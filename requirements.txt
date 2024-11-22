@@ -1,0 +1,16 @@
+Django==5.0.1
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+Pillow==10.2.0  # For image processing
+python-dotenv==1.0.0
+django-storages==1.14.2  # For file storage
+pandas==2.2.0  # For CSV handling
+psycopg2-binary==2.9.9  # For PostgreSQL
+BeautifulSoup4==4.12.3
+django-cleanup==8.1.0
+cloudinary==1.41.0
+django-cloudinary-storage==0.3.0
+django-imagekit==5.0.0
+django-filter==24.2
+python-decouple==3.8
+django-summernote==0.8.20.0
