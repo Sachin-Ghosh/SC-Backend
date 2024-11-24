@@ -34,13 +34,24 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 # ALLOWED_HOSTS = ["*"]
 
 # ALLOWED_HOSTS = ['your-app-name.onrender.com', 'localhost', '127.0.0.1']
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
+# ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
+# Updated ALLOWED_HOSTS
+ALLOWED_HOSTS = [
+    'student-council-backend.onrender.com',  # Your Render domain
+    'localhost',
+    '127.0.0.1',
+    '*',  # Temporarily allow all hosts for testing
+]
+
 
 PORT = int(os.environ.get('PORT', 8000))
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
-
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://student-council-backend.onrender.com",
+]
 
 # Application definition
 
