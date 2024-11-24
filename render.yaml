@@ -2,7 +2,7 @@ services:
   - type: web
     name: student-council-backend
     env: python
-    buildCommand: "./build.sh"
+    buildCommand: "chmod +x build.sh && ./build.sh"
     startCommand: "gunicorn sc_backend.wsgi:application --bind=0.0.0.0:$PORT --workers=2 --threads=4 --worker-class=gthread --worker-tmp-dir=/dev/shm --timeout 120"
     envVars:
       - key: PYTHON_VERSION
@@ -28,7 +28,7 @@ services:
       - key: DJANGO_SUPERUSER_EMAIL
         value: ghoshsachin2301@gmail.com  # Change this
       - key: DJANGO_SUPERUSER_PASSWORD
-        value: sc_ucoe@123  # This will generate a secure random password
+        generateValue: true  # This will generate a secure random password
     healthCheckPath: /admin/
     autoDeploy: false
 
