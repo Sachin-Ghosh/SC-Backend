@@ -1,13 +1,14 @@
-# render.yaml - Place this file in your project root
 services:
   - type: web
     name: student-council-backend
     env: python
     buildCommand: "./build.sh"
-    startCommand: "gunicorn sc_backend.wsgi:application"
+    startCommand: "gunicorn sc_backend.wsgi:application --bind 0.0.0.0:$PORT"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.0
+        value: 3.11.10
+      - key: PORT
+        value: 8000
       - key: DATABASE_URL
         fromDatabase:
           name: student_council_db
