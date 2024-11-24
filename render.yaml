@@ -3,7 +3,7 @@ services:
     name: student-council-backend
     env: python
     buildCommand: "./build.sh"
-    startCommand: "gunicorn sc_backend.wsgi:application --bind 0.0.0.0:$PORT"
+    startCommand: "gunicorn sc_backend.wsgi:application --bind=0.0.0.0:$PORT --workers=2 --threads=4 --worker-class=gthread --worker-tmp-dir=/dev/shm"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.10
@@ -19,6 +19,9 @@ services:
         value: sc_backend.settings
       - key: DEBUG
         value: false
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com,localhost,127.0.0.1"
+    healthCheckPath: /admin/
     autoDeploy: false
 
 databases:
