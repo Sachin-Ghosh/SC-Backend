@@ -23,6 +23,12 @@ services:
         value: "student-council-backend.onrender.com,localhost,127.0.0.1"
       - key: RENDER_EXTERNAL_URL
         value: "https://student-council-backend.onrender.com"
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: sachin  # Change this
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: ghoshsachin2301@gmail.com  # Change this
+      - key: DJANGO_SUPERUSER_PASSWORD
+        value: sc_ucoe@123  # This will generate a secure random password
     healthCheckPath: /admin/
     autoDeploy: false
 

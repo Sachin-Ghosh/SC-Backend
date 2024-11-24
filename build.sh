@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+# exit on error
+set -o errexit
 
 echo "Installing system dependencies..."
 apt-get update && apt-get install -y python3-pip python3-dev
@@ -16,6 +19,9 @@ python manage.py collectstatic --no-input
 
 echo "Running migrations..."
 python manage.py migrate --no-input
+
+echo "Creating superuser if none exists..."
+python manage.py create_superuser_if_none_exists
 
 # Create necessary directories
 mkdir -p staticfiles media
