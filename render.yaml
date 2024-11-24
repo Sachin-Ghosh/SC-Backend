@@ -1,0 +1,27 @@
+# render.yaml - Place this file in your project root
+services:
+  - type: web
+    name: student-council-backend
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn sc_backend.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: student_council_db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DJANGO_SETTINGS_MODULE
+        value: sc_backend.settings
+      - key: DEBUG
+        value: false
+    autoDeploy: false
+
+databases:
+  - name: student_council_db
+    databaseName: student_council
+    user: student_council
+    plan: free

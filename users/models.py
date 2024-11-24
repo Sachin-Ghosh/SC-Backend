@@ -1,5 +1,6 @@
 # Create your models here.
 from django.contrib.auth.models import AbstractUser
+from django.template.defaultfilters import slugify
 from django.db import models
 
 class User(AbstractUser):
@@ -13,7 +14,7 @@ class User(AbstractUser):
     user_type = models.CharField(max_length=10, choices=USER_TYPES)
     department = models.CharField(max_length=100)
     profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True)
-    bio = models.TextField(null=True, blank=True)
+    bio = models.SlugField(null=True, blank=True)
     email = models.EmailField(unique=True)  # Make email required and unique
     id_card_document = models.FileField(
         upload_to='id_cards/',
@@ -37,7 +38,7 @@ class CouncilMember(models.Model):
     term_start = models.DateField()
     term_end = models.DateField()
     responsibilities = models.TextField()
-    achievements = models.TextField(null=True, blank=True)
+    achievements = models.SlugField(null=True, blank=True)
     linkedin_profile = models.URLField(null=True, blank=True)
     
     def __str__(self):
@@ -49,7 +50,7 @@ class Faculty(models.Model):
     subjects = models.CharField(max_length=200)
     office_location = models.CharField(max_length=100, null=True, blank=True)
     office_hours = models.CharField(max_length=100, null=True, blank=True)
-    research_interests = models.TextField(null=True, blank=True)
+    research_interests = models.SlugField(null=True, blank=True)
     
     def __str__(self):
         return f"{self.user.username} - {self.designation}"
