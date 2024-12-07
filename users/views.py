@@ -1,34 +1,13 @@
 # from django.shortcuts import render
 
-# # Create your views here.
+# Create your views here.
 # # users/views.py
-# from rest_framework import viewsets, permissions
-# from rest_framework.decorators import action
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
 # from rest_framework.response import Response
 # from .models import User, CouncilMember, Faculty
 # from .serializers import UserSerializer, CouncilMemberSerializer, FacultySerializer
 
-# class UserViewSet(viewsets.ModelViewSet):
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     def get_queryset(self):
-#         queryset = User.objects.all()
-#         user_type = self.request.query_params.get('user_type', None)
-#         if user_type:
-#             queryset = queryset.filter(user_type=user_type)
-#         return queryset
-
-# class CouncilMemberViewSet(viewsets.ModelViewSet):
-#     queryset = CouncilMember.objects.all()
-#     serializer_class = CouncilMemberSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-# class FacultyViewSet(viewsets.ModelViewSet):
-#     queryset = Faculty.objects.all()
-#     serializer_class = FacultySerializer
-#     permission_classes = [permissions.IsAuthenticated]
 
 
 # users/views.py
@@ -42,6 +21,27 @@ from django.contrib.auth import authenticate
 from .models import User, CouncilMember, Faculty
 from .serializers import UserSerializer, CouncilMemberSerializer, FacultySerializer
 
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = User.objects.all()
+        user_type = self.request.query_params.get('user_type', None)
+        if user_type:
+            queryset = queryset.filter(user_type=user_type)
+        return queryset
+
+class CouncilMemberViewSet(viewsets.ModelViewSet):
+    queryset = CouncilMember.objects.all()
+    serializer_class = CouncilMemberSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class FacultyViewSet(viewsets.ModelViewSet):
+    queryset = Faculty.objects.all()
+    serializer_class = FacultySerializer
+    permission_classes = [permissions.IsAuthenticated]
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def register_user(request):

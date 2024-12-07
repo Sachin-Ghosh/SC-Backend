@@ -1,6 +1,15 @@
 # users/urls.py
 from django.urls import path
 from . import views
+from rest_framework.routers import DefaultRouter
+from .views import UserViewSet, CouncilMemberViewSet, FacultyViewSet  # Ensure these are imported
+
+
+router = DefaultRouter()
+router.register(r'users', UserViewSet)
+router.register(r'council-members', CouncilMemberViewSet)
+router.register(r'faculty', FacultyViewSet)
+
 
 urlpatterns = [
     path('register/', views.register_user, name='register'),
@@ -11,3 +20,5 @@ urlpatterns = [
     path('council-members/', views.council_members_list, name='council-members'),
     path('faculty/', views.faculty_list, name='faculty-list'),
 ]
+
+urlpatterns += router.urls
