@@ -10,9 +10,30 @@ class User(AbstractUser):
         ('STUDENT', 'Student'),
         ('FACULTY', 'Faculty')
     )
+    DEPARTMENT_TYPES = (
+        ('COMPUTER', 'Comps'),
+        ('IT', 'IT'),
+        ('AIML', 'AIML'),
+        ('DE', 'DE'),
+        ('OTHER', 'Other')
+    )
+    DIVISION_TYPES = (
+        ('A', 'A'),
+        ('B', 'B'),
+        ('C', 'C'),
+        ('D', 'D'),
+        ('E', 'E'),
+        ('F', 'F')
+    )
+    YEAR_TYPES = (
+        ('FE', 'FE'),
+        ('SE', 'SE'),
+        ('TE', 'TE'),
+        ('BE', 'BE')
+    )
     
     user_type = models.CharField(max_length=10, choices=USER_TYPES)
-    department = models.CharField(max_length=100)
+    department = models.CharField(max_length=100, choices=DEPARTMENT_TYPES)
     profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True)
     bio = models.SlugField(null=True, blank=True)
     email = models.EmailField(unique=True)  # Make email required and unique
@@ -24,10 +45,10 @@ class User(AbstractUser):
     )
     otp = models.CharField(max_length=6, null=True, blank=True)
     otp_valid_until = models.DateTimeField(null=True, blank=True)
-    division = models.TextField(null=True, blank=True)
-    phone = models.CharField(max_length=15, null=True, blank=True)
+    division = models.TextField(null=True, blank=True, choices=DIVISION_TYPES)
+    phone = models.CharField(max_length=15,null=True, blank=True)
     roll_number = models.CharField(max_length=20, null=True, blank=True)
-    year_of_study = models.IntegerField(null=True, blank=True)
+    year_of_study = models.IntegerField(null=True, blank=True, choices=YEAR_TYPES)
     
     def __str__(self):
         return self.username
