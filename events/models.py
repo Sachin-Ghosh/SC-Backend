@@ -82,6 +82,14 @@ class EventRegistration(models.Model):
         ('REJECTED', 'Rejected')
     )
     
+    DEPARTMENT_TYPES = (
+        ('COMPUTER', 'Comps'),
+        ('IT', 'IT'),
+        ('AIML', 'AIML'),
+        ('DE', 'DE'),
+        ('OTHER', 'Other')
+    )
+    
     sub_event = models.ForeignKey(SubEvent, on_delete=models.CASCADE)
     participant = models.ForeignKey(
     settings.AUTH_USER_MODEL,
@@ -90,7 +98,7 @@ class EventRegistration(models.Model):
 )
     team_name = models.CharField(max_length=100, null=True, blank=True)
     college_name = models.CharField(max_length=200, null=True, blank=True)
-    department = models.CharField(max_length=100)
+    department = models.CharField(max_length=100, choices=DEPARTMENT_TYPES)
     registration_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=REGISTRATION_STATUS, default='PENDING')
     payment_status = models.BooleanField(default=False)
