@@ -1,11 +1,8 @@
 
 
-# Create your views here.
-# # users/views.py
+# users/views.py
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
-
-# users/views.py
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
