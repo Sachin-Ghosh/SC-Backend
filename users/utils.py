@@ -8,8 +8,6 @@ def generate_otp(user):
     user.otp = otp
     user.otp_valid_until = timezone.now() + timedelta(minutes=10)
     user.save()
-    
-    # Send OTP via email
     send_mail(
         'Your Registration OTP',
         f'Your OTP for registration is: {otp}. Valid for 10 minutes.',
