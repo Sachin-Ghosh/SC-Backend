@@ -15,6 +15,10 @@ from django.core.mail import send_mail
 import os
 import random
 import string
+from django.db.models import Count
+from django.contrib.auth import logout
+from django.db.models import Q
+from datetime import datetime, timedelta
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -274,3 +278,198 @@ def view_id_card(request, user_id):
         return Response({
             'error': 'User not found'
         }, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def logout_user(request):
+    logout(request)
+    return Response({'message': 'Successfully logged out'})
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def request_password_reset(request):
+    email = request.data.get('email')
+    try:
+        user = User.objects.get(email=email)
+        otp = generate_otp()
+        user.otp = otp
+        user.otp_valid_until = timezone.now() + timezone.timedelta(minutes=10)
+        user.save()
+        send_otp_email(email, otp)
+        return Response({'message': 'Password reset OTP sent to email'})
+    except User.DoesNotExist:
+        return Response({'error': 'Email not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def reset_password(request):
+    email = request.data.get('email')
+    otp = request.data.get('otp')
+    new_password = request.data.get('new_password')
+    
+    try:
+        user = User.objects.get(email=email)
+        if user.otp != otp or timezone.now() > user.otp_valid_until:
+            return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user.set_password(new_password)
+        user.otp = None
+        user.otp_valid_until = None
+        user.save()
+        return Response({'message': 'Password reset successful'})
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def change_password(request):
+    user = request.user
+    old_password = request.data.get('old_password')
+    new_password = request.data.get('new_password')
+    
+    if not user.check_password(old_password):
+        return Response({'error': 'Invalid old password'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user.set_password(new_password)
+    user.save()
+    return Response({'message': 'Password changed successfully'})
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def upload_id_card(request):
+    if 'id_card_document' not in request.FILES:
+        return Response({'error': 'No ID card document provided'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user = request.user
+    user.id_card_document = request.FILES['id_card_document']
+    try:
+        user.full_clean()
+        user.save()
+        return Response({'message': 'ID card uploaded successfully'})
+    except ValidationError as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def users_by_department(request, department):
+    users = User.objects.filter(department=department)
+    serializer = UserSerializer(users, many=True)
+    return Response({'users': serializer.data})
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def users_by_year(request, year):
+    users = User.objects.filter(year_of_study=year)
+    serializer = UserSerializer(users, many=True)
+    return Response({'users': serializer.data})
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def users_by_division(request, division):
+    users = User.objects.filter(division=division)
+    serializer = UserSerializer(users, many=True)
+    return Response({'users': serializer.data})
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def demote_from_council(request, user_id):
+    if not request.user.user_type == 'ADMIN':
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        user = User.objects.get(id=user_id)
+        if user.user_type != 'COUNCIL':
+            return Response({'error': 'User is not a council member'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user.user_type = 'STUDENT'
+        user.save()
+        
+        try:
+            council_member = user.councilmember
+            council_member.delete()
+        except CouncilMember.DoesNotExist:
+            pass
+        
+        return Response({'message': 'Successfully demoted from council'})
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def active_council_members(request):
+    current_date = timezone.now().date()
+    active_members = CouncilMember.objects.filter(term_end__gte=current_date)
+    serializer = CouncilMemberSerializer(active_members, many=True)
+    return Response({'active_council_members': serializer.data})
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def expired_council_members(request):
+    current_date = timezone.now().date()
+    expired_members = CouncilMember.objects.filter(term_end__lt=current_date)
+    serializer = CouncilMemberSerializer(expired_members, many=True)
+    return Response({'expired_council_members': serializer.data})
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def faculty_by_department(request, department):
+    faculty = Faculty.objects.filter(user__department=department)
+    serializer = FacultySerializer(faculty, many=True)
+    return Response({'faculty': serializer.data})
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def faculty_by_subject(request, subject):
+    faculty = Faculty.objects.filter(subjects__icontains=subject)
+    serializer = FacultySerializer(faculty, many=True)
+    return Response({'faculty': serializer.data})
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def verify_id_card(request, user_id):
+    if not request.user.user_type in ['ADMIN', 'FACULTY']:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        user = User.objects.get(id=user_id)
+        if not user.id_card_document:
+            return Response({'error': 'No ID card document found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Add verification logic here
+        return Response({'message': 'ID card verified successfully'})
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def users_summary(request):
+    if not request.user.user_type in ['ADMIN', 'FACULTY']:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+    
+    summary = {
+        'total_users': User.objects.count(),
+        'active_users': User.objects.filter(is_active=True).count(),
+        'students': User.objects.filter(user_type='STUDENT').count(),
+        'faculty': User.objects.filter(user_type='FACULTY').count(),
+        'council_members': User.objects.filter(user_type='COUNCIL').count(),
+    }
+    return Response(summary)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def department_distribution(request):
+    if not request.user.user_type in ['ADMIN', 'FACULTY']:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+    
+    distribution = User.objects.values('department').annotate(count=Count('id'))
+    return Response(distribution)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def year_distribution(request):
+    if not request.user.user_type in ['ADMIN', 'FACULTY']:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+    
+    distribution = User.objects.values('year_of_study').annotate(count=Count('id'))
+    return Response(distribution)
