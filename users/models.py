@@ -2,8 +2,17 @@
 from django.contrib.auth.models import AbstractUser
 from django.template.defaultfilters import slugify
 from django.db import models
+from django.core.validators import FileExtensionValidator
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+import re
 
 class User(AbstractUser):
+    GENDER_CHOICES = (
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('O', 'Other')
+    )
     USER_TYPES = (
         ('ADMIN', 'Admin'),
         ('COUNCIL', 'Student Council'),
@@ -32,16 +41,22 @@ class User(AbstractUser):
         ('BE', 'BE')
     )
     
+    gender = models.CharField(
+        max_length=1, 
+        choices=GENDER_CHOICES,
+        default='O'  # Setting 'Other' as default for existing records
+    )
     user_type = models.CharField(max_length=10, choices=USER_TYPES)
     department = models.CharField(max_length=100, choices=DEPARTMENT_TYPES)
     profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True)
-    bio = models.SlugField(null=True, blank=True)
-    email = models.EmailField(unique=True)  # Make email required and unique
-    id_card_document = models.FileField(
+    bio = models.TextField(null=True, blank=True)
+    email = models.EmailField(unique=True)
+    id_card_document = models.ImageField(
         upload_to='id_cards/',
         null=True,
         blank=True,
-        help_text="Required for Students and Council members"
+        validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])],
+        help_text="Required for Students and Council members. Image files only (jpg, jpeg, png)"
     )
     otp = models.CharField(max_length=6, null=True, blank=True)
     otp_valid_until = models.DateTimeField(null=True, blank=True)
@@ -52,6 +67,26 @@ class User(AbstractUser):
     
     def __str__(self):
         return self.username
+
+    def clean(self):
+        # Validate college email except for FE students
+        if self.year_of_study != 'FE' and not self.email.endswith('@universal.edu.in'):  # Replace with your college domain
+            raise ValidationError('Must use college email address')
+        
+        # Validate ID card requirement
+        if self.user_type in ['STUDENT', 'COUNCIL'] and not self.id_card_document:
+            raise ValidationError('ID card document is required for students and council members')
+
+    def save(self, *args, **kwargs):
+        # Auto increment year in June
+        if self.year_of_study:
+            current_month = timezone.now().month
+            if current_month == 6:  # June
+                year_mapping = {'FE': 'SE', 'SE': 'TE', 'TE': 'BE'}
+                if self.year_of_study in year_mapping:
+                    self.year_of_study = year_mapping[self.year_of_study]
+        
+        super().save(*args, **kwargs)
 
 class CouncilMember(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

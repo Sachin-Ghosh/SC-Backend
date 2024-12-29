@@ -1,5 +1,3 @@
-
-
 # users/views.py
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
@@ -12,6 +10,11 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from .models import User, CouncilMember, Faculty
 from .serializers import UserSerializer, CouncilMemberSerializer, FacultySerializer
+from django.conf import settings
+from django.core.mail import send_mail
+import os
+import random
+import string
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -34,12 +37,27 @@ class FacultyViewSet(viewsets.ModelViewSet):
     queryset = Faculty.objects.all()
     serializer_class = FacultySerializer
     permission_classes = [permissions.IsAuthenticated]
+
+def send_otp_email(email, otp):
+    subject = 'Your OTP for Registration'
+    message = f'Your OTP is: {otp}. Valid for 10 minutes.'
+    from_email = settings.EMAIL_HOST_USER
+    recipient_list = [email]
+    
+    send_mail(subject, message, from_email, recipient_list)
+
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def register_user(request):
     email = request.data.get('email')
+    year_of_study = request.data.get('year_of_study')
     
-    # Check if email exists in database
+    # Validate email domain except for FE students
+    if year_of_study != 'FE' and not email.endswith('@college.edu'):  # Replace with your college domain
+        return Response({
+            'error': 'Must use college email address'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
     try:
         user = User.objects.get(email=email)
         if user.is_active:
@@ -48,7 +66,13 @@ def register_user(request):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         # Generate and send OTP
-        generate_otp(user)
+        otp = ''.join(random.choices(string.digits, k=6))
+        user.otp = otp
+        user.otp_valid_until = timezone.now() + timezone.timedelta(minutes=10)
+        user.save()
+        
+        send_otp_email(email, otp)
+        
         return Response({
             'message': 'OTP sent to your email'
         })
@@ -195,3 +219,58 @@ def faculty_list(request):
         return Response({
             'error': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def promote_to_council(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        if user.user_type != 'STUDENT':
+            return Response({
+                'error': 'Only students can be promoted to council'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Update user type
+        user.user_type = 'COUNCIL'
+        user.save()
+        
+        # Create council member entry
+        council_data = request.data
+        council_data['user'] = user.id
+        serializer = CouncilMemberSerializer(data=council_data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'Successfully promoted to council member',
+                'data': serializer.data
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    except User.DoesNotExist:
+        return Response({
+            'error': 'User not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def view_id_card(request, user_id):
+    if not request.user.user_type in ['ADMIN', 'COUNCIL', 'FACULTY']:
+        return Response({
+            'error': 'Unauthorized to view ID cards'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        user = User.objects.get(id=user_id)
+        if not user.id_card_document:
+            return Response({
+                'error': 'No ID card document found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response({
+            'id_card_url': request.build_absolute_uri(user.id_card_document.url)
+        })
+    
+    except User.DoesNotExist:
+        return Response({
+            'error': 'User not found'
+        }, status=status.HTTP_404_NOT_FOUND)

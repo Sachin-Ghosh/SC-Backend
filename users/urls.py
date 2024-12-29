@@ -19,6 +19,8 @@ urlpatterns = [
     path('profile/update/', views.update_profile, name='update-profile'),
     path('council-members/', views.council_members_list, name='council-members'),
     path('faculty/', views.faculty_list, name='faculty-list'),
+    path('promote-to-council/<int:user_id>/', views.promote_to_council, name='promote-to-council'),
+    path('view-id-card/<int:user_id>/', views.view_id_card, name='view-id-card'),
 ]
 
 urlpatterns += router.urls
