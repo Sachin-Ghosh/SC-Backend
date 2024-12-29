@@ -473,3 +473,201 @@ def year_distribution(request):
     
     distribution = User.objects.values('year_of_study').annotate(count=Count('id'))
     return Response(distribution)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def user_detail(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        serializer = UserSerializer(user)
+        
+        # Get additional information based on user type
+        additional_info = {}
+        if user.user_type == 'COUNCIL':
+            try:
+                council_info = CouncilMemberSerializer(user.councilmember).data
+                additional_info['council_info'] = council_info
+            except CouncilMember.DoesNotExist:
+                pass
+                
+        elif user.user_type == 'FACULTY':
+            try:
+                faculty_info = FacultySerializer(user.faculty).data
+                additional_info['faculty_info'] = faculty_info
+            except Faculty.DoesNotExist:
+                pass
+        
+        response_data = {
+            'user': serializer.data,
+            'additional_info': additional_info
+        }
+        
+        return Response(response_data)
+    except User.DoesNotExist:
+        return Response(
+            {'error': 'User not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def user_detail_by_username(request, username):
+    """
+    Get user details by username instead of directly calling user_detail
+    """
+    try:
+        user = User.objects.get(username=username)
+        serializer = UserSerializer(user)
+        
+        # Get additional information based on user type
+        additional_info = {}
+        if user.user_type == 'COUNCIL':
+            try:
+                council_info = CouncilMemberSerializer(user.councilmember).data
+                additional_info['council_info'] = council_info
+            except CouncilMember.DoesNotExist:
+                pass
+                
+        elif user.user_type == 'FACULTY':
+            try:
+                faculty_info = FacultySerializer(user.faculty).data
+                additional_info['faculty_info'] = faculty_info
+            except Faculty.DoesNotExist:
+                pass
+        
+        response_data = {
+            'user': serializer.data,
+            'additional_info': additional_info
+        }
+        
+        return Response(response_data)
+    except User.DoesNotExist:
+        return Response(
+            {'error': 'User not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def council_member_detail(request, member_id):
+    try:
+        council_member = CouncilMember.objects.get(id=member_id)
+        serializer = CouncilMemberSerializer(council_member)
+        
+        # Get additional statistics and information
+        response_data = {
+            'council_member': serializer.data,
+            'days_remaining': (council_member.term_end - timezone.now().date()).days,
+            'is_active': council_member.term_end >= timezone.now().date(),
+            'term_duration': (council_member.term_end - council_member.term_start).days,
+        }
+        
+        return Response(response_data)
+    except CouncilMember.DoesNotExist:
+        return Response(
+            {'error': 'Council member not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def council_member_history(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        council_history = CouncilMember.objects.filter(user=user).order_by('-term_start')
+        
+        if not council_history.exists():
+            return Response(
+                {'message': 'No council member history found for this user'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        serializer = CouncilMemberSerializer(council_history, many=True)
+        
+        # Calculate total service time
+        total_days = sum(
+            (member.term_end - member.term_start).days 
+            for member in council_history
+        )
+        
+        response_data = {
+            'user': UserSerializer(user).data,
+            'council_history': serializer.data,
+            'total_positions': council_history.count(),
+            'total_service_days': total_days,
+            'positions_held': list(council_history.values_list('position', flat=True).distinct())
+        }
+        
+        return Response(response_data)
+    except User.DoesNotExist:
+        return Response(
+            {'error': 'User not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def faculty_detail(request, faculty_id):
+    try:
+        faculty = Faculty.objects.get(id=faculty_id)
+        serializer = FacultySerializer(faculty)
+        
+        # Get additional information
+        subjects_list = faculty.subjects.split(',') if faculty.subjects else []
+        
+        # Get all students under this faculty's department
+        department_students = User.objects.filter(
+            department=faculty.user.department,
+            user_type='STUDENT'
+        ).count()
+        
+        response_data = {
+            'faculty': serializer.data,
+            'subjects_count': len(subjects_list),
+            'subjects_list': subjects_list,
+            'department_students': department_students,
+            'contact_info': {
+                'email': faculty.user.email,
+                'phone': faculty.user.phone,
+                'office_location': faculty.office_location,
+                'office_hours': faculty.office_hours
+            }
+        }
+        
+        return Response(response_data)
+    except Faculty.DoesNotExist:
+        return Response(
+            {'error': 'Faculty member not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def faculty_schedule(request, faculty_id):
+    try:
+        faculty = Faculty.objects.get(id=faculty_id)
+        
+        # This is a placeholder for faculty schedule
+        # You would typically connect this to a schedule/timetable model
+        schedule = {
+            'office_hours': faculty.office_hours,
+            'subjects': faculty.subjects.split(',') if faculty.subjects else [],
+            'department': faculty.user.department,
+            'availability': {
+                'Monday': '9:00 AM - 5:00 PM',
+                'Tuesday': '9:00 AM - 5:00 PM',
+                'Wednesday': '9:00 AM - 5:00 PM',
+                'Thursday': '9:00 AM - 5:00 PM',
+                'Friday': '9:00 AM - 5:00 PM'
+            }
+        }
+        
+        return Response({
+            'faculty': FacultySerializer(faculty).data,
+            'schedule': schedule
+        })
+    except Faculty.DoesNotExist:
+        return Response(
+            {'error': 'Faculty member not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )

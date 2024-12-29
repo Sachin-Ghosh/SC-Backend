@@ -50,6 +50,18 @@ urlpatterns = [
     path('stats/users-summary/', views.users_summary, name='users-summary'),
     path('stats/department-distribution/', views.department_distribution, name='department-distribution'),
     path('stats/year-distribution/', views.year_distribution, name='year-distribution'),
+    
+    # Detailed User Information
+    path('users/<int:user_id>/detail/', views.user_detail, name='user-detail'),
+    path('users/<str:username>/detail/', views.user_detail_by_username, name='user-detail-by-username'),
+    
+    # Detailed Council Member Information
+    path('council-members/<int:member_id>/detail/', views.council_member_detail, name='council-member-detail'),
+    path('council-members/history/<int:user_id>/', views.council_member_history, name='council-member-history'),
+    
+    # Detailed Faculty Information
+    path('faculty/<int:faculty_id>/detail/', views.faculty_detail, name='faculty-detail'),
+    path('faculty/schedule/<int:faculty_id>/', views.faculty_schedule, name='faculty-schedule'),
 ]
 
 urlpatterns += router.urls
