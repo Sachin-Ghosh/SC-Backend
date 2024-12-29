@@ -232,5 +232,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')  # Your Gmail address
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')  # Your Gmail app password
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='ghoshsachin2301@gmail.com')  # Add default empty string
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='ggxfdbpjopmrhmic')  # Add default empty string
+
+# Optional: Add this to disable email in development if credentials are not set
+if not all([EMAIL_HOST_USER, EMAIL_HOST_PASSWORD]):
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
