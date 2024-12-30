@@ -11,11 +11,11 @@ class Album(models.Model):
     slug = models.SlugField(unique=True)
     description = models.TextField()
     event = models.ForeignKey(Event, on_delete=models.SET_NULL, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True , null=True , blank=True)
     created_by = models.ForeignKey(
     settings.AUTH_USER_MODEL,
     on_delete=models.CASCADE,
-    related_name='created_albums'
+    related_name='created_albums' , null=True , blank=True
 )
     
     def save(self, *args, **kwargs):
@@ -32,7 +32,7 @@ class Media(models.Model):
         ('DOCUMENT', 'Document')
     )
     
-    album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name='media')
+    album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name='media' , null=True , blank=True)
     title = models.CharField(max_length=200)
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPES)
     file = models.FileField(upload_to='gallery/')

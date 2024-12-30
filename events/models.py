@@ -3,7 +3,18 @@ from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
 from django.contrib.auth.models import User
+from django.core.validators import FileExtensionValidator
+from django.utils import timezone
 from users.models import CouncilMember
+
+class Organization(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    logo = models.ImageField(upload_to='organizations/')
+    website = models.URLField(null=True, blank=True)
+    
+    def __str__(self):
+        return self.name
 
 class Event(models.Model):
     EVENT_TYPES = (
@@ -22,25 +33,53 @@ class Event(models.Model):
     venue = models.CharField(max_length=200)
     max_participants = models.IntegerField()
     organizer = models.ForeignKey(CouncilMember, on_delete=models.CASCADE)
+    collaborating_organizations = models.ManyToManyField(Organization, blank=True)
+    chairpersons = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='chaired_events'
+    )
+    vice_chairpersons = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='vice_chaired_events'
+    )
+    event_heads = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='headed_events'
+    )
     created_by = models.ForeignKey(
-    settings.AUTH_USER_MODEL,
-    on_delete=models.CASCADE,
-    related_name='created_events'
-)
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='created_events'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     cover_image = models.ImageField(upload_to='events/')
     banner_image = models.ImageField(upload_to='events/banners/')
-    rules_document = models.FileField(upload_to='events/rules/', null=True)
-    schedule_file = models.FileField(upload_to='events/schedules/', null=True)
+    rules_document = models.FileField(upload_to='events/rules/', null=True, blank=True)
+    schedule_file = models.FileField(upload_to='events/schedules/', null=True, blank=True)
     budget = models.DecimalField(max_digits=10, decimal_places=2)
     is_active = models.BooleanField(default=True)
     
+    # Social Media Links
+    instagram_link = models.URLField(null=True, blank=True)
+    facebook_link = models.URLField(null=True, blank=True)
+    twitter_link = models.URLField(null=True, blank=True)
+    linkedin_link = models.URLField(null=True, blank=True)
+    
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
+        if not self.slug:
+            self.slug = slugify(self.name)
         super().save(*args, **kwargs)
     
     def __str__(self):
         return self.name
+
+class SubEventImage(models.Model):
+    image = models.ImageField(upload_to='sub_events/')
+    caption = models.CharField(max_length=200, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.caption or f"Image {self.id}"
 
 class SubEvent(models.Model):
     EVENT_CATEGORIES = (
@@ -50,26 +89,50 @@ class SubEvent(models.Model):
         ('ACADEMIC', 'Academic')
     )
     
+    PARTICIPATION_TYPES = (
+        ('SOLO', 'Solo'),
+        ('DUO', 'Duo'),
+        ('GROUP', 'Group')
+    )
+    
+    EVENT_STAGES = (
+        ('REGISTRATION', 'Registration'),
+        ('PRELIMS', 'Preliminaries'),
+        ('QUARTERS', 'Quarter Finals'),
+        ('SEMIS', 'Semi Finals'),
+        ('FINALS', 'Finals')
+    )
+    
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='sub_events')
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     description = models.TextField()
-    category = models.CharField(max_length=20, choices=EVENT_CATEGORIES)
-    schedule = models.DateTimeField()
-    venue = models.CharField(max_length=200)
-    max_participants = models.IntegerField()
-    registration_deadline = models.DateTimeField()
-    coordinators = models.ManyToManyField(
-    settings.AUTH_USER_MODEL,
-    related_name='coordinated_subevents'
-)
-    registration_fee = models.DecimalField(max_digits=8, decimal_places=2)
-    rules = models.TextField()
-    scoring_criteria = models.TextField()
-    prize_pool = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    category = models.CharField(max_length=20, choices=EVENT_CATEGORIES , null=True , blank=True)
+    participation_type = models.CharField(max_length=10, choices=PARTICIPATION_TYPES , null=True , blank=True)
+    current_stage = models.CharField(max_length=20, choices=EVENT_STAGES, default='REGISTRATION' , null=True , blank=True)
+    schedule = models.DateTimeField(null=True , blank=True)
+    venue = models.CharField(max_length=200 , null=True , blank=True)
+    max_participants = models.IntegerField(null=True , blank=True)
+    min_team_size = models.IntegerField(default=1 , null=True , blank=True)
+    max_team_size = models.IntegerField(default=1 , null=True , blank=True)
+    registration_deadline = models.DateTimeField(null=True , blank=True)
+    sub_heads = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='sub_headed_events' , blank=True
+    )
+    registration_fee = models.DecimalField(max_digits=8, decimal_places=2 , null=True , blank=True)
+    rules = models.TextField(null=True , blank=True)
+    scoring_criteria = models.JSONField(default=dict , null=True , blank=True)  # Store judging criteria
+    prize_pool = models.DecimalField(max_digits=10, decimal_places=2 , null=True , blank=True)
+    allow_mixed_department = models.BooleanField(default=False)
+    allow_mixed_year = models.BooleanField(default=False)
+    allow_mixed_division = models.BooleanField(default=False)
+    double_trouble_allowed = models.BooleanField(default=False)
+    images = models.ManyToManyField(SubEventImage, blank=True)
     
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
+        if not self.slug:
+            self.slug = slugify(self.name)
         super().save(*args, **kwargs)
     
     def __str__(self):
@@ -91,37 +154,109 @@ class EventRegistration(models.Model):
     )
     
     sub_event = models.ForeignKey(SubEvent, on_delete=models.CASCADE)
-    participant = models.ForeignKey(
-    settings.AUTH_USER_MODEL,
-    on_delete=models.CASCADE,
-    related_name='event_registrations'
-)
+    team_leader = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='led_registrations' , null=True , blank=True
+    )
+    team_members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='team_registrations',
+        blank=True 
+    )
     team_name = models.CharField(max_length=100, null=True, blank=True)
-    college_name = models.CharField(max_length=200, null=True, blank=True)
-    department = models.CharField(max_length=100, choices=DEPARTMENT_TYPES)
+    registration_number = models.CharField(
+        max_length=20, 
+        unique=True,
+        null=True,  # Allow null temporarily for migration
+        blank=True  # Allow blank temporarily for migration
+    )
+    department = models.CharField(max_length=100, choices=DEPARTMENT_TYPES , null=True , blank=True)
+    year = models.CharField(max_length=10 , null=True , blank=True)
+    division = models.CharField(max_length=10 , null=True , blank=True)
     registration_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=REGISTRATION_STATUS, default='PENDING')
     payment_status = models.BooleanField(default=False)
-    payment_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    payment_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    current_stage = models.CharField(max_length=20, choices=SubEvent.EVENT_STAGES, default='REGISTRATION')
+    has_submitted_files = models.BooleanField(default=False)
+    
+    def save(self, *args, **kwargs):
+        if not self.registration_number:
+            prefix = f"{self.sub_event.event.name[:3]}{self.sub_event.name[:3]}".upper()
+            timestamp = timezone.now().strftime('%Y%m%d%H%M')
+            self.registration_number = f"{prefix}{timestamp}"
+        super().save(*args, **kwargs)
     
     def __str__(self):
-        return f"{self.participant.username} - {self.sub_event.name}"
+        return f"{self.team_leader.username} - {self.sub_event.name}"
 
+class SubmissionFile(models.Model):
+    registration = models.ForeignKey(EventRegistration, on_delete=models.CASCADE)
+    file = models.FileField(
+        upload_to='submissions/',
+        validators=[FileExtensionValidator(['jpg', 'jpeg', 'png', 'mp4', 'mov'])]
+    )
+    file_type = models.CharField(max_length=10)  # 'image' or 'video'
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Submission for {self.registration}"
+
+class EventDraw(models.Model):
+    sub_event = models.ForeignKey(SubEvent, on_delete=models.CASCADE)
+    stage = models.CharField(max_length=20, choices=SubEvent.EVENT_STAGES)
+    team1 = models.ForeignKey(
+        EventRegistration,
+        on_delete=models.CASCADE,
+        related_name='team1_draws'
+    )
+    team2 = models.ForeignKey(
+        EventRegistration,
+        on_delete=models.CASCADE,
+        related_name='team2_draws'
+    )
+    winner = models.ForeignKey(
+        EventRegistration,
+        on_delete=models.CASCADE,
+        related_name='won_draws',
+        null=True,
+        blank=True
+    )
+    schedule = models.DateTimeField()
+    venue = models.CharField(max_length=200)
+    
+    class Meta:
+        unique_together = ['sub_event', 'stage', 'team1', 'team2']
+
+    def __str__(self):
+        return f"{self.sub_event.name} - {self.stage} - {self.team1} vs {self.team2}"
 
 class EventScore(models.Model):
+    SCORE_TYPES = (
+        ('WINNER', 'Winner'),
+        ('RUNNER_UP', 'Runner Up')
+    )
+    
     sub_event = models.ForeignKey(SubEvent, on_delete=models.CASCADE)
-    participant = models.ForeignKey(
-    settings.AUTH_USER_MODEL,
-    on_delete=models.CASCADE,
-    related_name='received_scores'
-)
-    department = models.CharField(max_length=100)
-    score = models.DecimalField(max_digits=8, decimal_places=2)
+    event_registration = models.ForeignKey(EventRegistration, on_delete=models.CASCADE )  # Changed from registration to event_registration
+    stage = models.CharField(max_length=20, choices=SubEvent.EVENT_STAGES , null=True , blank=True)
+    score_type = models.CharField(max_length=20, choices=SCORE_TYPES, null=True, blank=True)
+    criteria_scores = models.JSONField(default=dict , null=True , blank=True)
+    total_score = models.DecimalField(max_digits=8, decimal_places=2 , null=True , blank=True)
     remarks = models.TextField(null=True, blank=True)
     judge = models.ForeignKey(
-    settings.AUTH_USER_MODEL,
-    on_delete=models.CASCADE,
-    related_name='judged_scores'
-)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    updated_at = models.DateTimeField(auto_now=True)
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='judged_scores' , null=True , blank=True
+    )
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE , null=True , blank=True)
+    updated_at = models.DateTimeField(auto_now=True , null=True , blank=True)
+    is_bye = models.BooleanField(default=False)
+    points_awarded = models.IntegerField(default=0 , null=True , blank=True)
+    
+    class Meta:
+        unique_together = ['sub_event', 'event_registration', 'stage', 'judge']
+
+    def __str__(self):
+        return f"{self.event_registration.team_leader.username} - {self.sub_event.name} - {self.stage}"
