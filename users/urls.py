@@ -13,7 +13,7 @@ router.register(r'faculty', views.FacultyViewSet)
 urlpatterns = [
     # Authentication & Registration
     path('register/', views.register_user, name='register'),
-    path('register/verify/', views.verify_and_complete_registration, name='verify-registration'),
+    path('register/verify/', views.verify_otp, name='verify-registration'),
     path('login/', views.login_user, name='login'),
     path('logout/', views.logout_user, name='logout'),
     path('request-password-reset/', views.request_password_reset, name='request-password-reset'),

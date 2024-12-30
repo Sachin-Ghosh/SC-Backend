@@ -50,83 +50,227 @@ def send_otp_email(email, otp):
     
     send_mail(subject, message, from_email, recipient_list)
 
+# @api_view(['POST'])
+# @permission_classes([permissions.AllowAny])
+# def register_user(request):
+#     email = request.data.get('email')
+#     year_of_study = request.data.get('year_of_study')
+    
+#     # Validate email domain except for FE students
+#     if year_of_study != 'FE' and not email.endswith('@universal.edu.in'):  # Replace with your college domain
+#         return Response({
+#             'error': 'Must use college email address'
+#         }, status=status.HTTP_400_BAD_REQUEST)
+    
+#     try:
+#         user = User.objects.get(email=email)
+#         if user.is_active:
+#             return Response({
+#                 'error': 'User already registered with this email'
+#             }, status=status.HTTP_400_BAD_REQUEST)
+        
+#         # Generate and send OTP
+#         otp = ''.join(random.choices(string.digits, k=6))
+#         user.otp = otp
+#         user.otp_valid_until = timezone.now() + timezone.timedelta(minutes=10)
+#         user.save()
+        
+#         send_otp_email(email, otp)
+        
+#         return Response({
+#             'message': 'OTP sent to your email'
+#         })
+        
+#     except User.DoesNotExist:
+#         return Response({
+#             'error': 'Email not found in our database'
+#         }, status=status.HTTP_404_NOT_FOUND)
+
+# @api_view(['POST'])
+# @permission_classes([permissions.AllowAny])
+# @parser_classes([MultiPartParser, FormParser])
+# def verify_and_complete_registration(request):
+#     email = request.data.get('email')
+#     otp = request.data.get('otp')
+#     password = request.data.get('password')
+#     id_card = request.FILES.get('id_card_document')
+    
+#     try:
+#         user = User.objects.get(email=email)
+        
+#         # Verify OTP
+#         if not user.otp or user.otp != otp or timezone.now() > user.otp_valid_until:
+#             return Response({
+#                 'error': 'Invalid or expired OTP'
+#             }, status=status.HTTP_400_BAD_REQUEST)
+        
+#         # Check ID card for students and council members
+#         if user.user_type in ['STUDENT', 'COUNCIL']:
+#             if not id_card:
+#                 return Response({
+#                     'error': 'ID card document is required'
+#                 }, status=status.HTTP_400_BAD_REQUEST)
+#             user.id_card_document = id_card
+        
+#         # Complete registration
+#         user.set_password(password)
+#         user.is_active = True
+#         user.otp = None
+#         user.otp_valid_until = None
+#         user.save()
+        
+#         return Response({
+#             'message': 'Registration completed successfully'
+#         })
+        
+#     except User.DoesNotExist:
+#         return Response({
+#             'error': 'User not found'
+#         }, status=status.HTTP_404_NOT_FOUND)
+
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def register_user(request):
     email = request.data.get('email')
-    year_of_study = request.data.get('year_of_study')
+    password = request.data.get('password')
+    user_type = request.data.get('user_type')  # 'STUDENT', 'FACULTY', or 'COUNCIL'
     
-    # Validate email domain except for FE students
-    if year_of_study != 'FE' and not email.endswith('@college.edu'):  # Replace with your college domain
+    if not all([email, password, user_type]):
         return Response({
-            'error': 'Must use college email address'
+            'error': 'Email, password and user type are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Validate email domain for all users
+    if not email.endswith('@universal.edu.in'):
+        return Response({
+            'error': 'Must use college email address (@universal.edu.in)'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Check if user already exists
+    if User.objects.filter(email=email).exists():
+        return Response({
+            'error': 'User already exists with this email'
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
-        user = User.objects.get(email=email)
-        if user.is_active:
-            return Response({
-                'error': 'User already registered with this email'
-            }, status=status.HTTP_400_BAD_REQUEST)
+        # Create user with basic information
+        user = User.objects.create(
+            email=email,
+            username=email.split('@')[0],  # Use email prefix as username
+            user_type=user_type,
+            is_active=False  # Will be activated after OTP verification
+        )
+        user.set_password(password)
         
-        # Generate and send OTP
+        # Generate and save OTP
         otp = ''.join(random.choices(string.digits, k=6))
         user.otp = otp
         user.otp_valid_until = timezone.now() + timezone.timedelta(minutes=10)
         user.save()
         
-        send_otp_email(email, otp)
+        # Send OTP email
+        subject = 'Your OTP for Registration'
+        message = f'Your OTP is: {otp}. Valid for 10 minutes.'
+        from_email = settings.EMAIL_HOST_USER
+        recipient_list = [email]
+        
+        send_mail(subject, message, from_email, recipient_list)
         
         return Response({
-            'message': 'OTP sent to your email'
+            'message': 'OTP sent to your email',
+            'email': email
         })
         
-    except User.DoesNotExist:
+    except Exception as e:
+        # If any error occurs, delete the user if it was created
+        if 'user' in locals():
+            user.delete()
         return Response({
-            'error': 'Email not found in our database'
-        }, status=status.HTTP_404_NOT_FOUND)
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
-@parser_classes([MultiPartParser, FormParser])
-def verify_and_complete_registration(request):
+def verify_otp(request):
     email = request.data.get('email')
     otp = request.data.get('otp')
-    password = request.data.get('password')
-    id_card = request.FILES.get('id_card_document')
     
     try:
         user = User.objects.get(email=email)
         
         # Verify OTP
-        if not user.otp or user.otp != otp or timezone.now() > user.otp_valid_until:
+        if not user.otp or user.otp != otp:
             return Response({
-                'error': 'Invalid or expired OTP'
+                'error': 'Invalid OTP'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Check ID card for students and council members
-        if user.user_type in ['STUDENT', 'COUNCIL']:
-            if not id_card:
-                return Response({
-                    'error': 'ID card document is required'
-                }, status=status.HTTP_400_BAD_REQUEST)
-            user.id_card_document = id_card
+        # Check OTP expiration
+        if timezone.now() > user.otp_valid_until:
+            return Response({
+                'error': 'OTP has expired'
+            }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Complete registration
-        user.set_password(password)
+        # Activate user
         user.is_active = True
         user.otp = None
         user.otp_valid_until = None
+        
+        # Add additional user information
+        user.first_name = request.data.get('first_name', '')
+        user.last_name = request.data.get('last_name', '')
+        user.department = request.data.get('department', '')
+        user.phone = request.data.get('phone_number', '')
+        user.profile_picture = request.data.get('profile_picture', '')
+        user.bio = request.data.get('bio', '')
+        user.gender = request.data.get('gender', '')
+        
+        if user.user_type == 'STUDENT':
+            user.year_of_study = request.data.get('year_of_study', '')
+            user.division = request.data.get('division', '')
+            user.roll_number = request.data.get('roll_number', '')
+            user.id_card_document = request.data.get('id_card_document', '')
+            
+        
+        elif user.user_type == 'FACULTY':
+            user.designation = request.data.get('designation', '')
+            user.subjects = request.data.get('subjects', [])
+            
+        elif user.user_type == 'COUNCIL':
+            user.position = request.data.get('position', '')
+            user.term_start = request.data.get('term_start')
+            user.term_end = request.data.get('term_end')
+        
         user.save()
         
+        # Create specific user type instance if needed
+        if user.user_type == 'FACULTY':
+            Faculty.objects.create(
+                user=user,
+                designation=user.designation,
+                subjects=user.subjects
+            )
+        elif user.user_type == 'COUNCIL':
+            CouncilMember.objects.create(
+                user=user,
+                position=user.position,
+                term_start=user.term_start,
+                term_end=user.term_end
+            )
+        
+        serializer = UserSerializer(user)
         return Response({
-            'message': 'Registration completed successfully'
+            'message': 'Registration completed successfully',
+            'user': serializer.data
         })
         
     except User.DoesNotExist:
         return Response({
             'error': 'User not found'
         }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
@@ -205,6 +349,59 @@ def council_members_list(request):
         return Response({
             'council_members': serializer.data
         })
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def resend_otp(request):
+    email = request.data.get('email')
+    
+    if not email:
+        return Response({
+            'error': 'Email is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        user = User.objects.get(email=email)
+        
+        # Check if user is already active
+        if user.is_active:
+            return Response({
+                'error': 'User is already verified'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Generate new OTP
+        new_otp = ''.join(random.choices(string.digits, k=6))
+        user.otp = new_otp
+        user.otp_valid_until = timezone.now() + timezone.timedelta(minutes=10)
+        user.save()
+        
+        # Send new OTP email
+        subject = 'Your New OTP for Registration'
+        message = f'Your new OTP is: {new_otp}. Valid for 10 minutes.'
+        from_email = settings.EMAIL_HOST_USER
+        recipient_list = [email]
+        
+        try:
+            send_mail(subject, message, from_email, recipient_list)
+            
+            return Response({
+                'message': 'New OTP sent successfully',
+                'email': email
+            })
+            
+        except Exception as e:
+            return Response({
+                'error': f'Failed to send OTP email: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+    except User.DoesNotExist:
+        return Response({
+            'error': 'No user found with this email. Please register first.'
+        }, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({
             'error': str(e)
