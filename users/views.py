@@ -7,7 +7,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .utils import generate_otp
 from rest_framework import status, permissions
 from rest_framework.response import Response
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login, logout
 from .models import User, CouncilMember, Faculty
 from .serializers import UserSerializer, CouncilMemberSerializer, FacultySerializer
 from django.conf import settings
@@ -19,6 +19,7 @@ from django.db.models import Count
 from django.contrib.auth import logout
 from django.db.models import Q
 from datetime import datetime, timedelta
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -219,7 +220,7 @@ def verify_otp(request):
         user.first_name = request.data.get('first_name', '')
         user.last_name = request.data.get('last_name', '')
         user.department = request.data.get('department', '')
-        user.phone = request.data.get('phone_number', '')
+        user.phone = request.data.get('phone', '')
         user.profile_picture = request.data.get('profile_picture', '')
         user.bio = request.data.get('bio', '')
         user.gender = request.data.get('gender', '')
@@ -280,31 +281,47 @@ def login_user(request):
     
     if not email or not password:
         return Response({
-            'error': 'Please provide both email and password'
+            'error': 'Email and password are required'
         }, status=status.HTTP_400_BAD_REQUEST)
     
-    user = authenticate(email=email, password=password)
-    
-    if user:
-        # Check if council member's term has ended
-        if user.user_type == 'COUNCIL':
-            try:
-                council_member = user.councilmember
-                if timezone.now().date() > council_member.term_end:
-                    user.user_type = 'STUDENT'
-                    user.save()
-                    council_member.delete()
-            except CouncilMember.DoesNotExist:
-                pass
+    try:
+        user = User.objects.get(email=email)
         
-        serializer = UserSerializer(user)
+        if not user.is_active:
+            return Response({
+                'error': 'Please verify your email first'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = authenticate(username=user.username, password=password)
+        
+        if user:
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'message': 'Login successful',
+                'tokens': {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                },
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'username': user.username,
+                    'user_type': user.user_type,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name
+                }
+            })
+        else:
+            return Response({
+                'error': 'Invalid credentials'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+            
+    except User.DoesNotExist:
         return Response({
-            'message': 'Login successful',
-            'user': serializer.data
-        })
-    return Response({
-        'error': 'Invalid credentials'
-    }, status=status.HTTP_401_UNAUTHORIZED)
+            'error': 'No user found with this email'
+        }, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
@@ -479,43 +496,104 @@ def view_id_card(request, user_id):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def logout_user(request):
-    logout(request)
-    return Response({'message': 'Successfully logged out'})
+    try:
+        refresh_token = request.data.get('refresh_token')
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+        
+        return Response({
+            'message': 'Logged out successfully'
+        })
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def request_password_reset(request):
     email = request.data.get('email')
+    
+    if not email:
+        return Response({
+            'error': 'Email is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
     try:
         user = User.objects.get(email=email)
-        otp = generate_otp()
-        user.otp = otp
-        user.otp_valid_until = timezone.now() + timezone.timedelta(minutes=10)
+        
+        # Generate password reset token
+        reset_token = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+        user.reset_password_token = reset_token
+        user.reset_password_token_valid_until = timezone.now() + timezone.timedelta(hours=1)
         user.save()
-        send_otp_email(email, otp)
-        return Response({'message': 'Password reset OTP sent to email'})
+        
+        # Send reset email
+        subject = 'Password Reset Request'
+        message = f'Your password reset token is: {reset_token}\nValid for 1 hour.'
+        from_email = settings.EMAIL_HOST_USER
+        recipient_list = [email]
+        
+        send_mail(subject, message, from_email, recipient_list)
+        
+        return Response({
+            'message': 'Password reset instructions sent to your email'
+        })
+        
     except User.DoesNotExist:
-        return Response({'error': 'Email not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({
+            'error': 'No user found with this email'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def reset_password(request):
     email = request.data.get('email')
-    otp = request.data.get('otp')
+    token = request.data.get('token')
     new_password = request.data.get('new_password')
     
+    if not all([email, token, new_password]):
+        return Response({
+            'error': 'Email, token and new password are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
     try:
         user = User.objects.get(email=email)
-        if user.otp != otp or timezone.now() > user.otp_valid_until:
-            return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
         
+        # Verify token
+        if not user.reset_password_token or user.reset_password_token != token:
+            return Response({
+                'error': 'Invalid reset token'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Check token expiration
+        if timezone.now() > user.reset_password_token_valid_until:
+            return Response({
+                'error': 'Reset token has expired'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Reset password
         user.set_password(new_password)
-        user.otp = None
-        user.otp_valid_until = None
+        user.reset_password_token = None
+        user.reset_password_token_valid_until = None
         user.save()
-        return Response({'message': 'Password reset successful'})
+        
+        return Response({
+            'message': 'Password reset successful'
+        })
+        
     except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({
+            'error': 'No user found with this email'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
@@ -524,12 +602,24 @@ def change_password(request):
     old_password = request.data.get('old_password')
     new_password = request.data.get('new_password')
     
+    if not all([old_password, new_password]):
+        return Response({
+            'error': 'Old password and new password are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
+    # Verify old password
     if not user.check_password(old_password):
-        return Response({'error': 'Invalid old password'}, status=status.HTTP_400_BAD_REQUEST)
-    
+        return Response({
+            'error': 'Invalid old password'
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
+    # Set new password
     user.set_password(new_password)
     user.save()
-    return Response({'message': 'Password changed successfully'})
+    
+    return Response({
+        'message': 'Password changed successfully'
+    })
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])

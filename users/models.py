@@ -63,7 +63,7 @@ class User(AbstractUser):
     division = models.TextField(null=True, blank=True, choices=DIVISION_TYPES)
     phone = models.CharField(max_length=15,null=True, blank=True)
     roll_number = models.CharField(max_length=20, null=True, blank=True)
-    year_of_study = models.IntegerField(null=True, blank=True, choices=YEAR_TYPES)
+    year_of_study = models.TextField(null=True, blank=True, choices=YEAR_TYPES)
     
     def __str__(self):
         return self.username
