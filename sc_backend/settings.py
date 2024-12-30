@@ -170,17 +170,24 @@ DATABASES = {
 #     }
 
 # Update database configuration
-import dj_database_url
-DATABASE_URL = config('DATABASE_URL', default=False)
-if DATABASE_URL:
+# Database Configuration
+if config('ENVIRONMENT', default='development') == 'production':
+    # Use PostgreSQL in production
     DATABASES = {
         'default': dj_database_url.config(
-            default=DATABASE_URL,
+            default=config('DATABASE_URL'),
             conn_max_age=600,
             conn_health_checks=True,
         )
     }
-
+else:
+    # Use SQLite in development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -268,3 +275,9 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='ggxfdbpjopmrhmic') 
 # Optional: Add this to disable email in development if credentials are not set
 if not all([EMAIL_HOST_USER, EMAIL_HOST_PASSWORD]):
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+if config('ENVIRONMENT', default='development') == 'production':
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
