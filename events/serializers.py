@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from .models import (
     Organization, Event, SubEvent, SubEventImage, EventRegistration,
-    SubmissionFile, EventDraw, EventScore
+    SubmissionFile, EventDraw, EventScore, EventHeat
 )
 from users.serializers import UserSerializer
 
@@ -141,3 +141,29 @@ class EventScoreSerializer(serializers.ModelSerializer):
             validated_data['points_awarded'] = 2
         
         return super().create(validated_data)
+
+class EventHeatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventHeat
+        fields = [
+            'id',
+            'sub_event',
+            'round_number',
+            'heat_number',
+            'participants',
+            'status',
+            'scheduled_time',
+            'completed_time',
+            'notes'
+        ]
+        read_only_fields = ['id']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Add participant details
+        representation['participants'] = EventRegistrationSerializer(
+            instance.participants.all(), 
+            many=True, 
+            context=self.context
+        ).data
+        return representation

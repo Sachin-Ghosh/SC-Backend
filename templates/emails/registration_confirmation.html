@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>Registration Confirmation</h2>
+    <p>Dear {{ team_leader.first_name }},</p>
+    
+    <p>Your registration for {{ event.name }} - {{ sub_event.name }} has been confirmed.</p>
+    
+    <p>Registration Details:</p>
+    <ul>
+        <li>Registration Number: {{ registration_number }}</li>
+        <li>Event: {{ event.name }}</li>
+        <li>Sub Event: {{ sub_event.name }}</li>
+        {% if team_members %}
+        <li>Team Members:
+            <ul>
+            {% for member in team_members %}
+                <li>{{ member.first_name }} {{ member.last_name }}</li>
+            {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+    </ul>
+    
+    <p>Please keep this registration number for future reference.</p>
+</body>
+</html> 

@@ -130,6 +130,18 @@ class SubEvent(models.Model):
     double_trouble_allowed = models.BooleanField(default=False)
     images = models.ManyToManyField(SubEventImage, blank=True)
     
+    ROUND_FORMATS = (
+        ('ELIMINATION', 'Elimination'),  # Participants get eliminated each round
+        ('POINTS', 'Points Based'),      # Points accumulate across rounds
+        ('TIME', 'Time Based'),          # Best time/score counts
+    )
+    
+    round_format = models.CharField(max_length=20, choices=ROUND_FORMATS , null=True , blank=True)
+    participants_per_group = models.IntegerField(default=5 , null=True , blank=True)  # How many compete at once
+    qualifiers_per_group = models.IntegerField(default=3 , null=True , blank=True)   # How many advance
+    current_round = models.IntegerField(default=1 , null=True , blank=True)
+    total_rounds = models.IntegerField(default=1 , null=True , blank=True)
+    
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
@@ -152,6 +164,20 @@ class EventRegistration(models.Model):
         ('DE', 'DE'),
         ('OTHER', 'Other')
     )
+    DIVISION_TYPES = (
+        ('A', 'A'),
+        ('B', 'B'),
+        ('C', 'C'),
+        ('D', 'D'),
+        ('E', 'E'),
+        ('F', 'F')
+    )
+    YEAR_TYPES = (
+        ('FE', 'FE'),
+        ('SE', 'SE'),
+        ('TE', 'TE'),
+        ('BE', 'BE')
+    )
     
     sub_event = models.ForeignKey(SubEvent, on_delete=models.CASCADE)
     team_leader = models.ForeignKey(
@@ -172,8 +198,8 @@ class EventRegistration(models.Model):
         blank=True  # Allow blank temporarily for migration
     )
     department = models.CharField(max_length=100, choices=DEPARTMENT_TYPES , null=True , blank=True)
-    year = models.CharField(max_length=10 , null=True , blank=True)
-    division = models.CharField(max_length=10 , null=True , blank=True)
+    year = models.CharField(max_length=10 , choices=YEAR_TYPES , null=True , blank=True)
+    division = models.CharField(max_length=10 , choices=DIVISION_TYPES , null=True , blank=True)
     registration_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=REGISTRATION_STATUS, default='PENDING')
     payment_status = models.BooleanField(default=False)
@@ -232,6 +258,26 @@ class EventDraw(models.Model):
     def __str__(self):
         return f"{self.sub_event.name} - {self.stage} - {self.team1} vs {self.team2}"
 
+class EventHeat(models.Model):
+    """Represents a single race/competition group within a round"""
+    sub_event = models.ForeignKey(SubEvent, on_delete=models.CASCADE)
+    round_number = models.IntegerField( default=1 )
+    heat_number = models.IntegerField( default=1 )
+    participants = models.ManyToManyField(
+        'EventRegistration',
+        related_name='heats'
+    )
+    status = models.CharField(max_length=20, choices=(
+        ('PENDING', 'Pending'),
+        ('ONGOING', 'Ongoing'),
+        ('COMPLETED', 'Completed')
+    ), default='PENDING')
+    scheduled_time = models.DateTimeField(null=True, blank=True)
+    completed_time = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = ['sub_event', 'round_number', 'heat_number']
 class EventScore(models.Model):
     SCORE_TYPES = (
         ('WINNER', 'Winner'),
@@ -254,6 +300,11 @@ class EventScore(models.Model):
     updated_at = models.DateTimeField(auto_now=True , null=True , blank=True)
     is_bye = models.BooleanField(default=False)
     points_awarded = models.IntegerField(default=0 , null=True , blank=True)
+    heat = models.ForeignKey(EventHeat, on_delete=models.CASCADE, null=True)
+    round_number = models.IntegerField(null=True , blank=True)
+    position = models.IntegerField(null=True)  # Position in the heat
+    time_taken = models.DurationField(null=True)  # For time-based events
+    qualified_for_next = models.BooleanField(default=False)
     
     class Meta:
         unique_together = ['sub_event', 'event_registration', 'stage', 'judge']

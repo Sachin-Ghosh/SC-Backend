@@ -1,0 +1,14 @@
+Welcome to Student Council's Website!
+
+Dear User,
+
+Thank you for registering with the Student Council's Website. To complete your registration, please use the following OTP:
+
+{{ otp }}
+
+This OTP is valid for {{ valid_minutes }} minutes.
+
+If you didn't request this registration, please ignore this email.
+
+Best regards,
+Student Council Team 

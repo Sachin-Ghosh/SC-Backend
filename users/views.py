@@ -1,4 +1,5 @@
 # users/views.py
+from django.forms import ValidationError
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from django.utils import timezone
@@ -13,6 +14,8 @@ from .serializers import UserSerializer, CouncilMemberSerializer, FacultySeriali
 from django.conf import settings
 from django.core.mail import send_mail
 import os
+from django.template.loader import render_to_string
+from django.utils import timezone
 import random
 import string
 from django.db.models import Count
@@ -51,6 +54,30 @@ def send_otp_email(email, otp):
     
     send_mail(subject, message, from_email, recipient_list)
 
+def send_registration_email(user, otp):
+    """Send registration confirmation and OTP email"""
+    context = {
+        'user': user,
+        'otp': otp,
+        'valid_minutes': 10  # OTP validity in minutes
+    }
+    
+    subject = 'Welcome to Student Council Website - Verify Your Email'
+    html_message = render_to_string('emails/registration_welcome.html', context)
+    plain_message = render_to_string('emails/registration_welcome.txt', context)
+    
+    try:
+        send_mail(
+            subject=subject,
+            message=plain_message,
+            html_message=html_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email]
+        )
+        return True
+    except Exception as e:
+        print(f"Email sending failed: {str(e)}")
+        return False
 # @api_view(['POST'])
 # @permission_classes([permissions.AllowAny])
 # def register_user(request):
@@ -175,26 +202,27 @@ def register_user(request):
         user.otp_valid_until = timezone.now() + timezone.timedelta(minutes=10)
         user.save()
         
-        # Send OTP email
-        subject = 'Your OTP for Registration'
-        message = f'Your OTP is: {otp}. Valid for 10 minutes.'
-        from_email = settings.EMAIL_HOST_USER
-        recipient_list = [email]
-        
-        send_mail(subject, message, from_email, recipient_list)
-        
-        return Response({
-            'message': 'OTP sent to your email',
-            'email': email
-        })
-        
+        # Send welcome email with OTP
+        if send_registration_email(user, otp):
+            return Response({
+                'message': 'Registration successful! Please check your email for OTP',
+                'email': email
+            })
+        else:
+            # If email fails, delete user and return error
+            user.delete()
+            return Response({
+                'error': 'Failed to send registration email'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
     except Exception as e:
-        # If any error occurs, delete the user if it was created
+        # If any error occurs, delete user if created
         if 'user' in locals():
             user.delete()
         return Response({
             'error': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
+       
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
@@ -403,13 +431,24 @@ def resend_otp(request):
         user.save()
         
         # Send new OTP email
-        subject = 'Your New OTP for Registration'
-        message = f'Your new OTP is: {new_otp}. Valid for 10 minutes.'
-        from_email = settings.EMAIL_HOST_USER
-        recipient_list = [email]
+        context = {
+            'user': user,
+            'otp': new_otp,
+            'valid_minutes': 10
+        }
+        
+        subject = 'Your New OTP for Student Council Registration'
+        html_message = render_to_string('emails/resend_otp.html', context)
+        plain_message = render_to_string('emails/resend_otp.txt', context)
         
         try:
-            send_mail(subject, message, from_email, recipient_list)
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                html_message=html_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email]
+            )
             
             return Response({
                 'message': 'New OTP sent successfully',

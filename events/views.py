@@ -5,15 +5,18 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db import models 
 from django.shortcuts import get_object_or_404
-from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage
-from .serializers import EventSerializer, SubEventSerializer, EventRegistrationSerializer, EventScoreSerializer, EventDrawSerializer , OrganizationSerializer , SubEventImageSerializer
+from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage, EventHeat , SubmissionFile 
+from .serializers import EventSerializer, SubEventSerializer, EventRegistrationSerializer, EventScoreSerializer, EventDrawSerializer , OrganizationSerializer , SubEventImageSerializer, EventHeatSerializer
 from rest_framework import viewsets, status     
-from django.db.models import Q, Count, Avg
+from django.db.models import Q, Count, Avg, Sum
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from rest_framework.decorators import action
 from rest_framework.routers import DefaultRouter
 from rest_framework.views import APIView
+import random
+from django.conf import settings
+from django.contrib.auth.models import User
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -265,6 +268,74 @@ class EventViewSet(viewsets.ModelViewSet):
         getattr(event, role).set(user_ids)
         return Response({'message': f'{role} updated successfully'})
 
+    @action(detail=True, methods=['get'])
+    def all_participants(self, request, slug=None):
+        """Get all participants for an event across all sub-events"""
+        event = self.get_object()
+        participants = EventRegistration.objects.filter(
+            sub_event__event=event
+        ).select_related(
+            'team_leader', 'sub_event'
+        ).prefetch_related('team_members')
+
+        # Filter options
+        department = request.query_params.get('department')
+        year = request.query_params.get('year')
+        division = request.query_params.get('division')
+
+        if department:
+            participants = participants.filter(department=department)
+        if year:
+            participants = participants.filter(year=year)
+        if division:
+            participants = participants.filter(division=division)
+
+        # Group by sub-event
+        sub_event_participants = {}
+        for registration in participants:
+            if registration.sub_event.name not in sub_event_participants:
+                sub_event_participants[registration.sub_event.name] = []
+            sub_event_participants[registration.sub_event.name].append({
+                'registration_id': registration.id,
+                'team_leader': {
+                    'id': registration.team_leader.id,
+                    'name': f"{registration.team_leader.first_name} {registration.team_leader.last_name}",
+                    'email': registration.team_leader.email,
+                },
+                'team_members': [{
+                    'id': member.id,
+                    'name': f"{member.first_name} {member.last_name}",
+                    'email': member.email,
+                } for member in registration.team_members.all()],
+                'department': registration.department,
+                'year': registration.year,
+                'division': registration.division,
+                'status': registration.status
+            })
+
+        return Response(sub_event_participants)
+
+    @action(detail=True, methods=['get'])
+    def department_statistics(self, request, slug=None):
+        """Get detailed statistics by department"""
+        event = self.get_object()
+        stats = EventRegistration.objects.filter(
+            sub_event__event=event
+        ).values(
+            'department', 'year', 'division'
+        ).annotate(
+            total_participants=Count('id'),
+            total_teams=Count('team_name', distinct=True),
+            average_score=Avg('scores__total_score'),
+            total_score=Sum('scores__total_score'),
+            qualified_participants=Count(
+                'id',
+                filter=Q(scores__qualified_for_next=True)
+            )
+        ).order_by('department', 'year', 'division')
+
+        return Response(stats)
+
 # SubEvent ViewSet
 class SubEventViewSet(viewsets.ModelViewSet):
     queryset = SubEvent.objects.all()
@@ -311,6 +382,166 @@ class SubEventViewSet(viewsets.ModelViewSet):
         
         return Response({'message': 'Stage updated successfully'})
 
+    @action(detail=True, methods=['post'])
+    def generate_heats(self, request, slug=None):
+        """Generate heats for the next round"""
+        sub_event = self.get_object()
+        round_number = request.data.get('round_number', sub_event.current_round)
+        
+        # Get qualified participants for this round
+        if round_number == 1:
+            participants = EventRegistration.objects.filter(
+                sub_event=sub_event,
+                status='APPROVED'
+            )
+        else:
+            # Get participants who qualified from previous round
+            participants = EventRegistration.objects.filter(
+                sub_event=sub_event,
+                scores__round_number=round_number-1,
+                scores__qualified_for_next=True
+            ).distinct()
+        
+        # Shuffle participants
+        participants = list(participants)
+        random.shuffle(participants)
+        
+        # Create heats
+        heats_needed = (len(participants) + sub_event.participants_per_group - 1) // sub_event.participants_per_group
+        
+        heats = []
+        for heat_number in range(1, heats_needed + 1):
+            heat = EventHeat.objects.create(
+                sub_event=sub_event,
+                round_number=round_number,
+                heat_number=heat_number
+            )
+            
+            # Assign participants to this heat
+            start_idx = (heat_number - 1) * sub_event.participants_per_group
+            end_idx = min(start_idx + sub_event.participants_per_group, len(participants))
+            heat_participants = participants[start_idx:end_idx]
+            heat.participants.set(heat_participants)
+            heats.append(heat)
+        
+        serializer = EventHeatSerializer(heats, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def record_heat_results(self, request, slug=None):
+        """Record results for a heat"""
+        heat_id = request.data.get('heat_id')
+        results = request.data.get('results', [])  # List of participant results
+        
+        heat = get_object_or_404(EventHeat, id=heat_id)
+        sub_event = heat.sub_event
+        
+        # Validate that all participants are in the heat
+        participant_ids = set(result['participant_id'] for result in results)
+        heat_participant_ids = set(heat.participants.values_list('id', flat=True))
+        if not participant_ids.issubset(heat_participant_ids):
+            return Response({'error': 'Invalid participant IDs'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
+        
+        # Record scores and determine qualifiers
+        for position, result in enumerate(results, 1):
+            participant_id = result['participant_id']
+            time_taken = result.get('time_taken')
+            
+            # Determine if participant qualifies for next round
+            qualified = position <= sub_event.qualifiers_per_group
+            
+            EventScore.objects.create(
+                sub_event=sub_event,
+                event_registration_id=participant_id,
+                heat=heat,
+                round_number=heat.round_number,
+                position=position,
+                time_taken=time_taken,
+                qualified_for_next=qualified,
+                judge=request.user,
+                total_score=result.get('score', 0)
+            )
+        
+        heat.status = 'COMPLETED'
+        heat.completed_time = timezone.now()
+        heat.save()
+        
+        return Response({'message': 'Heat results recorded successfully'})
+
+    @action(detail=True, methods=['get'])
+    def round_summary(self, request, slug=None):
+        """Get summary of a specific round"""
+        sub_event = self.get_object()
+        round_number = request.query_params.get('round', sub_event.current_round)
+        
+        heats = EventHeat.objects.filter(
+            sub_event=sub_event,
+            round_number=round_number
+        ).prefetch_related('participants')
+        
+        qualified_participants = EventRegistration.objects.filter(
+            sub_event=sub_event,
+            scores__round_number=round_number,
+            scores__qualified_for_next=True
+        ).distinct()
+        
+        return Response({
+            'round_number': round_number,
+            'total_heats': heats.count(),
+            'completed_heats': heats.filter(status='COMPLETED').count(),
+            'qualified_participants': qualified_participants.count(),
+            'heats': EventHeatSerializer(heats, many=True).data
+        })
+
+    @action(detail=True, methods=['get'])
+    def round_participants(self, request, slug=None):
+        """Get participants for each round"""
+        sub_event = self.get_object()
+        round_number = request.query_params.get('round', sub_event.current_round)
+
+        heats = EventHeat.objects.filter(
+            sub_event=sub_event,
+            round_number=round_number
+        ).prefetch_related(
+            'participants__team_leader',
+            'participants__team_members'
+        )
+
+        heat_data = []
+        for heat in heats:
+            participants = []
+            for registration in heat.participants.all():
+                participants.append({
+                    'registration_id': registration.id,
+                    'team_leader': {
+                        'id': registration.team_leader.id,
+                        'name': f"{registration.team_leader.first_name} {registration.team_leader.last_name}",
+                        'email': registration.team_leader.email,
+                    },
+                    'team_members': [{
+                        'id': member.id,
+                        'name': f"{member.first_name} {member.last_name}",
+                        'email': member.email,
+                    } for member in registration.team_members.all()],
+                    'scores': registration.scores.filter(
+                        round_number=round_number,
+                        heat=heat
+                    ).values('position', 'time_taken', 'total_score', 'qualified_for_next')
+                })
+
+            heat_data.append({
+                'heat_number': heat.heat_number,
+                'status': heat.status,
+                'scheduled_time': heat.scheduled_time,
+                'participants': participants
+            })
+
+        return Response({
+            'round_number': round_number,
+            'heats': heat_data
+        })
+
 class EventRegistrationViewSet(viewsets.ModelViewSet):
     queryset = EventRegistration.objects.all()
     serializer_class = EventRegistrationSerializer
@@ -349,21 +580,66 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
         registration = serializer.save(team_leader=request.user)
         
         # Send confirmation email
-        self._send_registration_confirmation(registration)
+        self._send_registration_email(registration)
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def _send_registration_confirmation(self, registration):
-        subject = f'Registration Confirmation - {registration.sub_event.name}'
-        message = render_to_string('events/registration_confirmation_email.html', {
-            'registration': registration,
+    def _send_registration_email(self, registration):
+        """Send registration confirmation email"""
+        context = {
+            'team_leader': registration.team_leader,
             'event': registration.sub_event.event,
             'sub_event': registration.sub_event,
-        })
-        recipient_list = [registration.team_leader.email]
-        recipient_list.extend([member.email for member in registration.team_members.all()])
+            'registration_number': registration.registration_number,
+            'team_members': registration.team_members.all()
+        }
+
+        subject = f'Registration Confirmation - {registration.sub_event.event.name}'
+        html_message = render_to_string('emails/registration_confirmation.html', context)
+        plain_message = render_to_string('emails/registration_confirmation.txt', context)
+
+        send_mail(
+            subject=subject,
+            message=plain_message,
+            html_message=html_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[registration.team_leader.email]
+        )
+
+    @action(detail=False, methods=['get'])
+    def available_team_members(self, request):
+        """Get list of users available for team selection"""
+        sub_event_id = request.query_params.get('sub_event')
+        if not sub_event_id:
+            return Response(
+                {'error': 'sub_event parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        sub_event = get_object_or_404(SubEvent, id=sub_event_id)
         
-        send_mail(subject, message, None, recipient_list)
+        # Get users who haven't registered for this sub-event
+        registered_users = EventRegistration.objects.filter(
+            sub_event=sub_event
+        ).values_list('team_leader_id', flat=True)
+
+        available_users = User.objects.exclude(
+            id__in=registered_users
+        ).values('id', 'first_name', 'last_name', 'email', 'department', 'year', 'division')
+
+        # Filter options
+        department = request.query_params.get('department')
+        year = request.query_params.get('year')
+        division = request.query_params.get('division')
+
+        if department:
+            available_users = available_users.filter(department=department)
+        if year:
+            available_users = available_users.filter(year=year)
+        if division:
+            available_users = available_users.filter(division=division)
+
+        return Response(available_users)
 
     @action(detail=True, methods=['post'])
     def submit_files(self, request, pk=None):

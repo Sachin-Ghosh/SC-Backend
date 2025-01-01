@@ -1,0 +1,14 @@
+Your New OTP
+
+Dear User,
+
+As requested, here is your new OTP for Student Council's Website registration:
+
+{{ otp }}
+
+This OTP is valid for {{ valid_minutes }} minutes.
+
+If you didn't request a new OTP, please ignore this email.
+
+Best regards,
+Student Council Team 
