@@ -147,6 +147,12 @@ def register_user(request):
             'error': 'Must use college email address (@universal.edu.in)'
         }, status=status.HTTP_400_BAD_REQUEST)
     
+    # Validate email domain except for FE students
+    # if year_of_study != 'FE' and not email.endswith('@college.edu'):  # Replace with your college domain
+    #     return Response({
+    #         'error': 'Must use college email address'
+    #     }, status=status.HTTP_400_BAD_REQUEST)
+    
     # Check if user already exists
     if User.objects.filter(email=email).exists():
         return Response({

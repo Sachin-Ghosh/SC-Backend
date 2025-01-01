@@ -3,36 +3,6 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
 
-# urlpatterns = [
-#     # Main Event URLs
-#     path('', views.event_list, name='event-list'),
-#     path('create/', views.create_event, name='create-event'),
-#     path('<slug:slug>/', views.event_detail, name='event-detail'),
-#     path('<slug:slug>/update/', views.update_event, name='update-event'),
-#     path('<slug:slug>/delete/', views.delete_event, name='delete-event'),
-    
-#     # Sub-Event URLs
-#     path('<slug:event_slug>/sub-events/', views.sub_event_list, name='sub-event-list'),
-#     path('<slug:event_slug>/sub-events/create/', views.create_sub_event, name='create-sub-event'),
-#     path('<slug:event_slug>/sub-events/<slug:sub_event_slug>/', views.sub_event_detail, name='sub-event-detail'),
-#     path('<slug:event_slug>/sub-events/<slug:sub_event_slug>/update/', views.update_sub_event, name='update-sub-event'),
-#     path('<slug:event_slug>/sub-events/<slug:sub_event_slug>/delete/', views.delete_sub_event, name='delete-sub-event'),
-    
-#     # Registration URLs
-#     path('register/<slug:sub_event_slug>/', views.register_event, name='register-event'),
-#     path('registrations/my/', views.my_registrations, name='my-registrations'),
-#     path('registrations/<int:registration_id>/cancel/', views.cancel_registration, name='cancel-registration'),
-    
-#     # Score URLs
-#     path('scores/<slug:sub_event_slug>/', views.event_scores, name='event-scores'),
-#     path('scores/<slug:sub_event_slug>/add/', views.add_score, name='add-score'),
-#     path('scores/<slug:sub_event_slug>/update/<int:score_id>/', views.update_score, name='update-score'),
-    
-#     # Department and Statistics URLs
-#     path('department-scores/', views.department_scores, name='department-scores'),
-#     path('statistics/', views.event_statistics, name='event-statistics'),
-# ]
-
 router = DefaultRouter()
 router.register(r'organizations', views.OrganizationViewSet)
 router.register(r'events', views.EventViewSet)
@@ -43,6 +13,30 @@ router.register(r'scores', views.EventScoreViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    
+    # Event Statistics and Draws
     path('events/<slug:event_slug>/statistics/', views.event_statistics, name='event-statistics'),
     path('sub-events/<slug:sub_event_slug>/generate-draws/', views.generate_draws, name='generate-draws'),
+    
+    # Event Management
+    path('events/<slug:slug>/add-organizers/', views.EventViewSet.as_view({'post': 'add_organizers'}), name='add-organizers'),
+    path('events/<slug:slug>/remove-organizers/', views.EventViewSet.as_view({'post': 'remove_organizers'}), name='remove-organizers'),
+    path('events/<slug:slug>/update-status/', views.EventViewSet.as_view({'post': 'update_status'}), name='update-event-status'),
+    
+    # Sub-Event Management
+    path('sub-events/<slug:slug>/add-images/', views.SubEventViewSet.as_view({'post': 'add_images'}), name='add-sub-event-images'),
+    path('sub-events/<slug:slug>/update-stage/', views.SubEventViewSet.as_view({'post': 'update_stage'}), name='update-sub-event-stage'),
+    path('sub-events/<slug:slug>/participants/', views.SubEventViewSet.as_view({'get': 'participants'}), name='sub-event-participants'),
+    
+    # Registration Management
+    path('registrations/<int:pk>/approve/', views.EventRegistrationViewSet.as_view({'post': 'approve'}), name='approve-registration'),
+    path('registrations/<int:pk>/reject/', views.EventRegistrationViewSet.as_view({'post': 'reject'}), name='reject-registration'),
+    path('registrations/<int:pk>/submit-files/', views.EventRegistrationViewSet.as_view({'post': 'submit_files'}), name='submit-files'),
+    path('registrations/my/', views.EventRegistrationViewSet.as_view({'get': 'my_registrations'}), name='my-registrations'),
+    
+    # Scoring and Results
+    path('scores/add/', views.EventScoreViewSet.as_view({'post': 'create'}), name='add-score'),
+    path('scores/<int:pk>/update/', views.EventScoreViewSet.as_view({'put': 'update'}), name='update-score'),
+    path('sub-events/<slug:slug>/leaderboard/', views.SubEventViewSet.as_view({'get': 'leaderboard'}), name='sub-event-leaderboard'),
+    path('events/<slug:slug>/department-scores/', views.EventViewSet.as_view({'get': 'department_scores'}), name='department-scores'),
 ]
