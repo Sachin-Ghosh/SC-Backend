@@ -110,6 +110,7 @@ INSTALLED_APPS = [
     'newsletter.apps.NewsletterConfig',
     'resources.apps.ResourcesConfig',
     'achievements.apps.AchievementsConfig',
+    'django_summernote',
 ]
 
 MIDDLEWARE = [
@@ -239,16 +240,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SUMMERNOTE_CONFIG = {
     'iframe': True,
-
     'summernote': {
 
         # Change editor size
         'width': '720',
-        'height': '480',
-
-        'lang': None,
-
-        # https://summernote.org/deep-dive/#custom-toolbar-popover
+        'height': '280',
         'toolbar': [
             ['style', ['style']],
             ['font', ['bold', 'underline', 'clear']],
@@ -259,9 +255,15 @@ SUMMERNOTE_CONFIG = {
             ['insert', ['link', 'picture', 'video']],
             ['view', ['fullscreen', 'codeview', 'help']],
         ],
-
-    'lazy': True,
-}
+        'codemirror': {
+            'theme': 'monokai',
+        },
+    },
+    'css': (
+        '//cdnjs.cloudflare.com/ajax/libs/codemirror/5.29.0/theme/monokai.min.css',
+    ),
+    'attachment_require_authentication': True,
+    'attachment_filesize_limit': 5 * 1024 * 1024,  # 5MB
 }
 
 # Email Configuration
@@ -281,3 +283,6 @@ if config('ENVIRONMENT', default='development') == 'production':
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
+# Add to your URLs
+X_FRAME_OPTIONS = 'SAMEORIGIN'

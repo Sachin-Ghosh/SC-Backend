@@ -1,5 +1,6 @@
 # events/serializers.py
 from rest_framework import serializers
+from django_summernote.fields import SummernoteTextField
 from .models import (
     Organization, Event, SubEvent, SubEventImage, EventRegistration,
     SubmissionFile, EventDraw, EventScore, EventHeat
@@ -7,6 +8,8 @@ from .models import (
 from users.serializers import UserSerializer
 
 class OrganizationSerializer(serializers.ModelSerializer):
+    description = serializers.CharField(style={'base_template': 'textarea.html'})
+
     class Meta:
         model = Organization
         fields = '__all__'
@@ -21,6 +24,7 @@ class EventSerializer(serializers.ModelSerializer):
     vice_chairpersons = UserSerializer(many=True, read_only=True)
     event_heads = UserSerializer(many=True, read_only=True)
     collaborating_organizations = OrganizationSerializer(many=True, read_only=True)
+    description = serializers.CharField(style={'base_template': 'textarea.html'})
     
     class Meta:
         model = Event
@@ -30,6 +34,7 @@ class EventSerializer(serializers.ModelSerializer):
 class SubEventSerializer(serializers.ModelSerializer):
     images = SubEventImageSerializer(many=True, read_only=True)
     sub_heads = UserSerializer(many=True, read_only=True)
+    description = serializers.CharField(style={'base_template': 'textarea.html'})
     
     class Meta:
         model = SubEvent
