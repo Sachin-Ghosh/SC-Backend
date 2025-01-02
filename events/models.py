@@ -122,7 +122,11 @@ class SubEvent(models.Model):
     allow_mixed_year = models.BooleanField(default=False)
     allow_mixed_division = models.BooleanField(default=False)
     double_trouble_allowed = models.BooleanField(default=False)
-    images = models.ManyToManyField('SubEventImage', blank=True)
+    images = models.ManyToManyField(
+        'SubEventImage',
+        related_name='sub_events',
+        blank=True
+    )
     
     ROUND_FORMATS = (
         ('ELIMINATION', 'Elimination'),  # Participants get eliminated each round
@@ -147,17 +151,20 @@ class SubEvent(models.Model):
 
 class SubEventImage(models.Model):
     sub_event = models.ForeignKey(
-        SubEvent,
+        'SubEvent',
         related_name='image_set',
         on_delete=models.CASCADE,
-        null=True , blank=True
+        null=True,  # Allow null temporarily for migration
+        blank=True
     )
     image = models.ImageField(upload_to='sub_events/images/')
     caption = models.CharField(max_length=200, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Image for {self.sub_event.name}"
+        if hasattr(self, 'sub_event') and self.sub_event:
+            return f"Image for {self.sub_event.name}"
+        return f"Image {self.id}" if self.id else "New Image"
     
     
 class EventRegistration(models.Model):
