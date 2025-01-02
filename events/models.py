@@ -73,13 +73,7 @@ class Event(models.Model):
     def __str__(self):
         return self.name
 
-class SubEventImage(models.Model):
-    image = models.ImageField(upload_to='sub_events/')
-    caption = models.CharField(max_length=200, blank=True)
-    uploaded_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.caption or f"Image {self.id}"
 
 class SubEvent(models.Model):
     EVENT_CATEGORIES = (
@@ -128,7 +122,7 @@ class SubEvent(models.Model):
     allow_mixed_year = models.BooleanField(default=False)
     allow_mixed_division = models.BooleanField(default=False)
     double_trouble_allowed = models.BooleanField(default=False)
-    images = models.ManyToManyField(SubEventImage, blank=True)
+    images = models.ManyToManyField('SubEventImage', blank=True)
     
     ROUND_FORMATS = (
         ('ELIMINATION', 'Elimination'),  # Participants get eliminated each round
@@ -150,6 +144,22 @@ class SubEvent(models.Model):
     def __str__(self):
         return f"{self.event.name} - {self.name}"
 
+
+class SubEventImage(models.Model):
+    sub_event = models.ForeignKey(
+        SubEvent,
+        related_name='image_set',
+        on_delete=models.CASCADE,
+        null=True , blank=True
+    )
+    image = models.ImageField(upload_to='sub_events/images/')
+    caption = models.CharField(max_length=200, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image for {self.sub_event.name}"
+    
+    
 class EventRegistration(models.Model):
     REGISTRATION_STATUS = (
         ('PENDING', 'Pending'),

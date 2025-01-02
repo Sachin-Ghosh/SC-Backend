@@ -343,22 +343,52 @@ class SubEventViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     lookup_field = 'slug'
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['POST'])
     def add_images(self, request, slug=None):
-        sub_event = self.get_object()
-        images_data = request.FILES.getlist('images')
-        captions = request.POST.getlist('captions')
-        
-        created_images = []
-        for image, caption in zip(images_data, captions):
-            sub_event_image = SubEventImage.objects.create(
-                image=image,
-                caption=caption
-            )
-            created_images.append(sub_event_image)
-        
-        sub_event.images.add(*created_images)
-        return Response({'message': 'Images added successfully'})
+        try:
+            sub_event = self.get_object()
+            images_data = request.FILES.getlist('images')
+            captions = request.POST.getlist('captions', [''] * len(images_data))  # Default empty captions if not provided
+            
+            if not images_data:
+                return Response({
+                    'error': 'No images provided'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            created_images = []
+            for image, caption in zip(images_data, captions):
+                # Validate image file
+                if not image.content_type.startswith('image/'):
+                    return Response({
+                        'error': f'File {image.name} is not an image'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                
+                try:
+                    sub_event_image = SubEventImage.objects.create(
+                        sub_event=sub_event,  # Add direct reference to sub_event
+                        image=image,
+                        caption=caption
+                    )
+                    created_images.append(sub_event_image)
+                except Exception as e:
+                    return Response({
+                        'error': f'Failed to save image {image.name}: {str(e)}'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # No need to use add() since we're already setting sub_event in create()
+            return Response({
+                'message': 'Images added successfully',
+                'images': [{
+                    'id': img.id,
+                    'url': request.build_absolute_uri(img.image.url),
+                    'caption': img.caption
+                } for img in created_images]
+            })
+            
+        except Exception as e:
+            return Response({
+                'error': f'Error adding images: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=True, methods=['post'])
     def update_stage(self, request, slug=None):
