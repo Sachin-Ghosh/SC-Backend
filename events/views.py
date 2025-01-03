@@ -343,6 +343,42 @@ class SubEventViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     lookup_field = 'slug'
     
+    def get_queryset(self):
+        queryset = SubEvent.objects.all()
+        
+        # Get filter parameters
+        category = self.request.query_params.get('category', None)
+        event_id = self.request.query_params.get('event', None)
+        participation_type = self.request.query_params.get('participation_type', None)
+        current_stage = self.request.query_params.get('current_stage', None)
+        
+        # Apply filters if parameters are provided
+        if category:
+            queryset = queryset.filter(category=category)
+        
+        if event_id:
+            queryset = queryset.filter(event_id=event_id)
+            
+        if participation_type:
+            queryset = queryset.filter(participation_type=participation_type)
+            
+        if current_stage:
+            queryset = queryset.filter(current_stage=current_stage)
+            
+        return queryset.select_related('event').prefetch_related(
+            'sub_heads',
+            'images'
+        )
+
+    @action(detail=False, methods=['GET'])
+    def filters(self, request):
+        """Return all possible filter values"""
+        return Response({
+            'categories': dict(SubEvent.EVENT_CATEGORIES),
+            'participation_types': dict(SubEvent.PARTICIPATION_TYPES),
+            'stages': dict(SubEvent.EVENT_STAGES)
+        })
+
     @action(detail=True, methods=['POST'])
     def add_images(self, request, slug=None):
         try:
