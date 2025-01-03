@@ -119,6 +119,8 @@ class SubEvent(models.Model):
     rules = models.TextField(null=True , blank=True)
     scoring_criteria = models.JSONField(default=dict , null=True , blank=True)  # Store judging criteria
     prize_pool = models.DecimalField(max_digits=10, decimal_places=2 , null=True , blank=True)
+    prize_pool_description = models.TextField(null=True , blank=True)
+    format_description = models.TextField(null=True , blank=True)
     allow_mixed_department = models.BooleanField(default=False)
     allow_mixed_year = models.BooleanField(default=False)
     allow_mixed_division = models.BooleanField(default=False)

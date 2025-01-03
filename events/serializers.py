@@ -36,6 +36,9 @@ class SubEventSerializer(serializers.ModelSerializer):
     sub_heads = UserSerializer(many=True, read_only=True)
     description = serializers.CharField(style={'base_template': 'textarea.html'})
     short_description = serializers.CharField(style={'base_template': 'textarea.html'})
+    prize_pool_description = serializers.CharField(style={'base_template': 'textarea.html'})
+    format_description = serializers.CharField(style={'base_template': 'textarea.html'})
+    rules = serializers.CharField(style={'base_template': 'textarea.html'})
     
     class Meta:
         model = SubEvent
