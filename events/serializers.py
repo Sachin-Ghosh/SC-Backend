@@ -35,6 +35,7 @@ class SubEventSerializer(serializers.ModelSerializer):
     images = SubEventImageSerializer(many=True, read_only=True)
     sub_heads = UserSerializer(many=True, read_only=True)
     description = serializers.CharField(style={'base_template': 'textarea.html'})
+    short_description = serializers.CharField(style={'base_template': 'textarea.html'})
     
     class Meta:
         model = SubEvent

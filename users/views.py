@@ -159,68 +159,91 @@ def send_registration_email(user, otp):
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def register_user(request):
-    email = request.data.get('email')
-    password = request.data.get('password')
-    user_type = request.data.get('user_type')  # 'STUDENT', 'FACULTY', or 'COUNCIL'
-    
-    if not all([email, password, user_type]):
-        return Response({
-            'error': 'Email, password and user type are required'
-        }, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Validate email domain for all users
-    if not email.endswith('@universal.edu.in'):
-        return Response({
-            'error': 'Must use college email address (@universal.edu.in)'
-        }, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Validate email domain except for FE students
-    # if year_of_study != 'FE' and not email.endswith('@college.edu'):  # Replace with your college domain
-    #     return Response({
-    #         'error': 'Must use college email address'
-    #     }, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Check if user already exists
-    if User.objects.filter(email=email).exists():
-        return Response({
-            'error': 'User already exists with this email'
-        }, status=status.HTTP_400_BAD_REQUEST)
-    
     try:
-        # Create user with basic information
-        user = User.objects.create(
-            email=email,
-            username=email.split('@')[0],  # Use email prefix as username
-            user_type=user_type,
-            is_active=False  # Will be activated after OTP verification
-        )
-        user.set_password(password)
+        email = request.data.get('email')
+        password = request.data.get('password')
+        user_type = request.data.get('user_type')
+        department = request.data.get('department')
         
-        # Generate and save OTP
-        otp = ''.join(random.choices(string.digits, k=6))
-        user.otp = otp
-        user.otp_valid_until = timezone.now() + timezone.timedelta(minutes=10)
-        user.save()
+        if not all([email, password, user_type, department]):
+            return Response({
+                'error': 'Email, password, user type and department are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Send welcome email with OTP
-        if send_registration_email(user, otp):
+        # Validate email domain
+        if not email.endswith('@universal.edu.in'):
             return Response({
-                'message': 'Registration successful! Please check your email for OTP',
-                'email': email
-            })
-        else:
-            # If email fails, delete user and return error
-            user.delete()
+                'error': 'Must use college email address (@universal.edu.in)'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if user exists
+        if User.objects.filter(email=email).exists():
             return Response({
-                'error': 'Failed to send registration email'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                'error': 'User already exists with this email'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create user and generate OTP
+        try:
+            user = User.objects.create(
+                email=email,
+                username=email.split('@')[0],
+                user_type=user_type,
+                department=department,
+                is_active=False
+            )
+            user.set_password(password)
+            
+            otp = ''.join(random.choices(string.digits, k=6))
+            user.otp = otp
+            user.otp_valid_until = timezone.now() + timezone.timedelta(minutes=10)
+            user.save()
+            
+            # Verify template existence
+            template_path = os.path.join(settings.BASE_DIR, 'sc_backend', 'templates', 'emails', 'registration_welcome.html')
+            if not os.path.exists(template_path):
+                raise Exception(f"Template not found at: {template_path}")
+            
+            # Prepare email
+            context = {
+                'user': user,
+                'otp': otp,
+                'valid_minutes': 10
+            }
+            
+            try:
+                html_message = render_to_string('emails/registration_welcome.html', context)
+                plain_message = render_to_string('emails/registration_welcome.txt', context)
+                
+                # Send email
+                send_mail(
+                    subject='Welcome to Student Council - Verify Your Email',
+                    message=plain_message,
+                    html_message=html_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+                
+                return Response({
+                    'message': 'Registration successful! Please check your email for OTP',
+                    'email': email
+                })
+                
+            except Exception as e:
+                user.delete()  # Cleanup if email fails
+                return Response({
+                    'error': f'Email error: {str(e)}',
+                    'template_path': template_path
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+        except Exception as e:
+            return Response({
+                'error': f'User creation error: {str(e)}'
+            }, status=status.HTTP_400_BAD_REQUEST)
             
     except Exception as e:
-        # If any error occurs, delete user if created
-        if 'user' in locals():
-            user.delete()
         return Response({
-            'error': str(e)
+            'error': f'Registration error: {str(e)}'
         }, status=status.HTTP_400_BAD_REQUEST)
        
 

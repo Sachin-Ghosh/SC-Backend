@@ -100,6 +100,7 @@ class SubEvent(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='sub_events')
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
+    short_description = models.TextField(null=True , blank=True)
     description = models.TextField()
     category = models.CharField(max_length=20, choices=EVENT_CATEGORIES , null=True , blank=True)
     participation_type = models.CharField(max_length=10, choices=PARTICIPATION_TYPES , null=True , blank=True)
