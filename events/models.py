@@ -86,7 +86,7 @@ class SubEvent(models.Model):
     PARTICIPATION_TYPES = (
         ('SOLO', 'Solo'),
         ('DUO', 'Duo'),
-        ('GROUP', 'Group')
+        ('GROUP', 'Group'),
     )
     
     EVENT_STAGES = (
@@ -142,6 +142,10 @@ class SubEvent(models.Model):
     qualifiers_per_group = models.IntegerField(default=3 , null=True , blank=True)   # How many advance
     current_round = models.IntegerField(default=1 , null=True , blank=True)
     total_rounds = models.IntegerField(default=1 , null=True , blank=True)
+    registration_start_time = models.DateTimeField(null=True, blank=True)
+    registration_end_time = models.DateTimeField(null=True, blank=True)
+    date = models.DateField(null=True, blank=True)
+    reporting_time = models.TimeField(null=True, blank=True)
     
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -227,15 +231,52 @@ class EventRegistration(models.Model):
     current_stage = models.CharField(max_length=20, choices=SubEvent.EVENT_STAGES, default='REGISTRATION')
     has_submitted_files = models.BooleanField(default=False)
     
+    def get_participant_display(self):
+        """Returns display text based on event type and participants"""
+        if self.sub_event.participation_type == 'SOLO':
+            participant = self.team_members.first()
+            if participant:
+                return f"{participant.first_name} {participant.last_name}"
+            return "No participant assigned"
+        else:
+            if self.team_name:
+                return self.team_name
+            return "Unnamed Team"
+
+    def __str__(self):
+        """Dynamic string representation based on event type"""
+        if self.sub_event.participation_type == 'SOLO':
+            participant = self.team_members.first()
+            if participant:
+                return f"{participant.first_name} {participant.last_name} - {self.sub_event.name}"
+            return f"Unassigned - {self.sub_event.name}"
+        else:
+            team_name = self.team_name or "Unnamed Team"
+            return f"{team_name} - {self.sub_event.name}"
+
+    def get_primary_contact(self):
+        """Returns the primary contact person for the registration"""
+        if self.team_leader:
+            return self.team_leader
+        return self.team_members.first()
+
+    def get_all_participants(self):
+        """Returns all participants including the team leader"""
+        return self.team_members.all()
+
     def save(self, *args, **kwargs):
+        # Generate registration number if not exists
         if not self.registration_number:
             prefix = f"{self.sub_event.event.name[:3]}{self.sub_event.name[:3]}".upper()
             timestamp = timezone.now().strftime('%Y%m%d%H%M')
             self.registration_number = f"{prefix}{timestamp}"
+        
+        # For solo events, ensure no team leader is set
+        if self.sub_event.participation_type == 'SOLO':
+            self.team_leader = None
+            self.team_name = None
+        
         super().save(*args, **kwargs)
-    
-    def __str__(self):
-        return f"{self.team_leader.username} - {self.sub_event.name}"
 
 class SubmissionFile(models.Model):
     registration = models.ForeignKey(EventRegistration, on_delete=models.CASCADE)

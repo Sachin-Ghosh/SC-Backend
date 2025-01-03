@@ -624,53 +624,77 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         sub_event = get_object_or_404(SubEvent, id=request.data.get('sub_event'))
         
-        # Check if registration is open
-        if timezone.now() > sub_event.registration_deadline:
-            return Response(
-                {'error': 'Registration deadline has passed'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # Validate registration window
+        if not self._validate_registration_window(sub_event):
+            return Response({"error": "Registration is not open"}, status=400)
+
+        # Prepare registration data
+        registration_data = request.data.copy()
         
-        # Check if maximum participants limit reached
-        if EventRegistration.objects.filter(sub_event=sub_event).count() >= sub_event.max_participants:
-            return Response(
-                {'error': 'Maximum participants limit reached'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        serializer = self.get_serializer(
-            data=request.data,
-            context={'sub_event': sub_event, 'team_leader': request.user}
-        )
+        if sub_event.participation_type == 'SOLO':
+            # Solo event: only one participant, no team leader or team name
+            registration_data.pop('team_leader', None)
+            registration_data.pop('team_name', None)
+            registration_data.pop('team_members', None)  # Will add current user later
+        else:
+            # Team event: requires team name and optionally team members
+            if not registration_data.get('team_name'):
+                return Response({"error": "Team name is required"}, status=400)
+            registration_data['team_leader'] = request.user.id
+
+        # Create registration
+        serializer = self.get_serializer(data=registration_data)
         serializer.is_valid(raise_exception=True)
-        registration = serializer.save(team_leader=request.user)
-        
+        registration = serializer.save()
+
+        # Add participants
+        if sub_event.participation_type == 'SOLO':
+            registration.team_members.add(request.user)
+        else:
+            # Add team leader and members
+            registration.team_members.add(request.user)
+            team_members = registration_data.get('team_members', [])
+            if team_members:
+                registration.team_members.add(*team_members)
+
         # Send confirmation email
-        self._send_registration_email(registration)
-        
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            self._send_registration_email(registration)
+        except Exception as e:
+            print(f"Failed to send confirmation email: {str(e)}")
+
+        return Response(serializer.data, status=201)
+
+    def _validate_registration_window(self, sub_event):
+        current_time = timezone.now()
+        if not sub_event.registration_start_time or not sub_event.registration_end_time:
+            return False
+        return sub_event.registration_start_time <= current_time <= sub_event.registration_end_time
 
     def _send_registration_email(self, registration):
-        """Send registration confirmation email"""
         context = {
-            'team_leader': registration.team_leader,
+            'registration': registration,
             'event': registration.sub_event.event,
             'sub_event': registration.sub_event,
+            'is_solo': registration.sub_event.participation_type == 'SOLO',
             'registration_number': registration.registration_number,
-            'team_members': registration.team_members.all()
+            'primary_contact': registration.get_primary_contact(),
+            'participants': registration.get_all_participants(),
         }
 
-        subject = f'Registration Confirmation - {registration.sub_event.event.name}'
+        subject = f'Registration Confirmation - {registration.sub_event.name}'
         html_message = render_to_string('emails/registration_confirmation.html', context)
         plain_message = render_to_string('emails/registration_confirmation.txt', context)
 
-        send_mail(
-            subject=subject,
-            message=plain_message,
-            html_message=html_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[registration.team_leader.email]
-        )
+        # Send to all participants
+        for participant in registration.get_all_participants():
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                html_message=html_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[participant.email]
+            )
 
     @action(detail=False, methods=['get'])
     def available_team_members(self, request):

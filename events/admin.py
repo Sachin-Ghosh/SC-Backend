@@ -29,10 +29,22 @@ class SubEventAdmin(SummernoteModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
 @admin.register(EventRegistration)
-class EventRegistrationAdmin(SummernoteModelAdmin):
-    list_display = ('registration_number', 'team_leader', 'sub_event', 'status', 'payment_status')
-    list_filter = ('status', 'payment_status', 'department', 'year', 'division')
-    search_fields = ('registration_number', 'team_leader__username', 'team_name')
+class EventRegistrationAdmin(admin.ModelAdmin):
+    list_display = ('get_display_name', 'sub_event', 'registration_number', 'status', 'registration_date')
+    list_filter = ('status', 'sub_event', 'department', 'year')
+    search_fields = ('registration_number', 'team_name', 'team_leader__email', 'team_members__email')
+    
+    def get_display_name(self, obj):
+        """Returns appropriate display name based on event type"""
+        return obj.get_participant_display()
+    get_display_name.short_description = 'Participant/Team'
+
+    def get_fields(self, request, obj=None):
+        """Dynamically show/hide fields based on event type"""
+        fields = super().get_fields(request, obj)
+        if obj and obj.sub_event.participation_type == 'SOLO':
+            fields = [f for f in fields if f not in ['team_leader', 'team_name']]
+        return fields
 
 @admin.register(EventScore)
 class EventScoreAdmin(SummernoteModelAdmin):
