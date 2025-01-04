@@ -351,20 +351,24 @@ class SubEventViewSet(viewsets.ModelViewSet):
         event_id = self.request.query_params.get('event', None)
         participation_type = self.request.query_params.get('participation_type', None)
         current_stage = self.request.query_params.get('current_stage', None)
+        gender = self.request.query_params.get('gender', None)
         
         # Apply filters if parameters are provided
         if category:
             queryset = queryset.filter(category=category)
-        
         if event_id:
             queryset = queryset.filter(event_id=event_id)
-            
         if participation_type:
             queryset = queryset.filter(participation_type=participation_type)
-            
         if current_stage:
             queryset = queryset.filter(current_stage=current_stage)
-            
+        if gender:
+            if gender.upper() in ['MALE', 'FEMALE']:
+                queryset = queryset.filter(
+                    models.Q(gender_participation=gender.upper()) | 
+                    models.Q(gender_participation='ALL')
+                )
+                
         return queryset.select_related('event').prefetch_related(
             'sub_heads',
             'images'
@@ -376,7 +380,8 @@ class SubEventViewSet(viewsets.ModelViewSet):
         return Response({
             'categories': dict(SubEvent.EVENT_CATEGORIES),
             'participation_types': dict(SubEvent.PARTICIPATION_TYPES),
-            'stages': dict(SubEvent.EVENT_STAGES)
+            'stages': dict(SubEvent.EVENT_STAGES),
+            'gender_participation': dict(SubEvent.GENDER_PARTICIPATION)
         })
 
     @action(detail=True, methods=['POST'])
@@ -627,6 +632,14 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
         # Validate registration window
         if not self._validate_registration_window(sub_event):
             return Response({"error": "Registration is not open"}, status=400)
+        
+        
+        # Validate gender restrictions
+        if not self._validate_gender_participation(request.user, sub_event):
+            return Response(
+                {"error": f"This event is restricted to {sub_event.get_gender_participation_display()} participants"}, 
+                status=400
+            )
 
         # Prepare registration data
         registration_data = request.data.copy()
@@ -695,6 +708,32 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[participant.email]
             )
+            
+    def _validate_gender_participation(self, user, sub_event):
+        """Validate if user meets gender participation requirements"""
+        if sub_event.gender_participation == 'ALL':
+            return True
+        
+        user_gender = getattr(user, 'gender', None)  # Assuming user model has gender field
+        if not user_gender:
+            return False
+            
+        if sub_event.gender_participation == 'MALE' and user_gender.upper() != 'MALE':
+            return False
+        if sub_event.gender_participation == 'FEMALE' and user_gender.upper() != 'FEMALE':
+            return False
+            
+        return True
+
+    def _validate_team_gender(self, team_members, sub_event):
+        """Validate gender requirements for all team members"""
+        if sub_event.gender_participation == 'ALL':
+            return True
+            
+        for member in team_members:
+            if not self._validate_gender_participation(member, sub_event):
+                return False
+        return True
 
     @action(detail=False, methods=['get'])
     def available_team_members(self, request):

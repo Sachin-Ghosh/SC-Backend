@@ -83,6 +83,12 @@ class SubEvent(models.Model):
         ('ACADEMIC', 'Academic')
     )
     
+    GENDER_PARTICIPATION = (
+        ('ALL', 'All'),
+        ('MALE', 'Boys Only'),
+        ('FEMALE', 'Girls Only')
+    )
+    
     PARTICIPATION_TYPES = (
         ('SOLO', 'Solo'),
         ('DUO', 'Duo'),
@@ -114,6 +120,13 @@ class SubEvent(models.Model):
     sub_heads = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         related_name='sub_headed_events' , blank=True
+    )
+    gender_participation = models.CharField(
+        max_length=10,
+        choices=GENDER_PARTICIPATION,
+        default='ALL',
+        help_text='Specify if the event is open to all or restricted by gender',
+        null=True , blank=True
     )
     registration_fee = models.DecimalField(max_digits=8, decimal_places=2 , null=True , blank=True)
     rules = models.TextField(null=True , blank=True)

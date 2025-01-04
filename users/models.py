@@ -9,9 +9,9 @@ import re
 
 class User(AbstractUser):
     GENDER_CHOICES = (
-        ('M', 'Male'),
-        ('F', 'Female'),
-        ('O', 'Other')
+        ('MALE', 'Male'),
+        ('FEMALE', 'Female'),
+        ('OTHER', 'Other')
     )
     USER_TYPES = (
         ('ADMIN', 'Admin'),
@@ -42,9 +42,10 @@ class User(AbstractUser):
     )
     
     gender = models.CharField(
-        max_length=1, 
+        max_length=10, 
         choices=GENDER_CHOICES,
-        default='O'  # Setting 'Other' as default for existing records
+        null=True , blank=True,
+        default='OTHER'  # Setting 'Other' as default for existing records
     )
     user_type = models.CharField(max_length=10, choices=USER_TYPES)
     department = models.CharField(max_length=100, choices=DEPARTMENT_TYPES)
