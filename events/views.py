@@ -1,11 +1,12 @@
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import models 
 from django.shortcuts import get_object_or_404
-from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage, EventHeat , SubmissionFile 
+from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage, EventHeat , SubmissionFile , User
 from .serializers import EventSerializer, SubEventSerializer, EventRegistrationSerializer, EventScoreSerializer, EventDrawSerializer , OrganizationSerializer , SubEventImageSerializer, EventHeatSerializer
 from rest_framework import viewsets, status     
 from django.db.models import Q, Count, Avg, Sum
@@ -17,6 +18,9 @@ from rest_framework.views import APIView
 import random
 from django.conf import settings
 from django.contrib.auth.models import User
+
+# Get the custom User model
+User = get_user_model()
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -830,41 +834,62 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
                 recipient_list=[participant.email]
             )
             
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], url_path='available-team-members')
     def available_team_members(self, request):
         """Get list of users available for team selection"""
         sub_event_id = request.query_params.get('sub_event')
         if not sub_event_id:
-            return Response(
-                {'error': 'sub_event parameter is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response([], status=status.HTTP_200_OK)
 
-        sub_event = get_object_or_404(SubEvent, id=sub_event_id)
-        
+        try:
+            sub_event = SubEvent.objects.get(id=sub_event_id)
+        except SubEvent.DoesNotExist:
+            return Response([], status=status.HTTP_200_OK)
+
         # Get users who haven't registered for this sub-event
         registered_users = EventRegistration.objects.filter(
             sub_event=sub_event
-        ).values_list('team_leader_id', flat=True)
+        ).values_list('team_members', flat=True)
 
         available_users = User.objects.exclude(
             id__in=registered_users
-        ).values('id', 'first_name', 'last_name', 'email', 'department', 'year', 'division')
+        ).exclude(
+            id=request.user.id  # Exclude the current user
+        )
+
+        # Apply gender filter if event has gender restrictions
+        if sub_event.gender_participation != 'ALL':
+            available_users = available_users.filter(gender=sub_event.gender_participation)
 
         # Filter options
         department = request.query_params.get('department')
-        year = request.query_params.get('year')
+        year_of_study = request.query_params.get('year')  # Changed parameter name
         division = request.query_params.get('division')
 
         if department:
             available_users = available_users.filter(department=department)
-        if year:
-            available_users = available_users.filter(year=year)
+        if year_of_study:  # Changed variable name
+            available_users = available_users.filter(year_of_study=year_of_study)  # Changed field name
         if division:
             available_users = available_users.filter(division=division)
 
-        return Response(available_users)
+        # Convert to list of dictionaries with required fields
+        available_users = list(available_users.values(
+            'id', 
+            'first_name', 
+            'last_name', 
+            'email', 
+            'department', 
+            'year_of_study',  # Changed field name
+            'division'
+        ))
 
+        # Rename year_of_study to year in response for frontend compatibility
+        for user in available_users:
+            user['year'] = user.pop('year_of_study')
+
+        return Response(available_users, status=status.HTTP_200_OK)
+    
     @action(detail=True, methods=['post'])
     def submit_files(self, request, pk=None):
         registration = self.get_object()

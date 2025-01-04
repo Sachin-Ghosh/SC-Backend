@@ -7,7 +7,7 @@ router = DefaultRouter()
 router.register(r'organizations', views.OrganizationViewSet)
 router.register(r'events', views.EventViewSet)
 router.register(r'sub-events', views.SubEventViewSet)
-router.register(r'registrations', views.EventRegistrationViewSet)
+router.register(r'registrations', views.EventRegistrationViewSet, basename='event-registration')
 router.register(r'draws', views.EventDrawViewSet)
 router.register(r'scores', views.EventScoreViewSet)
 
