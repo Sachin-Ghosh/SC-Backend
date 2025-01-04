@@ -1,0 +1,20 @@
+Registration Update
+
+{% if is_solo %}
+Dear {{ primary_contact.first_name }},
+
+Unfortunately, your registration for {{ event.name }} - {{ sub_event.name }} has been rejected.
+{% else %}
+Dear {{ primary_contact.first_name }},
+
+Unfortunately, your team's registration for {{ event.name }} - {{ sub_event.name }} has been rejected.
+{% endif %}
+
+{% if reason %}
+Reason for rejection: {{ reason }}
+{% endif %}
+
+If you believe this is an error or need clarification, please contact the event organizers.
+
+Best regards,
+Student Council Team 

@@ -735,6 +735,101 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
                 return False
         return True
 
+    @action(detail=True, methods=['POST'])
+    def approve(self, request, pk=None):
+        """
+        Approve a registration
+        POST /api/events/registrations/{id}/approve/
+        """
+        registration = self.get_object()
+        
+        # Check if already approved
+        if registration.status == 'APPROVED':
+            return Response(
+                {"error": "Registration is already approved"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # Update status
+        registration.status = 'APPROVED'
+        registration.save()
+        
+        # Send approval email
+        try:
+            self._send_status_update_email(registration, is_approved=True)
+        except Exception as e:
+            print(f"Failed to send approval email: {str(e)}")
+
+        return Response({
+            "message": "Registration approved successfully",
+            "registration_number": registration.registration_number,
+            "status": registration.status,
+            "updated_at": timezone.now()
+        })
+
+    @action(detail=True, methods=['POST'])
+    def reject(self, request, pk=None):
+        """
+        Reject a registration
+        POST /api/events/registrations/{id}/reject/
+        """
+        registration = self.get_object()
+        reason = request.data.get('reason', '')
+        
+        # Check if already rejected
+        if registration.status == 'REJECTED':
+            return Response(
+                {"error": "Registration is already rejected"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # Update status
+        registration.status = 'REJECTED'
+        registration.save()
+        
+        # Send rejection email
+        try:
+            self._send_status_update_email(registration, is_approved=False, reason=reason)
+        except Exception as e:
+            print(f"Failed to send rejection email: {str(e)}")
+
+        return Response({
+            "message": "Registration rejected successfully",
+            "registration_number": registration.registration_number,
+            "status": registration.status,
+            "reason": reason,
+            "updated_at": timezone.now()
+        })
+
+    def _send_status_update_email(self, registration, is_approved, reason=''):
+        """Send email notification for approval/rejection"""
+        context = {
+            'registration': registration,
+            'event': registration.sub_event.event,
+            'sub_event': registration.sub_event,
+            'is_solo': registration.sub_event.participation_type == 'SOLO',
+            'is_approved': is_approved,
+            'reason': reason,
+            'primary_contact': registration.get_primary_contact(),
+            'participants': registration.get_all_participants(),
+        }
+
+        template_prefix = 'approval' if is_approved else 'rejection'
+        subject = f'Registration {"Approved" if is_approved else "Rejected"} - {registration.sub_event.name}'
+        
+        html_message = render_to_string(f'emails/{template_prefix}_notification.html', context)
+        plain_message = render_to_string(f'emails/{template_prefix}_notification.txt', context)
+
+        # Send to all participants
+        for participant in registration.get_all_participants():
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                html_message=html_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[participant.email]
+            )
+            
     @action(detail=False, methods=['get'])
     def available_team_members(self, request):
         """Get list of users available for team selection"""

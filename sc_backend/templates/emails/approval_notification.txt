@@ -1,0 +1,21 @@
+Registration Approved
+
+{% if is_solo %}
+Dear {{ primary_contact.first_name }},
+
+Your registration for {{ event.name }} - {{ sub_event.name }} has been approved!
+{% else %}
+Dear {{ primary_contact.first_name }},
+
+Your team's registration for {{ event.name }} - {{ sub_event.name }} has been approved!
+{% endif %}
+
+Event Details:
+- Date: {{ sub_event.date }}
+- Venue: {{ sub_event.venue }}
+{% if sub_event.reporting_time %}- Reporting Time: {{ sub_event.reporting_time }}{% endif %}
+
+Please arrive at the venue on time with your registration number.
+
+Best regards,
+Student Council Team 

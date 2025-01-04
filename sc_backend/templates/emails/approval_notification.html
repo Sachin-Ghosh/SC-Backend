@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>Registration Approved</h2>
+    
+    {% if is_solo %}
+    <p>Dear {{ primary_contact.first_name }},</p>
+    
+    <p>Your registration for {{ event.name }} - {{ sub_event.name }} has been approved!</p>
+    {% else %}
+    <p>Dear {{ primary_contact.first_name }},</p>
+    
+    <p>Your team's registration for {{ event.name }} - {{ sub_event.name }} has been approved!</p>
+    {% endif %}
+    
+    <p>Event Details:</p>
+    <ul>
+        <li>Date: {{ sub_event.date }}</li>
+        <li>Venue: {{ sub_event.venue }}</li>
+        {% if sub_event.reporting_time %}
+        <li>Reporting Time: {{ sub_event.reporting_time }}</li>
+        {% endif %}
+    </ul>
+    
+    <p>Please arrive at the venue on time with your registration number.</p>
+    
+    <p>Best regards,<br>Student Council Team</p>
+</body>
+</html> 

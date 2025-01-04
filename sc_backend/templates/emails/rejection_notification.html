@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>Registration Update</h2>
+    
+    {% if is_solo %}
+    <p>Dear {{ primary_contact.first_name }},</p>
+    
+    <p>Unfortunately, your registration for {{ event.name }} - {{ sub_event.name }} has been rejected.</p>
+    {% else %}
+    <p>Dear {{ primary_contact.first_name }},</p>
+    
+    <p>Unfortunately, your team's registration for {{ event.name }} - {{ sub_event.name }} has been rejected.</p>
+    {% endif %}
+    
+    {% if reason %}
+    <p>Reason for rejection: {{ reason }}</p>
+    {% endif %}
+    
+    <p>If you believe this is an error or need clarification, please contact the event organizers.</p>
+    
+    <p>Best regards,<br>Student Council Team</p>
+</body>
+</html> 
