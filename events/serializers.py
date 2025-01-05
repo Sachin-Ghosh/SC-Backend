@@ -3,7 +3,8 @@ from rest_framework import serializers
 from django_summernote.fields import SummernoteTextField
 from .models import (
     Organization, Event, SubEvent, SubEventImage, EventRegistration,
-    SubmissionFile, EventDraw, EventScore, EventHeat, SubEventFaculty
+    SubmissionFile, EventDraw, EventScore, EventHeat, SubEventFaculty,
+    HeatParticipant
 )
 from users.serializers import UserSerializer
 
@@ -33,10 +34,13 @@ class EventSerializer(serializers.ModelSerializer):
 
 class SubEventFacultySerializer(serializers.ModelSerializer):
     faculty_name = serializers.SerializerMethodField()
+    faculty_email = serializers.EmailField(source='faculty.email', read_only=True)
+    
+    
 
     class Meta:
         model = SubEventFaculty
-        fields = ['id', 'faculty', 'faculty_name', 'sub_event', 'is_active', 'remarks']
+        fields = ['id', 'faculty', 'faculty_name', 'faculty_email', 'sub_event', 'is_active', 'remarks']
         read_only_fields = ['assigned_at']
 
     def get_faculty_name(self, obj):
@@ -179,27 +183,18 @@ class EventScoreSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class EventHeatSerializer(serializers.ModelSerializer):
+    participant_count = serializers.SerializerMethodField()
+    
     class Meta:
         model = EventHeat
-        fields = [
-            'id',
-            'sub_event',
-            'round_number',
-            'heat_number',
-            'participants',
-            'status',
-            'scheduled_time',
-            'completed_time',
-            'notes'
-        ]
-        read_only_fields = ['id']
+        fields = '__all__'
+    
+    def get_participant_count(self, obj):
+        return obj.heatparticipant_set.count()
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        # Add participant details
-        representation['participants'] = EventRegistrationSerializer(
-            instance.participants.all(), 
-            many=True, 
-            context=self.context
-        ).data
-        return representation
+class HeatParticipantSerializer(serializers.ModelSerializer):
+    participant_details = EventRegistrationSerializer(source='registration', read_only=True)
+    
+    class Meta:
+        model = HeatParticipant
+        fields = ['id', 'heat', 'registration', 'participant_details', 'created_at']

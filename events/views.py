@@ -16,6 +16,8 @@ from rest_framework.decorators import action
 from rest_framework.routers import DefaultRouter
 from rest_framework.views import APIView
 import random
+from django.db.models import Prefetch
+from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.models import User
 
@@ -148,28 +150,45 @@ def department_scores(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def event_statistics(request):
-    total_events = Event.objects.count()
-    total_participants = EventRegistration.objects.values('participant').distinct().count()
-    department_wise_participation = EventRegistration.objects.values('department').annotate(
-        count=models.Count('id')
-    )
+def event_statistics(request, event_slug):
+    event = get_object_or_404(Event, slug=event_slug)
+    sub_events = event.sub_events.all()
     
-    return Response({
-        'total_events': total_events,
-        'total_participants': total_participants,
-        'department_wise_participation': department_wise_participation
-    })
-# Add these views to your existing views.py file
+    statistics = {
+        'total_registrations': EventRegistration.objects.filter(sub_event__event=event).count(),
+        'sub_events': [],
+        'department_wise': {},
+        'year_wise': {}
+    }
+    
+    for sub_event in sub_events:
+        registrations = EventRegistration.objects.filter(sub_event=sub_event)
+        statistics['sub_events'].append({
+            'name': sub_event.name,
+            'total_participants': registrations.count(),
+            'stage_wise': registrations.values('current_stage').annotate(count=Count('id')),
+            'average_score': EventScore.objects.filter(sub_event=sub_event).aggregate(Avg('total_score'))
+        })
+        
+        # Department and year wise statistics
+        dept_stats = registrations.values('department').annotate(count=Count('id'))
+        year_stats = registrations.values('year').annotate(count=Count('id'))
+        
+        for stat in dept_stats:
+            dept = stat['department']
+            if dept not in statistics['department_wise']:
+                statistics['department_wise'][dept] = 0
+            statistics['department_wise'][dept] += stat['count']
+        
+        for stat in year_stats:
+            year = stat['year']
+            if year not in statistics['year_wise']:
+                statistics['year_wise'][year] = 0
+            statistics['year_wise'][year] += stat['count']
+    
+    return Response(statistics)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def sub_event_detail(request, event_slug, sub_event_slug):
-    sub_event = get_object_or_404(SubEvent, event__slug=event_slug, slug=sub_event_slug)
-    serializer = SubEventSerializer(sub_event)
-    return Response(serializer.data)
-
-@api_view(['PUT'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_sub_event(request, event_slug, sub_event_slug):
     if not request.user.user_type in ['ADMIN', 'COUNCIL']:
@@ -340,6 +359,108 @@ class EventViewSet(viewsets.ModelViewSet):
 
         return Response(stats)
 
+    @action(detail=True, methods=['get'])
+    def dashboard(self, request, pk=None):
+        """Get event dashboard statistics"""
+        event = self.get_object()
+        sub_events = SubEvent.objects.filter(event=event)
+        
+        return Response({
+            'total_sub_events': sub_events.count(),
+            'total_registrations': EventRegistration.objects.filter(
+                sub_event__event=event).count(),
+            'total_participants': EventRegistration.objects.filter(
+                sub_event__event=event).values('team_members').distinct().count(),
+            'upcoming_sub_events': sub_events.filter(
+                schedule__gt=timezone.now()).count(),
+            'completed_sub_events': sub_events.filter(
+                schedule__lt=timezone.now()).count(),
+            'total_faculty': SubEventFaculty.objects.filter(
+                sub_event__event=event).values('faculty').distinct().count(),
+        })
+
+    @action(detail=True, methods=['get'])
+    def get_all_faculty(self, request, pk=None):
+        """Get all faculty members across all sub-events of this event"""
+        event = self.get_object()
+        faculty = SubEventFaculty.objects.filter(sub_event__event=event)
+        
+        # Filters
+        department = request.query_params.get('department')
+        is_active = request.query_params.get('is_active')
+        search = request.query_params.get('search')
+        
+        if department:
+            faculty = faculty.filter(faculty__department=department)
+        if is_active is not None:
+            faculty = faculty.filter(is_active=is_active)
+        if search:
+            faculty = faculty.filter(
+                Q(faculty__first_name__icontains=search) |
+                Q(faculty__last_name__icontains=search) |
+                Q(faculty__email__icontains=search)
+            )
+        
+        return Response(SubEventFacultySerializer(faculty, many=True).data)
+
+    @action(detail=True, methods=['get'])
+    def get_registration_stats(self, request, pk=None):
+        """Get detailed registration statistics"""
+        event = self.get_object()
+        registrations = EventRegistration.objects.filter(sub_event__event=event)
+        
+        stats = {
+            'total_registrations': registrations.count(),
+            'by_status': dict(registrations.values('status')
+                            .annotate(count=Count('id'))
+                            .values_list('status', 'count')),
+            'by_department': dict(registrations.values('department')
+                                .annotate(count=Count('id'))
+                                .values_list('department', 'count')),
+            'by_year': dict(registrations.values('year')
+                          .annotate(count=Count('id'))
+                          .values_list('year', 'count')),
+            'by_division': dict(registrations.values('division')
+                              .annotate(count=Count('id'))
+                              .values_list('division', 'count')),
+        }
+        return Response(stats)
+
+    @action(detail=True, methods=['get'])
+    def get_timeline(self, request, pk=None):
+        """Get event timeline with sub-events"""
+        event = self.get_object()
+        sub_events = SubEvent.objects.filter(event=event).order_by('schedule')
+        
+        timeline = []
+        for sub in sub_events:
+            timeline.append({
+                'id': sub.id,
+                'name': sub.name,
+                'schedule': sub.schedule,
+                'venue': sub.venue,
+                'current_stage': sub.current_stage,
+                'registration_count': sub.event_registrations.count(),
+                'faculty_count': sub.subeventfaculty_set.filter(is_active=True).count()
+            })
+        
+        return Response(timeline)
+    
+    @action(detail=True, methods=['get'])
+    def sub_events_summary(self, request, pk=None):
+        """Get summary of all sub-events"""
+        event = self.get_object()
+        sub_events = SubEvent.objects.filter(event=event)
+        
+        return Response([{
+            'id': sub.id,
+            'name': sub.name,
+            'registrations_count': sub.event_registrations.count(),
+            'schedule': sub.schedule,
+            'venue': sub.venue,
+            'status': sub.current_stage,
+        } for sub in sub_events])
+
 # SubEvent ViewSet
 class SubEventViewSet(viewsets.ModelViewSet):
     queryset = SubEvent.objects.all()
@@ -434,6 +555,95 @@ class SubEventViewSet(viewsets.ModelViewSet):
             return Response({
                 'error': f'Error adding images: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    @action(detail=True, methods=['get'])
+    def get_faculty(self, request, pk=None):
+        """Get all faculty members for this sub-event with filters"""
+        sub_event = self.get_object()
+        faculty = SubEventFaculty.objects.filter(sub_event=sub_event)
+        
+        # Apply filters
+        is_active = request.query_params.get('is_active')
+        department = request.query_params.get('department')
+        search = request.query_params.get('search')
+        
+        if is_active is not None:
+            faculty = faculty.filter(is_active=is_active)
+        if department:
+            faculty = faculty.filter(faculty__department=department)
+        if search:
+            faculty = faculty.filter(
+                Q(faculty__first_name__icontains=search) |
+                Q(faculty__last_name__icontains=search) |
+                Q(faculty__email__icontains=search)
+            )
+        
+        return Response(SubEventFacultySerializer(faculty, many=True).data)
+
+    @action(detail=True, methods=['post'])
+    def remove_faculty(self, request, pk=None):
+        """Remove faculty from sub-event"""
+        sub_event = self.get_object()
+        faculty_ids = request.data.get('faculty_ids', [])
+        
+        if not faculty_ids:
+            return Response({'error': 'faculty_ids required'}, status=400)
+            
+        SubEventFaculty.objects.filter(
+            sub_event=sub_event,
+            faculty_id__in=faculty_ids
+        ).delete()
+        
+        return Response({'message': 'Faculty members removed successfully'})
+
+    @action(detail=True, methods=['get'])
+    def get_participants_by_department(self, request, pk=None):
+        """Get participants grouped by department"""
+        sub_event = self.get_object()
+        participants = EventRegistration.objects.filter(sub_event=sub_event)
+        
+        department_data = {}
+        for reg in participants:
+            if reg.department not in department_data:
+                department_data[reg.department] = {
+                    'total': 0,
+                    'approved': 0,
+                    'pending': 0,
+                    'rejected': 0
+                }
+            department_data[reg.department]['total'] += 1
+            department_data[reg.department][reg.status.lower()] += 1
+        
+        return Response(department_data)
+
+    @action(detail=True, methods=['get'])
+    def get_participants_by_year(self, request, pk=None):
+        """Get participants grouped by year"""
+        sub_event = self.get_object()
+        return Response(
+            EventRegistration.objects.filter(sub_event=sub_event)
+            .values('year')
+            .annotate(count=Count('id'))
+            .order_by('year')
+        )
+
+    @action(detail=True, methods=['get'])
+    def get_scores_by_criteria(self, request, pk=None):
+        """Get detailed scores breakdown by criteria"""
+        sub_event = self.get_object()
+        scores = EventScore.objects.filter(sub_event=sub_event)
+        
+        department = request.query_params.get('department')
+        year = request.query_params.get('year')
+        division = request.query_params.get('division')
+        
+        if department:
+            scores = scores.filter(event_registration__department=department)
+        if year:
+            scores = scores.filter(event_registration__year=year)
+        if division:
+            scores = scores.filter(event_registration__division=division)
+            
+        return Response(EventScoreSerializer(scores, many=True).data)
     
     @action(detail=True, methods=['post'])
     def update_stage(self, request, slug=None):
@@ -568,6 +778,93 @@ class SubEventViewSet(viewsets.ModelViewSet):
             'qualified_participants': qualified_participants.count(),
             'heats': EventHeatSerializer(heats, many=True).data
         })
+    @action(detail=True, methods=['post'], url_path='add-faculty')
+    def add_faculty(self, request, pk=None):
+        """Add faculty members to a sub-event"""
+        try:
+            sub_event = self.get_object()
+            
+            # Check if user has permission
+            if not request.user.user_type in ['ADMIN', 'COUNCIL']:
+                return Response({
+                    'error': 'Only admin and council members can add faculty'
+                }, status=status.HTTP_403_FORBIDDEN)
+            
+            # Get faculty emails from request
+            faculty_emails = request.data.get('faculty_emails', [])
+            if not faculty_emails:
+                return Response({
+                    'error': 'faculty_emails is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            if not isinstance(faculty_emails, list):
+                faculty_emails = [faculty_emails]
+            
+            results = {
+                'success': [],
+                'failed': []
+            }
+            
+            for email in faculty_emails:
+                try:
+                    # Get faculty user
+                    faculty = User.objects.get(email=email, user_type='FACULTY')
+                    
+                    # Check if already added
+                    if SubEventFaculty.objects.filter(
+                        faculty=faculty,
+                        sub_event=sub_event
+                    ).exists():
+                        results['failed'].append({
+                            'email': email,
+                            'reason': 'Already added to this sub-event'
+                        })
+                        continue
+                    
+                    # Add faculty to sub-event
+                    sub_event_faculty = SubEventFaculty.objects.create(
+                        faculty=faculty,
+                        sub_event=sub_event,
+                        is_active=True
+                    )
+                    
+                    results['success'].append({
+                        'email': email,
+                        'id': sub_event_faculty.id
+                    })
+                    
+                except User.DoesNotExist:
+                    results['failed'].append({
+                        'email': email,
+                        'reason': 'Faculty not found'
+                    })
+                except Exception as e:
+                    results['failed'].append({
+                        'email': email,
+                        'reason': str(e)
+                    })
+            
+            return Response({
+                'message': 'Faculty assignment process completed',
+                'results': results
+            })
+            
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['get'])
+    def faculty_list(self, request, pk=None):
+        """Get list of faculty assigned to this sub-event"""
+        sub_event = self.get_object()
+        faculty_assignments = SubEventFaculty.objects.filter(
+            sub_event=sub_event,
+            is_active=True
+        ).select_related('faculty')
+        
+        serializer = SubEventFacultySerializer(faculty_assignments, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
     def round_participants(self, request, slug=None):
@@ -617,6 +914,233 @@ class SubEventViewSet(viewsets.ModelViewSet):
             'heats': heat_data
         })
 
+    @action(detail=True, methods=['post'])
+    def register_team(self, request, pk=None):
+        """Register a team/individual for the sub-event"""
+        sub_event = self.get_object()
+        
+        # Validation logic here
+        team_data = request.data
+        
+        try:
+            registration = EventRegistration.objects.create(
+                sub_event=sub_event,
+                team_leader=request.user,
+                team_name=team_data.get('team_name'),
+                department=team_data.get('department'),
+                year=team_data.get('year'),
+                division=team_data.get('division')
+            )
+            
+            # Add team members
+            if team_data.get('team_members'):
+                registration.team_members.set(team_data['team_members'])
+            
+            return Response(EventRegistrationSerializer(registration).data)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+
+    @action(detail=True, methods=['post'])
+    def submit_scores(self, request, pk=None):
+        """Submit scores for participants"""
+        sub_event = self.get_object()
+        scores_data = request.data.get('scores', [])
+        
+        results = []
+        for score_data in scores_data:
+            try:
+                score = EventScore.objects.create(
+                    sub_event=sub_event,
+                    event_registration_id=score_data['registration_id'],
+                    judge=request.user,
+                    total_score=score_data['total_score'],
+                    criteria_scores=score_data.get('criteria_scores', {}),
+                    remarks=score_data.get('remarks')
+                )
+                results.append(EventScoreSerializer(score).data)
+            except Exception as e:
+                results.append({'error': str(e)})
+        
+        return Response(results)
+
+    @action(detail=True, methods=['get'])
+    def registrations(self, request, pk=None):
+        """Get all registrations for this sub-event"""
+        sub_event = self.get_object()
+        registrations = EventRegistration.objects.filter(sub_event=sub_event)
+        
+        status_filter = request.query_params.get('status')
+        if status_filter:
+            registrations = registrations.filter(status=status_filter)
+            
+        return Response(EventRegistrationSerializer(registrations, many=True).data)
+
+    @action(detail=True, methods=['get'])
+    def scores(self, request, pk=None):
+        """Get scores for this sub-event"""
+        sub_event = self.get_object()
+        scores = EventScore.objects.filter(sub_event=sub_event)
+        
+        return Response(EventScoreSerializer(scores, many=True).data)
+
+    @action(detail=True, methods=['post'])
+    def update_stage(self, request, pk=None):
+        """Update the current stage of the sub-event"""
+        sub_event = self.get_object()
+        new_stage = request.data.get('stage')
+        
+        if new_stage not in dict(SubEvent.EVENT_STAGES).keys():
+            return Response({'error': 'Invalid stage'}, status=400)
+            
+        sub_event.current_stage = new_stage
+        sub_event.save()
+        
+        return Response(SubEventSerializer(sub_event).data)
+    @action(detail=True, methods=['post'])
+    def create_heat(self, request, pk=None):
+        """Create a new heat for the sub-event"""
+        sub_event = self.get_object()
+        
+        try:
+            heat = EventHeat.objects.create(
+                sub_event=sub_event,
+                name=request.data.get('name'),
+                stage=request.data.get('stage'),
+                round_number=request.data.get('round_number'),
+                schedule=request.data.get('schedule'),
+                venue=request.data.get('venue'),
+                max_participants=request.data.get('max_participants', 0),
+                status='PENDING'
+            )
+            
+            return Response(EventHeatSerializer(heat).data)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+
+    @action(detail=True, methods=['post'])
+    def assign_participants_to_heat(self, request, pk=None):
+        """Assign participants to a specific heat"""
+        heat_id = request.data.get('heat_id')
+        registration_ids = request.data.get('registration_ids', [])
+        
+        if not heat_id or not registration_ids:
+            return Response({
+                'error': 'heat_id and registration_ids are required'
+            }, status=400)
+            
+        try:
+            heat = EventHeat.objects.get(id=heat_id, sub_event_id=pk)
+            
+            # Validate max participants
+            if heat.max_participants > 0:
+                current_count = heat.heatparticipant_set.count()
+                if current_count + len(registration_ids) > heat.max_participants:
+                    return Response({
+                        'error': 'Exceeds maximum participants allowed'
+                    }, status=400)
+            
+            # Add participants to heat
+            for reg_id in registration_ids:
+                HeatParticipant.objects.create(
+                    heat=heat,
+                    registration_id=reg_id
+                )
+            
+            return Response(EventHeatSerializer(heat).data)
+        except EventHeat.DoesNotExist:
+            return Response({'error': 'Heat not found'}, status=404)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+
+    @action(detail=True, methods=['get'])
+    def get_heats(self, request, pk=None):
+        """Get all heats for the sub-event with filters"""
+        sub_event = self.get_object()
+        heats = EventHeat.objects.filter(sub_event=sub_event)
+        
+        # Apply filters
+        stage = request.query_params.get('stage')
+        round_number = request.query_params.get('round')
+        status = request.query_params.get('status')
+        
+        if stage:
+            heats = heats.filter(stage=stage)
+        if round_number:
+            heats = heats.filter(round_number=round_number)
+        if status:
+            heats = heats.filter(status=status)
+            
+        return Response(EventHeatSerializer(heats, many=True).data)
+
+    @action(detail=True, methods=['get'])
+    def get_available_participants(self, request, pk=None):
+        """Get participants not assigned to any heat in the current stage"""
+        sub_event = self.get_object()
+        stage = request.query_params.get('stage')
+        round_number = request.query_params.get('round')
+        
+        if not stage:
+            return Response({'error': 'stage parameter is required'}, status=400)
+            
+        # Get all participants already assigned to heats
+        assigned_participants = HeatParticipant.objects.filter(
+            heat__sub_event=sub_event,
+            heat__stage=stage,
+            heat__round_number=round_number
+        ).values_list('registration_id', flat=True)
+        
+        # Get available participants
+        available = EventRegistration.objects.filter(
+            sub_event=sub_event,
+            status='APPROVED'
+        ).exclude(
+            id__in=assigned_participants
+        )
+        
+        return Response(EventRegistrationSerializer(available, many=True).data)
+
+class EventHeatViewSet(viewsets.ModelViewSet):
+    queryset = EventHeat.objects.all()
+    serializer_class = EventHeatSerializer
+    
+    @action(detail=True, methods=['post'])
+    def update_status(self, request, pk=None):
+        """Update heat status"""
+        heat = self.get_object()
+        new_status = request.data.get('status')
+        
+        if new_status not in ['PENDING', 'IN_PROGRESS', 'COMPLETED']:
+            return Response({'error': 'Invalid status'}, status=400)
+            
+        heat.status = new_status
+        heat.save()
+        
+        return Response(EventHeatSerializer(heat).data)
+
+    @action(detail=True, methods=['post'])
+    def remove_participants(self, request, pk=None):
+        """Remove participants from heat"""
+        heat = self.get_object()
+        registration_ids = request.data.get('registration_ids', [])
+        
+        if not registration_ids:
+            return Response({'error': 'registration_ids required'}, status=400)
+            
+        HeatParticipant.objects.filter(
+            heat=heat,
+            registration_id__in=registration_ids
+        ).delete()
+        
+        return Response({'message': 'Participants removed successfully'})
+
+    @action(detail=True, methods=['get'])
+    def get_participants(self, request, pk=None):
+        """Get all participants in this heat"""
+        heat = self.get_object()
+        participants = HeatParticipant.objects.filter(heat=heat)
+        
+        return Response(HeatParticipantSerializer(participants, many=True).data)
+
 class EventRegistrationViewSet(viewsets.ModelViewSet):
     queryset = EventRegistration.objects.all()
     serializer_class = EventRegistrationSerializer
@@ -651,6 +1175,61 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
             'team_leader'
         ).prefetch_related('team_members')
 
+    @action(detail=False, methods=['get'])
+    def get_by_filters(self, request):
+        """Get registrations with multiple filters"""
+        registrations = EventRegistration.objects.all()
+        
+        # Apply filters
+        event = request.query_params.get('event')
+        sub_event = request.query_params.get('sub_event')
+        department = request.query_params.get('department')
+        year = request.query_params.get('year')
+        division = request.query_params.get('division')
+        status = request.query_params.get('status')
+        has_files = request.query_params.get('has_files')
+        search = request.query_params.get('search')
+        
+        if event:
+            registrations = registrations.filter(sub_event__event_id=event)
+        if sub_event:
+            registrations = registrations.filter(sub_event_id=sub_event)
+        if department:
+            registrations = registrations.filter(department=department)
+        if year:
+            registrations = registrations.filter(year=year)
+        if division:
+            registrations = registrations.filter(division=division)
+        if status:
+            registrations = registrations.filter(status=status)
+        if has_files is not None:
+            registrations = registrations.filter(has_submitted_files=has_files)
+        if search:
+            registrations = registrations.filter(
+                Q(team_name__icontains=search) |
+                Q(team_leader__email__icontains=search)
+            )
+        
+        return Response(EventRegistrationSerializer(registrations, many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def get_team_submissions(self, request):
+        """Get all team submissions with filters"""
+        registrations = EventRegistration.objects.filter(has_submitted_files=True)
+        
+        event = request.query_params.get('event')
+        sub_event = request.query_params.get('sub_event')
+        status = request.query_params.get('status')
+        
+        if event:
+            registrations = registrations.filter(sub_event__event_id=event)
+        if sub_event:
+            registrations = registrations.filter(sub_event_id=sub_event)
+        if status:
+            registrations = registrations.filter(status=status)
+            
+        return Response(EventRegistrationSerializer(registrations, many=True).data)
+    
     @action(detail=False, methods=['get'])
     def get_by_registration_number(self, request):
         reg_number = request.query_params.get('registration_number')

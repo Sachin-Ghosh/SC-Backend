@@ -367,25 +367,39 @@ class EventDraw(models.Model):
         return f"{self.sub_event.name} - {self.stage} - {self.team1} vs {self.team2}"
 
 class EventHeat(models.Model):
-    """Represents a single race/competition group within a round"""
-    sub_event = models.ForeignKey(SubEvent, on_delete=models.CASCADE)
-    round_number = models.IntegerField( default=1 )
-    heat_number = models.IntegerField( default=1 )
-    participants = models.ManyToManyField(
-        'EventRegistration',
-        related_name='heats'
-    )
-    status = models.CharField(max_length=20, choices=(
+    HEAT_STATUS = (
         ('PENDING', 'Pending'),
-        ('ONGOING', 'Ongoing'),
+        ('IN_PROGRESS', 'In Progress'),
         ('COMPLETED', 'Completed')
-    ), default='PENDING')
-    scheduled_time = models.DateTimeField(null=True, blank=True)
-    completed_time = models.DateTimeField(null=True, blank=True)
-    notes = models.TextField(blank=True)
+    )
+    
+    sub_event = models.ForeignKey(SubEvent, on_delete=models.CASCADE)
+    stage = models.CharField(max_length=50, null=True, blank=True)
+    round_number = models.IntegerField(default=1, null=True, blank=True)
+    schedule = models.DateTimeField(null=True, blank=True)
+    venue = models.CharField(max_length=200, null=True, blank=True)
+    max_participants = models.IntegerField(default=0, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=HEAT_STATUS)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
-        unique_together = ['sub_event', 'round_number', 'heat_number']
+        unique_together = ['sub_event', 'stage', 'round_number']
+
+    def __str__(self):
+        return f"Heat {self.round_number} - {self.sub_event.name} ({self.stage})"
+
+class HeatParticipant(models.Model):
+    heat = models.ForeignKey(EventHeat, on_delete=models.CASCADE)
+    registration = models.ForeignKey(EventRegistration, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['heat', 'registration']
+
+    def __str__(self):
+        return f"{self.registration} - Heat {self.heat.round_number}"
+
 class EventScore(models.Model):
     SCORE_TYPES = (
         ('WINNER', 'Winner'),

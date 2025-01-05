@@ -7,7 +7,7 @@ from django_summernote.admin import SummernoteModelAdmin
 from .models import (
     Organization, Event, SubEvent, EventRegistration, 
     EventScore, EventDraw, SubEventImage, SubmissionFile,
-    SubEventFaculty, EventHeat, DepartmentScore
+    SubEventFaculty, EventHeat, DepartmentScore, HeatParticipant
 )
 
 class SubEventFacultyInline(admin.TabularInline):
@@ -183,38 +183,28 @@ class SubmissionFileAdmin(SummernoteModelAdmin):
     
 @admin.register(EventHeat)
 class EventHeatAdmin(admin.ModelAdmin):
-    list_display = ('get_heat_display', 'status', 'scheduled_time', 'get_participant_count')
-    list_filter = ('sub_event', 'round_number', 'status')
-    search_fields = ('sub_event__name', 'notes')
-    readonly_fields = ('completed_time',)
+    list_display = ['get_heat_name', 'sub_event', 'stage', 'round_number', 'schedule', 'venue', 'status', 'get_participant_count']
+    list_filter = ['sub_event', 'stage', 'round_number', 'status']
+    search_fields = ['venue', 'sub_event__name']
+    readonly_fields = ['created_at', 'updated_at']
     
-    def get_heat_display(self, obj):
-        return f"{obj.sub_event.name} - Round {obj.round_number} Heat {obj.heat_number}"
-    get_heat_display.short_description = 'Event Heat'
-
+    def get_heat_name(self, obj):
+        return f"Heat {obj.round_number} - {obj.sub_event.name}"
+    get_heat_name.short_description = 'Heat Name'
+    
     def get_participant_count(self, obj):
-        return obj.participants.count()
+        return obj.heatparticipant_set.count()
     get_participant_count.short_description = 'Participants'
 
-    fieldsets = (
-        ('Event Information', {
-            'fields': ('sub_event', 'round_number', 'heat_number')
-        }),
-        ('Status & Schedule', {
-            'fields': ('status', 'scheduled_time', 'completed_time')
-        }),
-        ('Participants', {
-            'fields': ('participants',)
-        }),
-        ('Additional Information', {
-            'fields': ('notes',),
-            'classes': ('collapse',)
-        }),
-    )
+@admin.register(HeatParticipant)
+class HeatParticipantAdmin(admin.ModelAdmin):
+    list_display = ['heat', 'registration', 'created_at']
+    list_filter = ['heat__sub_event', 'heat__stage', 'heat__round_number']
+    search_fields = ['heat__sub_event__name', 'registration__team_name']
+    readonly_fields = ['created_at']
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('sub_event')
-    
+        return super().get_queryset(request).select_related('heat', 'registration')
 
 @admin.register(DepartmentScore)
 class DepartmentScoreAdmin(admin.ModelAdmin):

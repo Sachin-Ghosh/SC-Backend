@@ -12,6 +12,7 @@ router.register(r'draws', views.EventDrawViewSet)
 router.register(r'scores', views.EventScoreViewSet, basename='event-score')
 # router.register(r'faculty-judges', views.SubEventFacultyViewSet, basename='sub-event-faculty')
 router.register(r'scoreboard', views.ScoreboardViewSet, basename='scoreboard')
+router.register(r'heats', views.EventHeatViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
