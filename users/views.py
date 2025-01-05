@@ -1026,3 +1026,144 @@ def faculty_schedule(request, faculty_id):
             {'error': 'Faculty member not found'}, 
             status=status.HTTP_404_NOT_FOUND
         )
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def filter_users(request):
+    """
+    Get users with multiple filter options.
+    Example: /api/users/filter/?department=COMPUTER&year=TE&division=A&gender=MALE&user_type=STUDENT
+    """
+    try:
+        users = User.objects.all()
+
+        # Basic Filters
+        department = request.query_params.get('department')
+        year = request.query_params.get('year')
+        division = request.query_params.get('division')
+        gender = request.query_params.get('gender')
+        user_type = request.query_params.get('user_type')
+        is_active = request.query_params.get('is_active')
+        
+        # Additional Filters
+        search = request.query_params.get('search')
+        has_profile_picture = request.query_params.get('has_profile_picture')
+        has_id_card = request.query_params.get('has_id_card')
+        position = request.query_params.get('position')  # For council members
+        designation = request.query_params.get('designation')  # For faculty
+        roll_number = request.query_params.get('roll_number')
+        
+        # Date Filters
+        joined_after = request.query_params.get('joined_after')
+        joined_before = request.query_params.get('joined_before')
+
+        # Apply filters
+        if department:
+            users = users.filter(department=department)
+        
+        if year:
+            users = users.filter(year_of_study=year)
+        
+        if division:
+            users = users.filter(division=division)
+        
+        if gender:
+            users = users.filter(gender=gender)
+        
+        if user_type:
+            users = users.filter(user_type=user_type)
+        
+        if is_active is not None:
+            is_active = is_active.lower() == 'true'
+            users = users.filter(is_active=is_active)
+        
+        if search:
+            users = users.filter(
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(email__icontains=search) |
+                Q(phone__icontains=search) |
+                Q(roll_number__icontains=search)
+            )
+        
+        if has_profile_picture is not None:
+            has_profile_picture = has_profile_picture.lower() == 'true'
+            if has_profile_picture:
+                users = users.exclude(profile_picture='')
+            else:
+                users = users.filter(profile_picture='')
+        
+        if has_id_card is not None:
+            has_id_card = has_id_card.lower() == 'true'
+            if has_id_card:
+                users = users.exclude(id_card_document='')
+            else:
+                users = users.filter(id_card_document='')
+        
+        if position and user_type == 'COUNCIL':
+            users = users.filter(position=position)
+        
+        if designation and user_type == 'FACULTY':
+            users = users.filter(designation=designation)
+        
+        if roll_number:
+            users = users.filter(roll_number__icontains=roll_number)
+        
+        if joined_after:
+            users = users.filter(date_joined__gte=joined_after)
+        
+        if joined_before:
+            users = users.filter(date_joined__lte=joined_before)
+
+        # Sorting
+        sort_by = request.query_params.get('sort_by', 'date_joined')
+        sort_order = request.query_params.get('sort_order', 'desc')
+        
+        if sort_order.lower() == 'asc':
+            users = users.order_by(sort_by)
+        else:
+            users = users.order_by(f'-{sort_by}')
+
+        # Pagination
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        # Count total before slicing
+        total_count = users.count()
+        
+        # Apply pagination
+        users = users[start:end]
+
+        # Serialize data
+        serializer = UserSerializer(users, many=True)
+
+        return Response({
+            'total_count': total_count,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': (total_count + page_size - 1) // page_size,
+            'results': serializer.data,
+            'filters_applied': {
+                'department': department,
+                'year': year,
+                'division': division,
+                'gender': gender,
+                'user_type': user_type,
+                'is_active': is_active,
+                'has_profile_picture': has_profile_picture,
+                'has_id_card': has_id_card,
+                'position': position,
+                'designation': designation,
+                'roll_number': roll_number,
+                'joined_after': joined_after,
+                'joined_before': joined_before,
+                'search': search
+            }
+        })
+
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)

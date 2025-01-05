@@ -2,7 +2,7 @@
 from django.urls import path
 from . import views
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, CouncilMemberViewSet, FacultyViewSet  # Ensure these are imported
+from .views import UserViewSet, CouncilMemberViewSet, FacultyViewSet, filter_users  # Ensure these are imported
 
 
 router = DefaultRouter()
@@ -62,6 +62,8 @@ urlpatterns = [
     # Detailed Faculty Information
     path('faculty/<int:faculty_id>/detail/', views.faculty_detail, name='faculty-detail'),
     path('faculty/schedule/<int:faculty_id>/', views.faculty_schedule, name='faculty-schedule'),
+    
+    path('filter/', filter_users, name='filter-users'),
 ]
 
 urlpatterns += router.urls
