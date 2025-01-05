@@ -133,6 +133,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
+            os.path.join(BASE_DIR, 'sc_backend', 'templates'),  # Updated path
             os.path.join(BASE_DIR, 'templates'),
             os.path.join(BASE_DIR, 'events', 'templates'),
         ],
