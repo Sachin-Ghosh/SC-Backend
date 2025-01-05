@@ -77,7 +77,13 @@ class EventRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventRegistration
         fields = '__all__'
-        read_only_fields = ('registration_number', 'status')
+        read_only_fields = ('registration_number', 'status','team_leader')
+        
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['team_leader'] = request.user
+        return super().create(validated_data)
     
     def validate_team_member_ids(self, value):
         sub_event = self.context['sub_event']
