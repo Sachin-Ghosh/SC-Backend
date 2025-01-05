@@ -35,7 +35,7 @@ urlpatterns = [
     path('registrations/<int:pk>/approve/', views.EventRegistrationViewSet.as_view({'post': 'approve'}), name='approve-registration'),
     path('registrations/<int:pk>/reject/', views.EventRegistrationViewSet.as_view({'post': 'reject'}), name='reject-registration'),
     path('registrations/<int:pk>/submit-files/', views.EventRegistrationViewSet.as_view({'post': 'submit_files'}), name='submit-files'),
-    path('registrations/my/', views.EventRegistrationViewSet.as_view({'get': 'my_registrations'}), name='my-registrations'),
+    path('registrations/my_registrations/', views.EventRegistrationViewSet.as_view({'get': 'my_registrations'}), name='my-registrations'),
     
     # Scoring and Results
     path('scores/add/', views.EventScoreViewSet.as_view({'post': 'create'}), name='add-score'),

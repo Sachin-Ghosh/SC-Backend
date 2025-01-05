@@ -9,6 +9,9 @@ from users.models import CouncilMember
 from django.contrib import admin
 from django.db.models import Sum
 from django.utils.html import format_html
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class Organization(models.Model):
     name = models.CharField(max_length=200)
@@ -197,28 +200,30 @@ class SubEventImage(models.Model):
         return f"Image {self.id}" if self.id else "New Image"
    
 class SubEventFaculty(models.Model):
+    # Change the faculty field to point to User model
+    faculty = models.ForeignKey(
+        User,  # Use User model directly
+        on_delete=models.CASCADE,
+        limit_choices_to={'user_type': 'FACULTY'}  # Optional: limit to faculty users
+    )
     sub_event = models.ForeignKey(
         SubEvent, 
         on_delete=models.CASCADE,
-        related_name='faculty_assignments'
+        related_name='faculty_assignments'  # Add this line
     )
-    faculty = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='judging_events',
-        limit_choices_to={'user_type': 'FACULTY'}  # Assuming you have user_type field
-    )
-    assigned_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     remarks = models.TextField(null=True, blank=True)
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
 
     class Meta:
         unique_together = ['sub_event', 'faculty']
-        verbose_name = 'Sub Event Faculty'
-        verbose_name_plural = 'Sub Event Faculties'
+        # verbose_name = 'Sub Event Faculty'
+        # verbose_name_plural = 'Sub Event Faculties'
 
     def __str__(self):
-        return f"{self.faculty.get_full_name()} - {self.sub_event.name}"
+        # return f"{self.faculty.get_full_name()} - {self.sub_event.name}"
+        return f"{self.faculty.email} - {self.sub_event.name}"
     
     
 class EventRegistration(models.Model):

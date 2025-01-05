@@ -1212,7 +1212,60 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
             )
         
         return Response(EventRegistrationSerializer(registrations, many=True).data)
+    
+    @action(detail=False, methods=['get'])
+    def my_registrations(self, request):
+            """Get all registrations for the logged-in user with filters"""
+            try:
+                registrations = EventRegistration.objects.filter(
+                    Q(team_leader=request.user) | 
+                    Q(team_members=request.user)
+                ).distinct()
 
+                # Apply filters
+                event = request.query_params.get('event')
+                sub_event = request.query_params.get('sub_event') 
+                status_filter = request.query_params.get('status')  # Renamed to avoid conflict
+                stage = request.query_params.get('stage')
+                has_files = request.query_params.get('has_files')
+                search = request.query_params.get('search')
+
+                if event:
+                    registrations = registrations.filter(sub_event__event_id=event)
+                if sub_event:
+                    registrations = registrations.filter(sub_event_id=sub_event)
+                if status_filter:
+                    registrations = registrations.filter(status=status_filter)
+                if stage:
+                    registrations = registrations.filter(current_stage=stage)
+                if has_files is not None:
+                    registrations = registrations.filter(has_submitted_files=has_files)
+                if search:
+                    registrations = registrations.filter(
+                        Q(team_name__icontains=search) |
+                        Q(sub_event__name__icontains=search)
+                    )
+
+                # Sort by registration_date instead of created_at
+                sort_by = request.query_params.get('sort_by', '-registration_date')
+                registrations = registrations.order_by(sort_by)
+
+                # Optimize queries
+                registrations = registrations.select_related(
+                    'sub_event', 
+                    'team_leader'
+                ).prefetch_related('team_members')
+
+                serializer = EventRegistrationSerializer(registrations, many=True)
+                return Response(serializer.data)
+
+            except Exception as e:
+                return Response(
+                    {'error': str(e)}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+    
+    
     @action(detail=False, methods=['get'])
     def get_team_submissions(self, request):
         """Get all team submissions with filters"""

@@ -79,7 +79,11 @@ class User(AbstractUser):
         # Validate ID card requirement
         if self.user_type in ['STUDENT', 'COUNCIL'] and not self.id_card_document:
             raise ValidationError('ID card document is required for students and council members')
-
+    def get_full_name(self):
+        """Return the full name of the user"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        return self.email
     def save(self, *args, **kwargs):
         # Auto increment year in June
         if self.year_of_study:
