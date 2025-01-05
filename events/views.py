@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db import models 
 from django.shortcuts import get_object_or_404
-from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage, EventHeat , SubmissionFile , User, SubEventFaculty, DepartmentScore
-from .serializers import EventSerializer, SubEventSerializer, EventRegistrationSerializer, EventScoreSerializer, EventDrawSerializer , OrganizationSerializer , SubEventImageSerializer, EventHeatSerializer, SubEventFacultySerializer
+from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage, EventHeat , SubmissionFile , User, SubEventFaculty, DepartmentScore, HeatParticipant
+from .serializers import EventSerializer, SubEventSerializer, EventRegistrationSerializer, EventScoreSerializer, EventDrawSerializer , OrganizationSerializer , SubEventImageSerializer, EventHeatSerializer, SubEventFacultySerializer, HeatParticipantSerializer
 from rest_framework import viewsets, status     
 from django.db.models import Q, Count, Avg, Sum
 from django.core.mail import send_mail
@@ -20,6 +20,7 @@ from django.db.models import Prefetch
 from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.models import User
+from rest_framework.exceptions import PermissionDenied
 
 # Get the custom User model
 User = get_user_model()
