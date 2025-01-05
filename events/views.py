@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db import models 
 from django.shortcuts import get_object_or_404
-from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage, EventHeat , SubmissionFile , User
-from .serializers import EventSerializer, SubEventSerializer, EventRegistrationSerializer, EventScoreSerializer, EventDrawSerializer , OrganizationSerializer , SubEventImageSerializer, EventHeatSerializer
+from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage, EventHeat , SubmissionFile , User, SubEventFaculty
+from .serializers import EventSerializer, SubEventSerializer, EventRegistrationSerializer, EventScoreSerializer, EventDrawSerializer , OrganizationSerializer , SubEventImageSerializer, EventHeatSerializer, SubEventFacultySerializer
 from rest_framework import viewsets, status     
 from django.db.models import Q, Count, Avg, Sum
 from django.core.mail import send_mail
@@ -952,12 +952,63 @@ class EventScoreViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.user_type in ['ADMIN', 'COUNCIL', 'FACULTY']:
-            return EventScore.objects.all()
-        return EventScore.objects.filter(
-            registration__team_leader=self.request.user
+        user = self.request.user
+        queryset = EventScore.objects.all()
+        sub_event = self.request.query_params.get('sub_event', None)
+        stage = self.request.query_params.get('stage', None)
+        heat = self.request.query_params.get('heat', None)
+
+        # If user is faculty, only show scores for their assigned sub-events
+        if user.user_type == 'FACULTY':
+            assigned_sub_events = user.judged_sub_events.all()
+            queryset = queryset.filter(sub_event__in=assigned_sub_events)
+
+        sub_event = self.request.query_params.get('sub_event', None)
+        stage = self.request.query_params.get('stage', None)
+        heat = self.request.query_params.get('heat', None)
+
+        if sub_event:
+            queryset = queryset.filter(sub_event_id=sub_event)
+        if stage:
+            queryset = queryset.filter(stage=stage)
+        if heat:
+            queryset = queryset.filter(heat_id=heat)
+
+        return queryset.select_related(
+            'sub_event',
+            'event_registration',
+            'judge',
+            'heat'
         )
 
+    def perform_create(self, serializer):
+        user = self.request.user
+        sub_event = serializer.validated_data['sub_event']
+
+        # Check if user is assigned as faculty for this sub-event
+        if user.user_type == 'FACULTY' and not SubEventFaculty.objects.filter(
+            faculty=user,
+            sub_event=sub_event,
+            is_active=True
+        ).exists():
+            raise PermissionDenied("You are not assigned to judge this event")
+
+        serializer.save(judge=user, updated_by=user)
+
+    def perform_update(self, serializer):
+        user = self.request.user
+        sub_event = serializer.validated_data['sub_event']
+
+        # Check if user is assigned as faculty for this sub-event
+        if user.user_type == 'FACULTY' and not SubEventFaculty.objects.filter(
+            faculty=user,
+            sub_event=sub_event,
+            is_active=True
+        ).exists():
+            raise PermissionDenied("You are not assigned to judge this event")
+
+        serializer.save(updated_by=user)
+        
     def create(self, request, *args, **kwargs):
         if request.user.user_type not in ['ADMIN', 'COUNCIL', 'FACULTY']:
             return Response(
@@ -974,6 +1025,7 @@ class EventScoreViewSet(viewsets.ModelViewSet):
         serializer.save(judge=request.user, updated_by=request.user)
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 # Additional API Views
 @api_view(['GET'])

@@ -9,7 +9,8 @@ router.register(r'events', views.EventViewSet)
 router.register(r'sub-events', views.SubEventViewSet)
 router.register(r'registrations', views.EventRegistrationViewSet, basename='event-registration')
 router.register(r'draws', views.EventDrawViewSet)
-router.register(r'scores', views.EventScoreViewSet)
+router.register(r'scores', views.EventScoreViewSet, basename='event-score')
+# router.register(r'faculty-judges', views.SubEventFacultyViewSet, basename='sub-event-faculty')
 
 urlpatterns = [
     path('', include(router.urls)),

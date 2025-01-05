@@ -3,7 +3,7 @@ from rest_framework import serializers
 from django_summernote.fields import SummernoteTextField
 from .models import (
     Organization, Event, SubEvent, SubEventImage, EventRegistration,
-    SubmissionFile, EventDraw, EventScore, EventHeat
+    SubmissionFile, EventDraw, EventScore, EventHeat, SubEventFaculty
 )
 from users.serializers import UserSerializer
 
@@ -31,6 +31,17 @@ class EventSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('slug', 'created_by')
 
+class SubEventFacultySerializer(serializers.ModelSerializer):
+    faculty_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SubEventFaculty
+        fields = ['id', 'faculty', 'faculty_name', 'sub_event', 'is_active', 'remarks']
+        read_only_fields = ['assigned_at']
+
+    def get_faculty_name(self, obj):
+        return obj.faculty.get_full_name()
+    
 class SubEventSerializer(serializers.ModelSerializer):
     images = SubEventImageSerializer(many=True, read_only=True)
     sub_heads = UserSerializer(many=True, read_only=True)
@@ -39,7 +50,7 @@ class SubEventSerializer(serializers.ModelSerializer):
     prize_pool_description = serializers.CharField(style={'base_template': 'textarea.html'})
     format_description = serializers.CharField(style={'base_template': 'textarea.html'})
     rules = serializers.CharField(style={'base_template': 'textarea.html'})
-    
+    faculty_judges = SubEventFacultySerializer(many=True, read_only=True)
     class Meta:
         model = SubEvent
         fields = '__all__'

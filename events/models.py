@@ -74,7 +74,6 @@ class Event(models.Model):
         return self.name
 
 
-
 class SubEvent(models.Model):
     EVENT_CATEGORIES = (
         ('SPORTS', 'Sports'),
@@ -102,7 +101,12 @@ class SubEvent(models.Model):
         ('SEMIS', 'Semi Finals'),
         ('FINALS', 'Finals')
     )
-    
+    faculty_judges = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through='SubEventFaculty',
+        related_name='judged_sub_events',
+        blank=True
+    )
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='sub_events')
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
@@ -165,6 +169,9 @@ class SubEvent(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
     
+    def get_active_faculty(self):
+        return self.faculty_judges.filter(is_active=True)
+    
     def __str__(self):
         return f"{self.event.name} - {self.name}"
 
@@ -185,6 +192,30 @@ class SubEventImage(models.Model):
         if hasattr(self, 'sub_event') and self.sub_event:
             return f"Image for {self.sub_event.name}"
         return f"Image {self.id}" if self.id else "New Image"
+   
+class SubEventFaculty(models.Model):
+    sub_event = models.ForeignKey(
+        SubEvent, 
+        on_delete=models.CASCADE,
+        related_name='faculty_assignments'
+    )
+    faculty = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='judging_events',
+        limit_choices_to={'user_type': 'FACULTY'}  # Assuming you have user_type field
+    )
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    remarks = models.TextField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ['sub_event', 'faculty']
+        verbose_name = 'Sub Event Faculty'
+        verbose_name_plural = 'Sub Event Faculties'
+
+    def __str__(self):
+        return f"{self.faculty.get_full_name()} - {self.sub_event.name}"
     
     
 class EventRegistration(models.Model):
@@ -359,7 +390,8 @@ class EventScore(models.Model):
     )
     
     sub_event = models.ForeignKey(SubEvent, on_delete=models.CASCADE)
-    event_registration = models.ForeignKey(EventRegistration, on_delete=models.CASCADE )  # Changed from registration to event_registration
+    event_registration = models.ForeignKey(EventRegistration, on_delete=models.CASCADE,
+        related_name='scores')  # Changed from registration to event_registration
     stage = models.CharField(max_length=20, choices=SubEvent.EVENT_STAGES , null=True , blank=True)
     score_type = models.CharField(max_length=20, choices=SCORE_TYPES, null=True, blank=True)
     criteria_scores = models.JSONField(default=dict , null=True , blank=True)
@@ -374,14 +406,21 @@ class EventScore(models.Model):
     updated_at = models.DateTimeField(auto_now=True , null=True , blank=True)
     is_bye = models.BooleanField(default=False)
     points_awarded = models.IntegerField(default=0 , null=True , blank=True)
-    heat = models.ForeignKey(EventHeat, on_delete=models.CASCADE, null=True)
+    heat = models.ForeignKey(EventHeat, on_delete=models.CASCADE, null=True , blank=True)
     round_number = models.IntegerField(null=True , blank=True)
     position = models.IntegerField(null=True)  # Position in the heat
-    time_taken = models.DurationField(null=True)  # For time-based events
+    time_taken = models.DurationField(null=True , blank=True)  # For time-based events
     qualified_for_next = models.BooleanField(default=False)
     
     class Meta:
         unique_together = ['sub_event', 'event_registration', 'stage', 'judge']
+        ordering = ['sub_event', 'stage', '-total_score']
 
     def __str__(self):
-        return f"{self.event_registration.team_leader.username} - {self.sub_event.name} - {self.stage}"
+        participant = self.event_registration.get_participant_display()
+        return f"{participant} - {self.sub_event.name} - {self.stage}"
+
+    def save(self, *args, **kwargs):
+        if self.heat and not self.round_number:
+            self.round_number = self.heat.round_number
+        super().save(*args, **kwargs)
