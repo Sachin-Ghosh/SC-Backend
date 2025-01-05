@@ -1,5 +1,5 @@
 # users/urls.py
-from django.urls import path
+from django.urls import path, include
 from . import views
 from rest_framework.routers import DefaultRouter
 from .views import UserViewSet, CouncilMemberViewSet, FacultyViewSet, filter_users  # Ensure these are imported
@@ -11,6 +11,8 @@ router.register(r'council-members', views.CouncilMemberViewSet)
 router.register(r'faculty', views.FacultyViewSet)
 
 urlpatterns = [
+    path('', include(router.urls)),
+    
     # Authentication & Registration
     path('register/', views.register_user, name='register'),
     path('register/verify/', views.verify_otp, name='verify-registration'),
