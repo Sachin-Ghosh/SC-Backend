@@ -15,6 +15,7 @@ urlpatterns = [
     path('register/', views.register_user, name='register'),
     path('register/verify/', views.verify_otp, name='verify-registration'),
     path('login/', views.login_user, name='login'),
+    path('resend-otp/', views.resend_otp, name='resend-otp'),
     path('logout/', views.logout_user, name='logout'),
     path('request-password-reset/', views.request_password_reset, name='request-password-reset'),
     path('reset-password/', views.reset_password, name='reset-password'),
