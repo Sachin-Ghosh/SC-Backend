@@ -1025,6 +1025,111 @@ class EventScoreViewSet(viewsets.ModelViewSet):
         serializer.save(judge=request.user, updated_by=request.user)
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    @action(detail=False, methods=['post'])
+    def submit_score(self, request):
+        """
+        Submit scores for a participant/team
+        """
+        sub_event_id = request.data.get('sub_event')
+        registration_id = request.data.get('registration')
+        
+        # Validate permissions
+        if not self._can_submit_score(request.user, sub_event_id):
+            return Response(
+                {"error": "You are not authorized to submit scores for this event"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Get or create score object
+        score_data = {
+            'sub_event_id': sub_event_id,
+            'event_registration_id': registration_id,
+            'judge': request.user,
+            'stage': request.data.get('stage'),
+            'round_number': request.data.get('round_number'),
+            'heat_id': request.data.get('heat'),
+            'total_score': request.data.get('total_score'),
+            'criteria_scores': request.data.get('criteria_scores', {}),
+            'position': request.data.get('position'),
+            'remarks': request.data.get('remarks'),
+            'qualified_for_next': request.data.get('qualified_for_next', False)
+        }
+
+        serializer = self.get_serializer(data=score_data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'])
+    def participant_scores(self, request):
+        """
+        Get scores for a specific participant/team
+        """
+        registration_id = request.query_params.get('registration')
+        if not registration_id:
+            return Response(
+                {"error": "registration parameter is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        scores = EventScore.objects.filter(
+            event_registration_id=registration_id
+        ).select_related('judge', 'sub_event')
+
+        serializer = self.get_serializer(scores, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def event_leaderboard(self, request):
+        """
+        Get leaderboard for a specific sub-event
+        """
+        sub_event_id = request.query_params.get('sub_event')
+        stage = request.query_params.get('stage')
+        round_number = request.query_params.get('round')
+
+        if not sub_event_id:
+            return Response(
+                {"error": "sub_event parameter is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        scores = EventScore.objects.filter(
+            sub_event_id=sub_event_id
+        )
+
+        if stage:
+            scores = scores.filter(stage=stage)
+        if round_number:
+            scores = scores.filter(round_number=round_number)
+
+        # Calculate average scores from all judges
+        from django.db.models import Avg, Count
+        leaderboard = scores.values(
+            'event_registration',
+            'event_registration__team_leader__first_name',
+            'event_registration__team_name'
+        ).annotate(
+            average_score=Avg('total_score'),
+            judge_count=Count('judge', distinct=True)
+        ).order_by('-average_score')
+
+        return Response(leaderboard)
+
+    def _can_submit_score(self, user, sub_event_id):
+        """Check if user can submit scores for this sub-event"""
+        if user.user_type in ['ADMIN', 'COUNCIL']:
+            return True
+        
+        if user.user_type == 'FACULTY':
+            return SubEventFaculty.objects.filter(
+                faculty=user,
+                sub_event_id=sub_event_id,
+                is_active=True
+            ).exists()
+        
+        return False
 
 
 # Additional API Views

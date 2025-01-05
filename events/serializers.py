@@ -130,11 +130,27 @@ class EventDrawSerializer(serializers.ModelSerializer):
 
 class EventScoreSerializer(serializers.ModelSerializer):
     judge_name = serializers.CharField(source='judge.get_full_name', read_only=True)
+    participant_name = serializers.SerializerMethodField()
+    sub_event_name = serializers.SerializerMethodField()
+
     
     class Meta:
         model = EventScore
         fields = '__all__'
         read_only_fields = ('points_awarded',)
+        
+    def get_judge_name(self, obj):
+        return obj.judge.get_full_name() if obj.judge else None
+
+    def get_participant_name(self, obj):
+        if obj.event_registration:
+            if obj.event_registration.team_name:
+                return obj.event_registration.team_name
+            return obj.event_registration.team_leader.get_full_name()
+        return None
+
+    def get_sub_event_name(self, obj):
+        return obj.sub_event.name if obj.sub_event else None
     
     def validate_criteria_scores(self, value):
         sub_event = self.instance.sub_event if self.instance else self.context.get('sub_event')
