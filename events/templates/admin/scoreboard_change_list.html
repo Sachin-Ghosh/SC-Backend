@@ -1,0 +1,83 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+{% load score_filters %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static 'admin/css/scoreboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="scoreboard-container">
+    <!-- Overall Summary Cards -->
+    <div class="summary-cards">
+        <div class="summary-card">
+            <h3>Total Departments</h3>
+            <div class="card-value">{{ department_totals|length }}</div>
+        </div>
+        <div class="summary-card">
+            <h3>Total Sub Events</h3>
+            <div class="card-value">{{ sub_events|length }}</div>
+        </div>
+        <div class="summary-card">
+            <h3>Total Points Awarded</h3>
+            <div class="card-value">{{ total_points }}</div>
+        </div>
+    </div>
+
+    <!-- Detailed Sub Event Scores -->
+    <div class="scoreboard-section">
+        <h2>Sub Event Wise Scores</h2>
+        <div class="table-responsive">
+            <table class="subevent-scores">
+                <thead>
+                    <tr>
+                        <th class="fixed-column">Sub Events</th>
+                        {% for group in class_groups %}
+                        <th>{{ group.year }} {{ group.department }} {{ group.division }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subevent in sub_events %}
+                    <tr>
+                        <td class="fixed-column">{{ subevent.name }}</td>
+                        {% for group in class_groups %}
+                        <td>
+                            {% with score=scores|get_score:subevent.id|get_group_score:group %}
+                            {{ score|default:"-" }}
+                            {% endwith %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                    <tr class="total-row">
+                        <td class="fixed-column"><strong>Total Points</strong></td>
+                        {% for group in class_groups %}
+                        <td><strong>{{ group.total_points }}</strong></td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Department Rankings -->
+    <div class="rankings-container">
+        <div class="ranking-section">
+            <h2>Department Rankings</h2>
+            <div class="ranking-cards">
+                {% for dept in department_totals %}
+                <div class="ranking-card {% if forloop.counter <= 3 %}top-{{ forloop.counter }}{% endif %}">
+                    <div class="rank">#{{ forloop.counter }}</div>
+                    <div class="dept-name">{{ dept.department }}</div>
+                    <div class="points">{{ dept.total_points }} pts</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ block.super }}
+{% endblock %} 

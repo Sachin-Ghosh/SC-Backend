@@ -6,6 +6,9 @@ from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
 from django.utils import timezone
 from users.models import CouncilMember
+from django.contrib import admin
+from django.db.models import Sum
+from django.utils.html import format_html
 
 class Organization(models.Model):
     name = models.CharField(max_length=200)
@@ -424,3 +427,39 @@ class EventScore(models.Model):
         if self.heat and not self.round_number:
             self.round_number = self.heat.round_number
         super().save(*args, **kwargs)
+        
+        # Update department scores if this is a winning score
+        if self.score_type in ['WINNER', 'RUNNER_UP']:
+            self._update_department_score()
+    
+    def _update_department_score(self):
+        registration = self.event_registration
+        points = 5 if self.score_type == 'WINNER' else 3  # Example point values
+        
+        dept_score, created = DepartmentScore.objects.get_or_create(
+            department=registration.team_leader.department,
+            year=registration.team_leader.year_of_study,
+            division=registration.team_leader.division,
+            sub_event=self.sub_event,
+            defaults={'points': points}
+        )
+        
+        if not created:
+            dept_score.points = points
+            dept_score.save()
+
+class DepartmentScore(models.Model):
+    department = models.CharField(max_length=50)
+    year = models.CharField(max_length=10)
+    division = models.CharField(max_length=10)
+    sub_event = models.ForeignKey(SubEvent, on_delete=models.CASCADE)
+    points = models.IntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['department', 'year', 'division', 'sub_event']
+        
+    def __str__(self):
+        return f"{self.department} {self.year} {self.division} - {self.sub_event.name}"
+    
+    

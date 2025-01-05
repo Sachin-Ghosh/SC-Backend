@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db import models 
 from django.shortcuts import get_object_or_404
-from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage, EventHeat , SubmissionFile , User, SubEventFaculty
+from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage, EventHeat , SubmissionFile , User, SubEventFaculty, DepartmentScore
 from .serializers import EventSerializer, SubEventSerializer, EventRegistrationSerializer, EventScoreSerializer, EventDrawSerializer , OrganizationSerializer , SubEventImageSerializer, EventHeatSerializer, SubEventFacultySerializer
 from rest_framework import viewsets, status     
 from django.db.models import Q, Count, Avg, Sum
@@ -623,12 +623,46 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.user_type in ['ADMIN', 'COUNCIL']:
-            return EventRegistration.objects.all()
-        return EventRegistration.objects.filter(
-            Q(team_leader=self.request.user) | 
-            Q(team_members=self.request.user)
-        ).distinct()
+        queryset = EventRegistration.objects.all()
+        
+        # Filter parameters
+        sub_event = self.request.query_params.get('sub_event')
+        department = self.request.query_params.get('department')
+        year = self.request.query_params.get('year')
+        division = self.request.query_params.get('division')
+        status = self.request.query_params.get('status')
+        event = self.request.query_params.get('event')
+        
+        if sub_event:
+            queryset = queryset.filter(sub_event_id=sub_event)
+        if department:
+            queryset = queryset.filter(team_leader__department=department)
+        if year:
+            queryset = queryset.filter(team_leader__year_of_study=year)
+        if division:
+            queryset = queryset.filter(team_leader__division=division)
+        if status:
+            queryset = queryset.filter(status=status)
+        if event:
+            queryset = queryset.filter(sub_event__event_id=event)
+            
+        return queryset.select_related(
+            'sub_event', 
+            'team_leader'
+        ).prefetch_related('team_members')
+
+    @action(detail=False, methods=['get'])
+    def get_by_registration_number(self, request):
+        reg_number = request.query_params.get('registration_number')
+        if not reg_number:
+            return Response(
+                {"error": "Registration number is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        registration = get_object_or_404(EventRegistration, registration_number=reg_number)
+        serializer = self.get_serializer(registration)
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         sub_event = get_object_or_404(SubEvent, id=request.data.get('sub_event'))
@@ -1230,3 +1264,323 @@ def generate_draws(request, sub_event_slug):
     
     serializer = EventDrawSerializer(draws, many=True)
     return Response(serializer.data)
+
+class ScoreboardViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['get'])
+    def department_scoreboard(self, request):
+        """Get comprehensive scoreboard with department/year/division breakdowns"""
+        from django.db.models import Sum
+        
+        # Get filter parameters
+        department = request.query_params.get('department')
+        year = request.query_params.get('year')
+        division = request.query_params.get('division')
+        event = request.query_params.get('event')
+        
+        # Base queryset
+        scores = DepartmentScore.objects.all()
+        
+        # Apply filters
+        if department:
+            scores = scores.filter(department=department)
+        if year:
+            scores = scores.filter(year=year)
+        if division:
+            scores = scores.filter(division=division)
+        if event:
+            scores = scores.filter(sub_event__event_id=event)
+            
+        # Get total scores
+        total_scores = scores.values(
+            'department', 'year', 'division'
+        ).annotate(
+            total_points=Sum('points')
+        ).order_by('-total_points')
+        
+        # Get detailed breakdown by sub_event
+        detailed_scores = scores.values(
+            'department', 'year', 'division',
+            'sub_event__name', 'points'
+        )
+        
+        # Structure the response
+        response = {
+            'overall_rankings': total_scores,
+            'detailed_scores': detailed_scores,
+            'department_wise': self._get_department_rankings(scores),
+            'year_wise': self._get_year_rankings(scores),
+            'division_wise': self._get_division_rankings(scores)
+        }
+        
+        return Response(response)
+    
+    def _get_department_rankings(self, scores):
+        return scores.values('department').annotate(
+            total_points=Sum('points')
+        ).order_by('-total_points')
+    
+    def _get_year_rankings(self, scores):
+        return scores.values('year').annotate(
+            total_points=Sum('points')
+        ).order_by('-total_points')
+    
+    def _get_division_rankings(self, scores):
+        return scores.values('division').annotate(
+            total_points=Sum('points')
+        ).order_by('-total_points')
+
+    @action(detail=False, methods=['get'])
+    def live_updates(self, request):
+        """Get recent score updates"""
+        recent_scores = DepartmentScore.objects.order_by(
+            '-updated_at'
+        )[:10].select_related('sub_event')
+        
+        return Response([{
+            'department': score.department,
+            'year': score.year,
+            'division': score.division,
+            'sub_event': score.sub_event.name,
+            'points': score.points,
+            'updated_at': score.updated_at
+        } for score in recent_scores])
+        
+        
+    @action(detail=False, methods=['GET'])
+    def overall_scoreboard(self, request):
+        """Get complete scoreboard with all breakdowns"""
+        try:
+            # Get query parameters for filtering
+            event_id = request.query_params.get('event')
+            department = request.query_params.get('department')
+            year = request.query_params.get('year')
+            division = request.query_params.get('division')
+
+            # Base queryset
+            scores = DepartmentScore.objects.all()
+
+            # Apply filters
+            if event_id:
+                scores = scores.filter(sub_event__event_id=event_id)
+            if department:
+                scores = scores.filter(department=department)
+            if year:
+                scores = scores.filter(year=year)
+            if division:
+                scores = scores.filter(division=division)
+
+            # Get summary statistics
+            summary = {
+                'total_points': scores.aggregate(Sum('points'))['points__sum'] or 0,
+                'total_departments': scores.values('department').distinct().count(),
+                'total_sub_events': scores.values('sub_event').distinct().count()
+            }
+
+            # Get department-wise totals
+            department_totals = scores.values('department').annotate(
+                total_points=Sum('points'),
+                sub_events_participated=Count('sub_event', distinct=True)
+            ).order_by('-total_points')
+
+            # Get year-wise totals
+            year_totals = scores.values('year').annotate(
+                total_points=Sum('points')
+            ).order_by('-total_points')
+
+            # Get division-wise totals
+            division_totals = scores.values('division').annotate(
+                total_points=Sum('points')
+            ).order_by('-total_points')
+
+            # Get detailed sub-event scores
+            sub_event_scores = {}
+            for score in scores:
+                key = f"{score.year}_{score.department}_{score.division}"
+                if score.sub_event_id not in sub_event_scores:
+                    sub_event_scores[score.sub_event_id] = {}
+                sub_event_scores[score.sub_event_id][key] = score.points
+
+            return Response({
+                'summary': summary,
+                'department_rankings': department_totals,
+                'year_rankings': year_totals,
+                'division_rankings': division_totals,
+                'sub_event_scores': sub_event_scores
+            })
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['GET'])
+    def department_scores(self, request):
+        """Get scores for a specific department"""
+        department = request.query_params.get('department')
+        if not department:
+            return Response({'error': 'Department parameter is required'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
+
+        scores = DepartmentScore.objects.filter(department=department)
+        
+        return Response({
+            'total_points': scores.aggregate(Sum('points'))['points__sum'] or 0,
+            'sub_event_scores': list(scores.values(
+                'sub_event__name', 'points', 'year', 'division'
+            ))
+        })
+
+    @action(detail=False, methods=['GET'])
+    def class_scores(self, request):
+        """Get scores for a specific class (department-year-division combination)"""
+        department = request.query_params.get('department')
+        year = request.query_params.get('year')
+        division = request.query_params.get('division')
+
+        if not all([department, year, division]):
+            return Response(
+                {'error': 'Department, year, and division parameters are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        scores = DepartmentScore.objects.filter(
+            department=department,
+            year=year,
+            division=division
+        )
+
+        return Response({
+            'total_points': scores.aggregate(Sum('points'))['points__sum'] or 0,
+            'sub_event_scores': list(scores.values(
+                'sub_event__name', 'points'
+            ))
+        })
+
+    @action(detail=False, methods=['GET'])
+    def sub_event_scores(self, request):
+        """Get all scores for a specific sub-event"""
+        sub_event_id = request.query_params.get('sub_event')
+        if not sub_event_id:
+            return Response(
+                {'error': 'Sub-event parameter is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        scores = DepartmentScore.objects.filter(sub_event_id=sub_event_id)
+        
+        return Response({
+            'sub_event_details': SubEvent.objects.filter(id=sub_event_id).values().first(),
+            'scores': list(scores.values(
+                'department', 'year', 'division', 'points'
+            ).order_by('-points'))
+        })
+
+    @action(detail=False, methods=['GET'])
+    def leaderboard(self, request):
+        """Get top performing departments/classes"""
+        scores = DepartmentScore.objects.all()
+        
+        # Get top departments
+        top_departments = scores.values('department').annotate(
+            total_points=Sum('points')
+        ).order_by('-total_points')[:5]
+
+        # Get top classes
+        top_classes = scores.values(
+            'department', 'year', 'division'
+        ).annotate(
+            total_points=Sum('points')
+        ).order_by('-total_points')[:5]
+
+        return Response({
+            'top_departments': top_departments,
+            'top_classes': top_classes
+        })
+    @action(detail=False, methods=['GET'])
+    def matrix_scoreboard(self, request):
+        """Get scoreboard in matrix format with sub-events as rows and class groups as columns"""
+        try:
+            event_id = request.query_params.get('event')
+            
+            # Get all sub-events for the event
+            sub_events = SubEvent.objects.filter(event_id=event_id).order_by('name')
+            
+            # Get all unique class combinations
+            scores = DepartmentScore.objects.all()
+            if event_id:
+                scores = scores.filter(sub_event__event_id=event_id)
+            
+            class_groups = scores.values(
+                'department', 'year', 'division'
+            ).distinct().order_by('department', 'year', 'division')
+
+            # Create class group labels
+            columns = []
+            for group in class_groups:
+                column_label = f"{group['year']} {group['department']} {group['division']}"
+                columns.append({
+                    'id': f"{group['year']}_{group['department']}_{group['division']}",
+                    'label': column_label,
+                    'department': group['department'],
+                    'year': group['year'],
+                    'division': group['division']
+                })
+
+            # Create score matrix
+            matrix_data = []
+            for sub_event in sub_events:
+                row = {
+                    'sub_event_id': sub_event.id,
+                    'sub_event_name': sub_event.name,
+                    'scores': {}
+                }
+                
+                # Get scores for this sub-event
+                sub_event_scores = scores.filter(sub_event=sub_event)
+                for group in class_groups:
+                    key = f"{group['year']}_{group['department']}_{group['division']}"
+                    score = sub_event_scores.filter(
+                        department=group['department'],
+                        year=group['year'],
+                        division=group['division']
+                    ).first()
+                    row['scores'][key] = score.points if score else 0
+                
+                matrix_data.append(row)
+
+            # Calculate column totals
+            column_totals = {}
+            for group in class_groups:
+                key = f"{group['year']}_{group['department']}_{group['division']}"
+                total = scores.filter(
+                    department=group['department'],
+                    year=group['year'],
+                    division=group['division']
+                ).aggregate(total=Sum('points'))['total'] or 0
+                column_totals[key] = total
+
+            # Get top 3 class groups
+            sorted_totals = sorted(
+                column_totals.items(), 
+                key=lambda x: x[1], 
+                reverse=True
+            )[:3]
+            top_performers = [
+                {
+                    'rank': idx + 1,
+                    'class_group': key,
+                    'total_points': total
+                } for idx, (key, total) in enumerate(sorted_totals)
+            ]
+
+            return Response({
+                'columns': columns,  # Class groups (TE COMPS A, etc.)
+                'matrix_data': matrix_data,  # Sub-event wise scores
+                'column_totals': column_totals,  # Total scores for each class
+                'top_performers': top_performers,  # Top 3 class groups
+                'event_id': event_id,
+                'total_sub_events': len(sub_events),
+                'total_class_groups': len(class_groups)
+            })
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)

@@ -1,11 +1,13 @@
 # events/admin.py
 from django.contrib import admin
+from django.db.models import Sum
+from django.utils.html import format_html
 from django_summernote.admin import SummernoteModelAdmin
 
 from .models import (
     Organization, Event, SubEvent, EventRegistration, 
     EventScore, EventDraw, SubEventImage, SubmissionFile,
-    SubEventFaculty, EventHeat
+    SubEventFaculty, EventHeat, DepartmentScore
 )
 
 class SubEventFacultyInline(admin.TabularInline):
@@ -212,3 +214,112 @@ class EventHeatAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('sub_event')
+    
+
+@admin.register(DepartmentScore)
+class DepartmentScoreAdmin(admin.ModelAdmin):
+    list_display = ('department', 'year', 'division', 'sub_event', 'points', 'updated_at')
+    list_filter = ('department', 'year', 'division', 'sub_event__event')
+    search_fields = ('department', 'sub_event__name')
+    readonly_fields = ('updated_at',)
+    change_list_template = 'admin/scoreboard_change_list.html'  # Use custom template
+    
+    def changelist_view(self, request, extra_context=None):
+        response = super().changelist_view(request, extra_context=extra_context)
+        
+        try:
+            qs = self.get_queryset(request)
+            
+            # Get all sub events
+            sub_events = SubEvent.objects.all().order_by('name')
+            
+            # Get all unique class groups (year-department-division combinations)
+            class_groups = qs.values(
+                'year', 'department', 'division'
+            ).annotate(
+                total_points=Sum('points')
+            ).order_by('department', 'year', 'division')
+            
+            # Get scores matrix
+            scores = {}
+            for score in qs:
+                if score.sub_event_id not in scores:
+                    scores[score.sub_event_id] = {}
+                key = f"{score.year}_{score.department}_{score.division}"
+                scores[score.sub_event_id][key] = score.points
+            
+            extra_context = {
+                'sub_events': sub_events,
+                'class_groups': class_groups,
+                'scores': scores,
+                'total_points': qs.aggregate(Sum('points'))['points__sum'] or 0,
+            }
+            response.context_data.update(extra_context)
+        except:
+            pass
+        
+        return response
+
+    class Media:
+        css = {
+            'all': ('admin/css/scoreboard.css',)
+        }
+
+# Create a proxy model for the scoreboard view
+class Scoreboard(DepartmentScore):
+    class Meta:
+        proxy = True
+        verbose_name = 'Scoreboard'
+        verbose_name_plural = 'Scoreboard'
+
+@admin.register(Scoreboard)
+class ScoreboardAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/scoreboard_change_list.html'
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        scores = DepartmentScore.objects.all()
+        
+        # Department-wise totals
+        department_totals = scores.values('department').annotate(
+            total_points=Sum('points')
+        ).order_by('-total_points')
+        
+        # Year-wise totals
+        year_totals = scores.values('year').annotate(
+            total_points=Sum('points')
+        ).order_by('-total_points')
+        
+        # Division-wise totals
+        division_totals = scores.values('division').annotate(
+            total_points=Sum('points')
+        ).order_by('-total_points')
+        
+        # Combined totals
+        combined_totals = scores.values(
+            'department', 'year', 'division'
+        ).annotate(
+            total_points=Sum('points')
+        ).order_by('-total_points')
+        
+        extra_context = {
+            'department_totals': department_totals,
+            'year_totals': year_totals,
+            'division_totals': division_totals,
+            'combined_totals': combined_totals,
+        }
+        
+        return super().changelist_view(request, extra_context=extra_context)
+
+    class Media:
+        css = {
+            'all': ('admin/css/scoreboard.css',)
+        }
