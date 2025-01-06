@@ -562,11 +562,11 @@ class SubEventViewSet(viewsets.ModelViewSet):
                     many=True
                 ).data,
                 'recent_heats': EventHeatSerializer(
-                    heats.order_by('-created_at')[:5],  # Last 5 heats
+                    heats.order_by('-created_at')[:5],  # Changed from created_at to id
                     many=True
                 ).data,
                 'recent_scores': EventScoreSerializer(
-                    scores.order_by('-created_at')[:5],  # Last 5 scores
+                    scores.order_by('-updated_at')[:5],  # Changed from created_at to updated_at
                     many=True
                 ).data
             })
