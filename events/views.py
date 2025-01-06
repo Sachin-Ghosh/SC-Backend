@@ -1076,15 +1076,15 @@ class SubEventViewSet(viewsets.ModelViewSet):
         sub_event.save()
         
         return Response(SubEventSerializer(sub_event).data)
-    @action(detail=True, methods=['post'])
-    def create_heat(self, request, pk=None):
+    @action(detail=True, methods=['post'], url_path='create-heat')
+    def create_heat(self, request, **kwargs):
         """Create a new heat for the sub-event"""
         sub_event = self.get_object()
         
         try:
             heat = EventHeat.objects.create(
                 sub_event=sub_event,
-                name=request.data.get('name'),
+                heat_name=request.data.get('name'),
                 stage=request.data.get('stage'),
                 round_number=request.data.get('round_number'),
                 schedule=request.data.get('schedule'),
@@ -1093,12 +1093,12 @@ class SubEventViewSet(viewsets.ModelViewSet):
                 status='PENDING'
             )
             
-            return Response(EventHeatSerializer(heat).data)
+            return Response(EventHeatSerializer(heat).data, status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response({'error': str(e)}, status=400)
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['post'])
-    def assign_participants_to_heat(self, request, pk=None):
+    @action(detail=True, methods=['post'] , url_path='assign-participants-to-heat')
+    def assign_participants_to_heat(self, request, **kwargs):
         """Assign participants to a specific heat"""
         heat_id = request.data.get('heat_id')
         registration_ids = request.data.get('registration_ids', [])
@@ -1109,7 +1109,7 @@ class SubEventViewSet(viewsets.ModelViewSet):
             }, status=400)
             
         try:
-            heat = EventHeat.objects.get(id=heat_id, sub_event_id=pk)
+            heat = EventHeat.objects.get(id=heat_id, sub_event_id=kwargs['id'])
             
             # Validate max participants
             if heat.max_participants > 0:
@@ -1132,8 +1132,8 @@ class SubEventViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=400)
 
-    @action(detail=True, methods=['get'])
-    def get_heats(self, request, pk=None):
+    @action(detail=True, methods=['get'], url_path='get-heats')
+    def get_heats(self, request, **kwargs):  # Change to use **kwargs
         """Get all heats for the sub-event with filters"""
         sub_event = self.get_object()
         heats = EventHeat.objects.filter(sub_event=sub_event)
@@ -1152,8 +1152,8 @@ class SubEventViewSet(viewsets.ModelViewSet):
             
         return Response(EventHeatSerializer(heats, many=True).data)
 
-    @action(detail=True, methods=['get'])
-    def get_available_participants(self, request, pk=None):
+    @action(detail=True, methods=['get'] , url_path='get-available-participants')
+    def get_available_participants(self, request, **kwargs):
         """Get participants not assigned to any heat in the current stage"""
         sub_event = self.get_object()
         stage = request.query_params.get('stage')
@@ -1197,8 +1197,8 @@ class EventHeatViewSet(viewsets.ModelViewSet):
         
         return Response(EventHeatSerializer(heat).data)
 
-    @action(detail=True, methods=['post'])
-    def remove_participants(self, request, pk=None):
+    @action(detail=True, methods=['post'] , url_path='remove-participants')
+    def remove_participants(self, request, **kwargs):
         """Remove participants from heat"""
         heat = self.get_object()
         registration_ids = request.data.get('registration_ids', [])
@@ -1213,8 +1213,8 @@ class EventHeatViewSet(viewsets.ModelViewSet):
         
         return Response({'message': 'Participants removed successfully'})
 
-    @action(detail=True, methods=['get'])
-    def get_participants(self, request, pk=None):
+    @action(detail=True, methods=['get'] , url_path='get-participants')
+    def get_participants(self, request, **kwargs):
         """Get all participants in this heat"""
         heat = self.get_object()
         participants = HeatParticipant.objects.filter(heat=heat)
