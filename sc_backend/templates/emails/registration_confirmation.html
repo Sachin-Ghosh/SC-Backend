@@ -5,7 +5,7 @@
     
     {% if is_solo %}
     <!-- Solo Event Email -->
-    <p>Dear {{ team_leader.first_name }},</p>
+    <p>Dear {{ team_members.0.first_name }},</p>
     
     <p>Your registration for {{ event.name }} - {{ sub_event.name }} has been confirmed.</p>
     
@@ -14,12 +14,12 @@
         <li>Registration Number: {{ registration_number }}</li>
         <li>Event: {{ event.name }}</li>
         <li>Sub Event: {{ sub_event.name }}</li>
-        <li>Participant: {{ team_leader.first_name }} {{ team_leader.last_name }}</li>
+        <li>Participant: {{ team_members.0.full_name }}</li>
     </ul>
 
     {% else %}
     <!-- Team Event Email -->
-    <p>Dear {{ team_leader.first_name }},</p>
+    <p>Dear {{ team_members.0.first_name }},</p>
     
     <p>Your team's registration for {{ event.name }} - {{ sub_event.name }} has been confirmed.</p>
     
@@ -29,18 +29,13 @@
         <li>Event: {{ event.name }}</li>
         <li>Sub Event: {{ sub_event.name }}</li>
         <li>Team Name: {{ registration.team_name }}</li>
-        <li>Team Leader: {{ team_leader.first_name }} {{ team_leader.last_name }}</li>
-        {% if team_members %}
         <li>Team Members:
             <ul>
             {% for member in team_members %}
-                {% if member.id != team_leader.id %}
-                <li>{{ member.first_name }} {{ member.last_name }}</li>
-                {% endif %}
+                <li>{{ member.full_name }}</li>
             {% endfor %}
             </ul>
         </li>
-        {% endif %}
     </ul>
     {% endif %}
     

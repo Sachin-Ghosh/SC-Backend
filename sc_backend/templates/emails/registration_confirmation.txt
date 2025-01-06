@@ -1,7 +1,7 @@
 Registration Confirmation
 
 {% if is_solo %}
-Dear {{ team_leader.first_name }},
+Dear {{ team_members.0.first_name }},
 
 Your registration for {{ event.name }} - {{ sub_event.name }} has been confirmed.
 
@@ -9,10 +9,10 @@ Registration Details:
 - Registration Number: {{ registration_number }}
 - Event: {{ event.name }}
 - Sub Event: {{ sub_event.name }}
-- Participant: {{ team_leader.first_name }} {{ team_leader.last_name }}
+- Participant: {{ team_members.0.full_name }}
 
 {% else %}
-Dear {{ team_leader.first_name }},
+Dear {{ team_members.0.first_name }},
 
 Your team's registration for {{ event.name }} - {{ sub_event.name }} has been confirmed.
 
@@ -21,12 +21,9 @@ Registration Details:
 - Event: {{ event.name }}
 - Sub Event: {{ sub_event.name }}
 - Team Name: {{ registration.team_name }}
-- Team Leader: {{ team_leader.first_name }} {{ team_leader.last_name }}
-{% if team_members %}
 - Team Members:
-{% for member in team_members %}{% if member.id != team_leader.id %}
-  * {{ member.first_name }} {{ member.last_name }}{% endif %}{% endfor %}
-{% endif %}
+{% for member in team_members %}  * {{ member.full_name }}
+{% endfor %}
 {% endif %}
 
 Event Details:
