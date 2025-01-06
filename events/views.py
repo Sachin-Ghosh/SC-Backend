@@ -500,6 +500,85 @@ class SubEventViewSet(viewsets.ModelViewSet):
             'images'
         )
 
+    def retrieve(self, request, *args, **kwargs):
+        """Get sub-event details by ID with optional filters"""
+        try:
+            sub_event = self.get_object()
+            
+            # Get query parameters for filtering
+            stage = request.query_params.get('stage')
+            status = request.query_params.get('status')
+            registration_open = request.query_params.get('registration_open')
+            has_results = request.query_params.get('has_results')
+            
+            # Get related data with filters
+            registrations = sub_event.eventregistration_set.all()
+            heats = sub_event.eventheat_set.all()
+            scores = sub_event.eventscore_set.all()
+            
+            # Apply filters
+            if stage:
+                registrations = registrations.filter(current_stage=stage)
+                heats = heats.filter(stage=stage)
+            
+            if status:
+                registrations = registrations.filter(status=status)
+                heats = heats.filter(status=status)
+            
+            if registration_open is not None:
+                registration_open = registration_open.lower() == 'true'
+                if not registration_open:
+                    registrations = registrations.none()
+            
+            # Get statistics
+            stats = {
+                'total_registrations': registrations.count(),
+                'total_participants': registrations.aggregate(
+                    total=Count('team_members') + Count('team_leader', distinct=True)
+                )['total'],
+                'total_heats': heats.count(),
+                'total_scores': scores.count(),
+                'registration_status': {
+                    'PENDING': registrations.filter(status='PENDING').count(),
+                    'APPROVED': registrations.filter(status='APPROVED').count(),
+                    'REJECTED': registrations.filter(status='REJECTED').count(),
+                },
+                'stage_counts': {
+                    stage: registrations.filter(current_stage=stage).count()
+                    for stage in sub_event.event.stages
+                } if sub_event.event else {}
+            }
+            
+            # Serialize sub-event data
+            serializer = self.get_serializer(sub_event)
+            data = serializer.data
+            
+            # Add additional data
+            data.update({
+                'statistics': stats,
+                'registrations': EventRegistrationSerializer(
+                    registrations.select_related('team_leader')
+                    .prefetch_related('team_members')[:10],  # Limit to 10 recent
+                    many=True
+                ).data,
+                'recent_heats': EventHeatSerializer(
+                    heats.order_by('-created_at')[:5],  # Last 5 heats
+                    many=True
+                ).data,
+                'recent_scores': EventScoreSerializer(
+                    scores.order_by('-created_at')[:5],  # Last 5 scores
+                    many=True
+                ).data
+            })
+            
+            return Response(data)
+            
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
     @action(detail=False, methods=['GET'])
     def filters(self, request):
         """Return all possible filter values"""

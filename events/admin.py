@@ -48,7 +48,7 @@ class SubEventAdmin(SummernoteModelAdmin):
 
     fieldsets = (
         ('Basic Information', {
-            'fields': ('event', 'name', 'slug', 'short_description', 'description')
+            'fields': ('event', 'name', 'slug', 'short_description', 'description', 'images')
         }),
         ('Event Details', {
             'fields': (
