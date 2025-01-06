@@ -16,6 +16,7 @@ from django.core.mail import send_mail
 import os
 from django.template.loader import render_to_string
 from django.utils import timezone
+from .utils import generate_name_from_email
 import random
 import string
 from django.db.models import Count
@@ -181,12 +182,18 @@ def register_user(request):
             return Response({
                 'error': 'User already exists with this email'
             }, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Generate first_name and last_name from email
+        first_name, last_name = generate_name_from_email(email)
+        
         
         # Create user and generate OTP
         try:
             user = User.objects.create(
                 email=email,
                 username=email.split('@')[0],
+                first_name=first_name,
+                last_name=last_name,
                 user_type=user_type,
                 department=department,
                 is_active=False

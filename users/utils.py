@@ -16,3 +16,9 @@ def generate_otp(user):
         fail_silently=False,
     )
     return otp
+
+def generate_name_from_email(email):
+    first_name = email.split('@')[0]
+    last_name = email.split('@')[1].split('.')[0]
+    return first_name, last_name    
+
