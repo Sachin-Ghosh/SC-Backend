@@ -413,7 +413,8 @@ class HeatParticipant(models.Model):
 class EventScore(models.Model):
     SCORE_TYPES = (
         ('WINNER', 'Winner'),
-        ('RUNNER_UP', 'Runner Up')
+        ('RUNNER_UP', 'Runner Up'),
+        ('PARTICIPANT', 'Participant')
     )
     
     sub_event = models.ForeignKey(SubEvent, on_delete=models.CASCADE)
@@ -458,18 +459,22 @@ class EventScore(models.Model):
     
     def _update_department_score(self):
         registration = self.event_registration
-        points = 5 if self.score_type == 'WINNER' else 3  # Example point values
+        # points = 2 if self.score_type == 'WINNER' else 1  # Example point values
         
         dept_score, created = DepartmentScore.objects.get_or_create(
-            department=registration.team_leader.department,
-            year=registration.team_leader.year_of_study,
-            division=registration.team_leader.division,
+            department=registration.department,
+            year=registration.year,
+            division=registration.division,
             sub_event=self.sub_event,
-            defaults={'points': points}
+            defaults={
+                    'total_score': self.total_score,
+                    # 'points': points,
+                    'updated_at': timezone.now()
+                }
         )
         
         if not created:
-            dept_score.points = points
+            # dept_score.points = points
             dept_score.save()
 
 class DepartmentScore(models.Model):
@@ -477,7 +482,8 @@ class DepartmentScore(models.Model):
     year = models.CharField(max_length=10)
     division = models.CharField(max_length=10)
     sub_event = models.ForeignKey(SubEvent, on_delete=models.CASCADE)
-    points = models.IntegerField(default=0)
+    # points = models.IntegerField(default=0)
+    total_score = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:

@@ -947,7 +947,7 @@ class SubEventViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
-    def round_participants(self, request, slug=None):
+    def round_participants(self, request, **kwargs):
         """Get participants for each round"""
         sub_event = self.get_object()
         round_number = request.query_params.get('round', sub_event.current_round)
@@ -956,7 +956,7 @@ class SubEventViewSet(viewsets.ModelViewSet):
             sub_event=sub_event,
             round_number=round_number
         ).prefetch_related(
-            'participants__team_leader',
+            'participants',
             'participants__team_members'
         )
 
@@ -966,17 +966,13 @@ class SubEventViewSet(viewsets.ModelViewSet):
             for registration in heat.participants.all():
                 participants.append({
                     'registration_id': registration.id,
-                    'team_leader': {
-                        'id': registration.team_leader.id,
-                        'name': f"{registration.team_leader.first_name} {registration.team_leader.last_name}",
-                        'email': registration.team_leader.email,
-                    },
                     'team_members': [{
                         'id': member.id,
                         'name': f"{member.first_name} {member.last_name}",
                         'email': member.email,
                     } for member in registration.team_members.all()],
-                    'scores': registration.scores.filter(
+                    'scores': EventScore.objects.filter(
+                        event_registration=registration,
                         round_number=round_number,
                         heat=heat
                     ).values('position', 'time_taken', 'total_score', 'qualified_for_next')
@@ -1055,8 +1051,8 @@ class SubEventViewSet(viewsets.ModelViewSet):
             
         return Response(EventRegistrationSerializer(registrations, many=True).data)
 
-    @action(detail=True, methods=['get'])
-    def scores(self, request, pk=None):
+    @action(detail=True, methods=['get'] , url_path='get-scores')
+    def get_scores(self, request, **kwargs):
         """Get scores for this sub-event"""
         sub_event = self.get_object()
         scores = EventScore.objects.filter(sub_event=sub_event)
@@ -1178,6 +1174,45 @@ class SubEventViewSet(viewsets.ModelViewSet):
         )
         
         return Response(EventRegistrationSerializer(available, many=True).data)
+    
+    @action(detail=True, methods=['get'])
+    def leaderboard(self, request, **kwargs):
+        """Get leaderboard for this sub-event"""
+        sub_event = self.get_object()
+        stage = request.query_params.get('stage')
+        round_number = request.query_params.get('round')
+        
+        scores = EventScore.objects.filter(
+            sub_event=sub_event,
+            stage=stage,
+            round_number=round_number
+        ).select_related('event_registration')
+        
+        # Group by registration and get highest score
+        rankings = {}
+        for score in scores:
+            reg_id = score.event_registration_id
+            if reg_id not in rankings or score.total_score > rankings[reg_id]['total_score']:
+                rankings[reg_id] = {
+                    'position': score.position,
+                    'registration_id': reg_id,
+                    'team_name': score.event_registration.team_name,
+                    'total_score': score.total_score,
+                    'qualified': score.qualified_for_next
+                }
+        
+        # Sort by total score
+        sorted_rankings = sorted(
+            rankings.values(),
+            key=lambda x: x['total_score'],
+            reverse=True
+        )
+        
+        return Response({
+            'stage': stage,
+            'round': round_number,
+            'rankings': sorted_rankings
+        })
 
 class EventHeatViewSet(viewsets.ModelViewSet):
     queryset = EventHeat.objects.all()
@@ -1751,6 +1786,13 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
 
         return Response(available_users, status=status.HTTP_200_OK)
     
+    @action(detail=True, methods=['get'] , url_path='scores')
+    def get_scores(self, request,pk=None, **kwargs):
+        registration = self.get_object() 
+        scores = EventScore.objects.filter(event_registration=registration)
+        return Response(EventScoreSerializer(scores, many=True).data)
+    
+    
     @action(detail=True, methods=['post'])
     def submit_files(self, request, pk=None):
         registration = self.get_object()
@@ -1842,6 +1884,54 @@ class EventScoreViewSet(viewsets.ModelViewSet):
             'heat'
         )
 
+    def update(self, request, *args, **kwargs):
+        score = self.get_object()
+        
+        # Update only allowed fields
+        score.total_score = request.data.get('total_score', score.total_score)
+        score.criteria_scores = request.data.get('criteria_scores', score.criteria_scores)
+        score.remarks = request.data.get('remarks', score.remarks)
+        score.qualified_for_next = request.data.get('qualified_for_next', score.qualified_for_next)
+        score.save()
+        
+        return Response(EventScoreSerializer(score).data)
+    @action(detail=False, methods=['post'])
+    def bulk_submit(self, request):
+        """Submit multiple scores at once"""
+        try:
+            sub_event = get_object_or_404(SubEvent, id=request.data.get('sub_event'))
+            heat = get_object_or_404(EventHeat, id=request.data.get('heat'))
+            stage = request.data.get('stage')
+            round_number = request.data.get('round_number')
+            
+            scores_data = request.data.get('scores', [])
+            created_scores = []
+            
+            for score_data in scores_data:
+                score = EventScore.objects.create(
+                    sub_event=sub_event,
+                    heat=heat,
+                    stage=stage,
+                    round_number=round_number,
+                    event_registration_id=score_data['registration'],
+                    judge=request.user,
+                    total_score=score_data['total_score'],
+                    criteria_scores=score_data.get('criteria_scores', {}),
+                    position=score_data.get('position'),
+                    qualified_for_next=score_data.get('qualified_for_next', False)
+                )
+                created_scores.append(score)
+            
+            return Response(
+                EventScoreSerializer(created_scores, many=True).data,
+                status=status.HTTP_201_CREATED
+            )
+            
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
     def perform_create(self, serializer):
         user = self.request.user
         sub_event = serializer.validated_data['sub_event']
@@ -1886,8 +1976,10 @@ class EventScoreViewSet(viewsets.ModelViewSet):
         serializer.save(judge=request.user, updated_by=request.user)
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'] , url_path='submit-score')
     def submit_score(self, request):
+        
+        sub_event = get_object_or_404(SubEvent, id=request.data.get('sub_event'))
         """
         Submit scores for a participant/team
         """
@@ -1903,12 +1995,13 @@ class EventScoreViewSet(viewsets.ModelViewSet):
 
         # Get or create score object
         score_data = {
-            'sub_event_id': sub_event_id,
-            'event_registration_id': registration_id,
-            'judge': request.user,
+            'sub_event': request.data.get('sub_event'),
+            'event_registration': request.data.get('registration'),  # Changed from registration to event_registration
+            'judge': request.user.id,  # Add judge ID explicitly
             'stage': request.data.get('stage'),
+            'score_type': request.data.get('score_type'),
             'round_number': request.data.get('round_number'),
-            'heat_id': request.data.get('heat'),
+            'heat': request.data.get('heat'),
             'total_score': request.data.get('total_score'),
             'criteria_scores': request.data.get('criteria_scores', {}),
             'position': request.data.get('position'),
@@ -1916,12 +2009,15 @@ class EventScoreViewSet(viewsets.ModelViewSet):
             'qualified_for_next': request.data.get('qualified_for_next', False)
         }
 
-        serializer = self.get_serializer(data=score_data)
+        serializer = EventScoreSerializer(
+            data=score_data,
+            context={'sub_event': sub_event, 'request': request}
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
     @action(detail=False, methods=['get'])
     def participant_scores(self, request):
         """
@@ -2123,13 +2219,13 @@ class ScoreboardViewSet(viewsets.ViewSet):
         total_scores = scores.values(
             'department', 'year', 'division'
         ).annotate(
-            total_points=Sum('points')
-        ).order_by('-total_points')
+            total_score=Sum('total_score')
+        ).order_by('-total_score')
         
         # Get detailed breakdown by sub_event
         detailed_scores = scores.values(
             'department', 'year', 'division',
-            'sub_event__name', 'points'
+            'sub_event__name', 'total_score'
         )
         
         # Structure the response
@@ -2145,18 +2241,18 @@ class ScoreboardViewSet(viewsets.ViewSet):
     
     def _get_department_rankings(self, scores):
         return scores.values('department').annotate(
-            total_points=Sum('points')
-        ).order_by('-total_points')
+            total_score=Sum('total_score')
+        ).order_by('-total_score')
     
     def _get_year_rankings(self, scores):
         return scores.values('year').annotate(
-            total_points=Sum('points')
-        ).order_by('-total_points')
+            total_score=Sum('total_score')
+        ).order_by('-total_score')
     
     def _get_division_rankings(self, scores):
         return scores.values('division').annotate(
-            total_points=Sum('points')
-        ).order_by('-total_points')
+            total_score=Sum('total_score')
+        ).order_by('-total_score')
 
     @action(detail=False, methods=['get'])
     def live_updates(self, request):
@@ -2170,7 +2266,7 @@ class ScoreboardViewSet(viewsets.ViewSet):
             'year': score.year,
             'division': score.division,
             'sub_event': score.sub_event.name,
-            'points': score.points,
+            'total_score': score.total_score,
             'updated_at': score.updated_at
         } for score in recent_scores])
         
@@ -2200,26 +2296,26 @@ class ScoreboardViewSet(viewsets.ViewSet):
 
             # Get summary statistics
             summary = {
-                'total_points': scores.aggregate(Sum('points'))['points__sum'] or 0,
+                'total_score': scores.aggregate(Sum('total_score'))['total_score__sum'] or 0,
                 'total_departments': scores.values('department').distinct().count(),
                 'total_sub_events': scores.values('sub_event').distinct().count()
             }
 
             # Get department-wise totals
             department_totals = scores.values('department').annotate(
-                total_points=Sum('points'),
+                total_score=Sum('total_score'),
                 sub_events_participated=Count('sub_event', distinct=True)
-            ).order_by('-total_points')
+            ).order_by('-total_score')
 
             # Get year-wise totals
             year_totals = scores.values('year').annotate(
-                total_points=Sum('points')
-            ).order_by('-total_points')
+                total_score=Sum('total_score')
+            ).order_by('-total_score')
 
             # Get division-wise totals
             division_totals = scores.values('division').annotate(
-                total_points=Sum('points')
-            ).order_by('-total_points')
+                total_score=Sum('total_score')
+            ).order_by('-total_score')
 
             # Get detailed sub-event scores
             sub_event_scores = {}
@@ -2227,7 +2323,7 @@ class ScoreboardViewSet(viewsets.ViewSet):
                 key = f"{score.year}_{score.department}_{score.division}"
                 if score.sub_event_id not in sub_event_scores:
                     sub_event_scores[score.sub_event_id] = {}
-                sub_event_scores[score.sub_event_id][key] = score.points
+                sub_event_scores[score.sub_event_id][key] = score.total_score
 
             return Response({
                 'summary': summary,
@@ -2250,9 +2346,9 @@ class ScoreboardViewSet(viewsets.ViewSet):
         scores = DepartmentScore.objects.filter(department=department)
         
         return Response({
-            'total_points': scores.aggregate(Sum('points'))['points__sum'] or 0,
+            'total_score': scores.aggregate(Sum('total_score'))['total_score__sum'] or 0,
             'sub_event_scores': list(scores.values(
-                'sub_event__name', 'points', 'year', 'division'
+                'sub_event__name', 'total_score', 'year', 'division'
             ))
         })
 
@@ -2276,9 +2372,9 @@ class ScoreboardViewSet(viewsets.ViewSet):
         )
 
         return Response({
-            'total_points': scores.aggregate(Sum('points'))['points__sum'] or 0,
+            'total_score': scores.aggregate(Sum('total_score'))['total_score__sum'] or 0,
             'sub_event_scores': list(scores.values(
-                'sub_event__name', 'points'
+                'sub_event__name', 'total_score'
             ))
         })
 
@@ -2297,8 +2393,8 @@ class ScoreboardViewSet(viewsets.ViewSet):
         return Response({
             'sub_event_details': SubEvent.objects.filter(id=sub_event_id).values().first(),
             'scores': list(scores.values(
-                'department', 'year', 'division', 'points'
-            ).order_by('-points'))
+                'department', 'year', 'division', 'total_score'
+            ).order_by('-total_score'))
         })
 
     @action(detail=False, methods=['GET'])
@@ -2308,15 +2404,15 @@ class ScoreboardViewSet(viewsets.ViewSet):
         
         # Get top departments
         top_departments = scores.values('department').annotate(
-            total_points=Sum('points')
-        ).order_by('-total_points')[:5]
+            total_score=Sum('total_score')
+        ).order_by('-total_score')[:5]
 
         # Get top classes
         top_classes = scores.values(
             'department', 'year', 'division'
         ).annotate(
-            total_points=Sum('points')
-        ).order_by('-total_points')[:5]
+            total_score=Sum('total_score')
+        ).order_by('-total_score')[:5]
 
         return Response({
             'top_departments': top_departments,
@@ -2370,7 +2466,7 @@ class ScoreboardViewSet(viewsets.ViewSet):
                         year=group['year'],
                         division=group['division']
                     ).first()
-                    row['scores'][key] = score.points if score else 0
+                    row['scores'][key] = score.total_score if score else 0
                 
                 matrix_data.append(row)
 
@@ -2382,7 +2478,7 @@ class ScoreboardViewSet(viewsets.ViewSet):
                     department=group['department'],
                     year=group['year'],
                     division=group['division']
-                ).aggregate(total=Sum('points'))['total'] or 0
+                ).aggregate(total=Sum('total_score'))['total'] or 0
                 column_totals[key] = total
 
             # Get top 3 class groups

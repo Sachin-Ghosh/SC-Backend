@@ -21,7 +21,7 @@
         </div>
         <div class="summary-card">
             <h3>Total Points Awarded</h3>
-            <div class="card-value">{{ total_points }}</div>
+            <div class="card-value">{{ total_score }}</div>
         </div>
     </div>
 
@@ -45,7 +45,7 @@
                         {% for group in class_groups %}
                         <td>
                             {% with score=scores|get_score:subevent.id|get_group_score:group %}
-                            {{ score|default:"-" }}
+                            {{ score }}
                             {% endwith %}
                         </td>
                         {% endfor %}
@@ -54,7 +54,7 @@
                     <tr class="total-row">
                         <td class="fixed-column"><strong>Total Points</strong></td>
                         {% for group in class_groups %}
-                        <td><strong>{{ group.total_points }}</strong></td>
+                        <td><strong>{{ group.total_score|floatformat:1 }}</strong></td>
                         {% endfor %}
                     </tr>
                 </tbody>
@@ -71,7 +71,7 @@
                 <div class="ranking-card {% if forloop.counter <= 3 %}top-{{ forloop.counter }}{% endif %}">
                     <div class="rank">#{{ forloop.counter }}</div>
                     <div class="dept-name">{{ dept.department }}</div>
-                    <div class="points">{{ dept.total_points }} pts</div>
+                    <div class="points">{{ dept.total_score }} pts</div>
                 </div>
                 {% endfor %}
             </div>

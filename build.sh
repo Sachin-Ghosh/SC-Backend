@@ -3,7 +3,7 @@
 set -o errexit
 
 echo "Installing system dependencies..."
-apt-get update && apt-get install -y python3-pip python3-dev
+apt-get update && apt-get install -y python3-pip python3-dev tesseract-ocr
 
 echo "Upgrading pip..."
 python -m pip install --upgrade pip

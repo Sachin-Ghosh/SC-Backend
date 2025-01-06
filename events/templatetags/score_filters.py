@@ -1,4 +1,5 @@
 from django import template
+from decimal import Decimal
 
 register = template.Library()
 
@@ -7,7 +8,7 @@ def get_score(scores_dict, subevent_id):
     """Get scores for a specific subevent"""
     if not scores_dict:
         return {}
-    return scores_dict.get(str(subevent_id), {})
+    return scores_dict.get(subevent_id, {})
 
 @register.filter
 def get_group_score(subevent_scores, group):
@@ -15,4 +16,5 @@ def get_group_score(subevent_scores, group):
     if not subevent_scores or not group:
         return '-'
     key = f"{group['year']}_{group['department']}_{group['division']}"
-    return subevent_scores.get(key, '-')
+    score = subevent_scores.get(key, 0)
+    return f"{score:.1f}" if score else '-'

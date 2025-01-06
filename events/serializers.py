@@ -156,37 +156,40 @@ class EventScoreSerializer(serializers.ModelSerializer):
         if obj.event_registration:
             if obj.event_registration.team_name:
                 return obj.event_registration.team_name
-            return obj.event_registration.team_leader.get_full_name()
+            # Get first team member's name
+            team_members = obj.event_registration.team_members.all()
+            if team_members.exists():
+                member = team_members.first()
+                return f"{member.first_name} {member.last_name}".strip()
         return None
 
     def get_sub_event_name(self, obj):
         return obj.sub_event.name if obj.sub_event else None
     
-    def validate_criteria_scores(self, value):
-        sub_event = self.instance.sub_event if self.instance else self.context.get('sub_event')
-        required_criteria = sub_event.scoring_criteria.keys()
+    # def validate_criteria_scores(self, value):
+    #     sub_event = self.instance.sub_event if self.instance else self.context.get('sub_event')
+    #     required_criteria = sub_event.scoring_criteria.keys()
         
-        if not all(criterion in value for criterion in required_criteria):
-            raise serializers.ValidationError(f"Must provide scores for all criteria: {', '.join(required_criteria)}")
+    #     if not all(criterion in value for criterion in required_criteria):
+    #         raise serializers.ValidationError(f"Must provide scores for all criteria: {', '.join(required_criteria)}")
         
-        return value
+    #     return value
     
     def create(self, validated_data):
         # Calculate total score based on criteria weights
-        sub_event = self.context['sub_event']
-        criteria_scores = validated_data['criteria_scores']
-        total_score = sum(
-            criteria_scores[criterion] * sub_event.scoring_criteria[criterion]['weight']
-            for criterion in criteria_scores
-        )
-        validated_data['total_score'] = total_score
+        criteria_scores = validated_data.get('criteria_scores', {})
+        sub_event = self.context.get('sub_event')
         
-        # Award points for group events if this is a winner
-        if (validated_data.get('score_type') == 'WINNER' and 
-            sub_event.participation_type == 'GROUP'):
-            validated_data['points_awarded'] = 2
+        if sub_event and criteria_scores:
+            total_score = sum(
+                criteria_scores.get(criterion, 0) * sub_event.scoring_criteria.get(criterion, {}).get('weight', 1)
+                for criterion in criteria_scores
+            )
+            validated_data['total_score'] = total_score
         
-        return super().create(validated_data)
+        # Create score instance
+        score = super().create(validated_data)
+        return score
 
 class EventHeatSerializer(serializers.ModelSerializer):
     participant_count = serializers.SerializerMethodField()

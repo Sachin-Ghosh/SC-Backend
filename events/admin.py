@@ -208,7 +208,7 @@ class HeatParticipantAdmin(admin.ModelAdmin):
 
 @admin.register(DepartmentScore)
 class DepartmentScoreAdmin(admin.ModelAdmin):
-    list_display = ('department', 'year', 'division', 'sub_event', 'points', 'updated_at')
+    list_display = ('department', 'year', 'division', 'sub_event', 'total_score', 'updated_at')
     list_filter = ('department', 'year', 'division', 'sub_event__event')
     search_fields = ('department', 'sub_event__name')
     readonly_fields = ('updated_at',)
@@ -227,7 +227,7 @@ class DepartmentScoreAdmin(admin.ModelAdmin):
             class_groups = qs.values(
                 'year', 'department', 'division'
             ).annotate(
-                total_points=Sum('points')
+                total_score=Sum('total_score')
             ).order_by('department', 'year', 'division')
             
             # Get scores matrix
@@ -236,13 +236,24 @@ class DepartmentScoreAdmin(admin.ModelAdmin):
                 if score.sub_event_id not in scores:
                     scores[score.sub_event_id] = {}
                 key = f"{score.year}_{score.department}_{score.division}"
-                scores[score.sub_event_id][key] = score.points
+                scores[score.sub_event_id][key] = score.total_score
             
+            # Calculate totals for each group
+            for group in class_groups:
+                total = 0
+                for sub_event_id in scores:
+                    key = f"{group['year']}_{group['department']}_{group['division']}"
+                    total += scores[sub_event_id].get(key, 0)
+                group['total_score'] = total
+                
             extra_context = {
                 'sub_events': sub_events,
                 'class_groups': class_groups,
                 'scores': scores,
-                'total_points': qs.aggregate(Sum('points'))['points__sum'] or 0,
+                'total_score': sum(score.total_score for score in qs),
+                'department_totals': qs.values('department').annotate(
+                    total_score=Sum('total_score')
+                ).order_by('-total_score')
             }
             response.context_data.update(extra_context)
         except:
@@ -280,25 +291,25 @@ class ScoreboardAdmin(admin.ModelAdmin):
         
         # Department-wise totals
         department_totals = scores.values('department').annotate(
-            total_points=Sum('points')
-        ).order_by('-total_points')
+            total_score=Sum('total_score')
+        ).order_by('-total_score')
         
         # Year-wise totals
         year_totals = scores.values('year').annotate(
-            total_points=Sum('points')
-        ).order_by('-total_points')
+            total_score=Sum('total_score')
+        ).order_by('-total_score')
         
         # Division-wise totals
         division_totals = scores.values('division').annotate(
-            total_points=Sum('points')
-        ).order_by('-total_points')
+            total_score=Sum('total_score')
+        ).order_by('-total_score')
         
         # Combined totals
         combined_totals = scores.values(
             'department', 'year', 'division'
         ).annotate(
-            total_points=Sum('points')
-        ).order_by('-total_points')
+            total_score=Sum('total_score')
+        ).order_by('-total_score')
         
         extra_context = {
             'department_totals': department_totals,
