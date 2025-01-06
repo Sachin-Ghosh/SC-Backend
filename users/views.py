@@ -24,6 +24,9 @@ from django.contrib.auth import logout
 from django.db.models import Q
 from datetime import datetime, timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
+from PIL import Image
+import pytesseract
+import re
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -79,6 +82,24 @@ def send_registration_email(user, otp):
     except Exception as e:
         print(f"Email sending failed: {str(e)}")
         return False
+    
+def verify_college_id(image_file):
+    try:
+        image = Image.open(image_file)
+        text = pytesseract.image_to_string(image)
+        college_name_pattern = r"Universal College of Engineering"  # For time being Just using the college name later we can add more steps        
+        has_college_name = bool(re.search(college_name_pattern, text, re.IGNORECASE))
+        
+        # print("Extracted Text:", text)
+        # print("College Name Found:", has_college_name)
+        
+        if has_college_name:
+            return True, "Valid college ID card"
+        else:
+            return False, "Invalid college ID card"
+            
+    except Exception as e:
+        return False, f"Error processing image: {str(e)}"
 # @api_view(['POST'])
 # @permission_classes([permissions.AllowAny])
 # def register_user(request):
@@ -788,20 +809,18 @@ def faculty_by_subject(request, subject):
     return Response({'faculty': serializer.data})
 
 @api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-def verify_id_card(request, user_id):
-    if not request.user.user_type in ['ADMIN', 'FACULTY']:
-        return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+@permission_classes([permissions.AllowAny])
+def verify_id_card(request):
+    if 'id_card_document' not in request.FILES:
+        return Response({'error': 'No ID card document provided'}, status=status.HTTP_400_BAD_REQUEST)
     
-    try:
-        user = User.objects.get(id=user_id)
-        if not user.id_card_document:
-            return Response({'error': 'No ID card document found'}, status=status.HTTP_404_NOT_FOUND)
-        
-        # Add verification logic here
-        return Response({'message': 'ID card verified successfully'})
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    id_card = request.FILES['id_card_document']
+    is_valid, message = verify_college_id(id_card)
+    
+    return Response({
+        'is_valid': is_valid,
+        'message': message
+    }, status=status.HTTP_200_OK if is_valid else status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])

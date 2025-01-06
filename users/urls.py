@@ -47,7 +47,7 @@ urlpatterns = [
     
     # ID Card Management
     path('view-id-card/<int:user_id>/', views.view_id_card, name='view-id-card'),
-    path('verify-id-card/<int:user_id>/', views.verify_id_card, name='verify-id-card'),
+    path('verify-id-card/', views.verify_id_card, name='verify-id-card'),
     
     # Statistics and Reports
     path('stats/users-summary/', views.users_summary, name='users-summary'),
