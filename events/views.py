@@ -1376,102 +1376,102 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(registration)
         return Response(serializer.data)
 
-    # def create(self, request, *args, **kwargs):
-    #     sub_event = get_object_or_404(SubEvent, id=request.data.get('sub_event'))
-        
-    #     # Validate registration window
-    #     if not self._validate_registration_window(sub_event):
-    #         return Response({"error": "Registration is not open"}, status=400)
-        
-        
-    #     # Validate gender restrictions
-    #     if not self._validate_gender_participation(request.user, sub_event):
-    #         return Response(
-    #             {"error": f"This event is restricted to {sub_event.get_gender_participation_display()} participants"}, 
-    #             status=400
-    #         )
-
-    #     # Prepare registration data
-    #     registration_data = request.data.copy()
-        
-    #     if sub_event.participation_type == 'SOLO':
-    #         # Solo event: only one participant, no team leader or team name
-    #         registration_data.pop('team_leader', None)
-    #         registration_data.pop('team_name', None)
-    #         registration_data.pop('team_members', None)  # Will add current user later
-    #     else:
-    #         # Team event: requires team name and optionally team members
-    #         if not registration_data.get('team_name'):
-    #             return Response({"error": "Team name is required"}, status=400)
-    #         registration_data['team_leader'] = request.user.id
-
-    #     # Create registration
-    #     serializer = self.get_serializer(data=registration_data)
-    #     serializer.is_valid(raise_exception=True)
-    #     registration = serializer.save()
-
-    #     # Add participants
-    #     if sub_event.participation_type == 'SOLO':
-    #         registration.team_members.add(request.user)
-    #     else:
-    #         # Add team leader and members
-    #         registration.team_members.add(request.user)
-    #         team_members = registration_data.get('team_members', [])
-    #         if team_members:
-    #             registration.team_members.add(*team_members)
-
-    #     # Send confirmation email
-    #     try:
-    #         self._send_registration_email(registration)
-    #     except Exception as e:
-    #         print(f"Failed to send confirmation email: {str(e)}")
-
-    #     return Response(serializer.data, status=201)
-
     def create(self, request, *args, **kwargs):
-        """Create registration with current user as team leader"""
-        try:
-            # Get the sub_event and validate it exists
-            sub_event = get_object_or_404(SubEvent, id=request.data.get('sub_event'))
-            
-            # Create registration data
-            registration_data = {
-                'sub_event_id': sub_event.id,
-                'team_leader_id': request.user.id,  # Set team leader ID explicitly
-                'department': request.data.get('department'),
-                'year': request.data.get('year'),
-                'division': request.data.get('division'),
-                'team_name': request.data.get('team_name'),
-                'current_stage': 'REGISTRATION',
-                'status': 'PENDING'
-            }
-            
-            # Create registration
-            registration = EventRegistration.objects.create(**registration_data)
-            
-            # Handle team members based on event type
-            if sub_event.participation_type == 'SOLO':
-                # For solo events, don't add any team members
-                pass
-            elif sub_event.participation_type == 'TEAM':
-                # For team events, add team members if provided
-                team_members = request.data.get('team_members', [])
-                if team_members:
-                    registration.team_members.set(team_members)
-            
-            # Refresh and serialize
-            registration.refresh_from_db()
-            serializer = self.get_serializer(registration)
-            
+        sub_event = get_object_or_404(SubEvent, id=request.data.get('sub_event'))
+        
+        # Validate registration window
+        if not self._validate_registration_window(sub_event):
+            return Response({"error": "Registration is not open"}, status=400)
+        
+        
+        # Validate gender restrictions
+        if not self._validate_gender_participation(request.user, sub_event):
             return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED
+                {"error": f"This event is restricted to {sub_event.get_gender_participation_display()} participants"}, 
+                status=400
             )
-            
+
+        # Prepare registration data
+        registration_data = request.data.copy()
+        
+        if sub_event.participation_type == 'SOLO':
+            # Solo event: only one participant, no team leader or team name
+            registration_data.pop('team_leader', None)
+            registration_data.pop('team_name', None)
+            registration_data.pop('team_members', None)  # Will add current user later
+        else:
+            # Team event: requires team name and optionally team members
+            if not registration_data.get('team_name'):
+                return Response({"error": "Team name is required"}, status=400)
+            registration_data['team_leader'] = request.user.id
+
+        # Create registration
+        serializer = self.get_serializer(data=registration_data)
+        serializer.is_valid(raise_exception=True)
+        registration = serializer.save()
+
+        # Add participants
+        if sub_event.participation_type == 'SOLO':
+            registration.team_members.add(request.user)
+        else:
+            # Add team leader and members
+            registration.team_members.add(request.user)
+            team_members = registration_data.get('team_members', [])
+            if team_members:
+                registration.team_members.add(*team_members)
+
+        # Send confirmation email
+        try:
+            self._send_registration_email(registration)
         except Exception as e:
-            return Response({
-                'error': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
+            print(f"Failed to send confirmation email: {str(e)}")
+
+        return Response(serializer.data, status=201)
+
+    # def create(self, request, *args, **kwargs):
+    #     """Create registration with current user as team leader"""
+    #     try:
+    #         # Get the sub_event and validate it exists
+    #         sub_event = get_object_or_404(SubEvent, id=request.data.get('sub_event'))
+            
+    #         # Create registration data
+    #         registration_data = {
+    #             'sub_event_id': sub_event.id,
+    #             'team_leader_id': request.user.id,  # Set team leader ID explicitly
+    #             'department': request.data.get('department'),
+    #             'year': request.data.get('year'),
+    #             'division': request.data.get('division'),
+    #             'team_name': request.data.get('team_name'),
+    #             'current_stage': 'REGISTRATION',
+    #             'status': 'PENDING'
+    #         }
+            
+    #         # Create registration
+    #         registration = EventRegistration.objects.create(**registration_data)
+            
+    #         # Handle team members based on event type
+    #         if sub_event.participation_type == 'SOLO':
+    #             # For solo events, don't add any team members
+    #             pass
+    #         elif sub_event.participation_type == 'TEAM':
+    #             # For team events, add team members if provided
+    #             team_members = request.data.get('team_members', [])
+    #             if team_members:
+    #                 registration.team_members.set(team_members)
+            
+    #         # Refresh and serialize
+    #         registration.refresh_from_db()
+    #         serializer = self.get_serializer(registration)
+            
+    #         return Response(
+    #             serializer.data,
+    #             status=status.HTTP_201_CREATED
+    #         )
+            
+    #     except Exception as e:
+    #         return Response({
+    #             'error': str(e)
+    #         }, status=status.HTTP_400_BAD_REQUEST)
         
     def _validate_registration_window(self, sub_event):
         current_time = timezone.now()
