@@ -545,7 +545,7 @@ class SubEventViewSet(viewsets.ModelViewSet):
                 },
                 'stage_counts': {
                     stage: registrations.filter(current_stage=stage).count()
-                    for stage in sub_event.event.stages
+                    # for stage in sub_event.stages
                 } if sub_event.event else {}
             }
             

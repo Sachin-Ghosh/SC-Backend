@@ -42,15 +42,18 @@ class Event(models.Model):
     collaborating_organizations = models.ManyToManyField(Organization, blank=True)
     chairpersons = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
-        related_name='chaired_events'
+        related_name='chaired_events',
+        blank=True
     )
     vice_chairpersons = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
-        related_name='vice_chaired_events'
+        related_name='vice_chaired_events',
+        blank=True
     )
     event_heads = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
-        related_name='headed_events'
+        related_name='headed_events',
+        blank=True
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
