@@ -14,6 +14,7 @@ pip install numpy
 
 # Install Leptonica first
 echo "Installing Leptonica..."
+rm -rf leptonica  # Remove if exists
 git clone --depth 1 https://github.com/DanBloomberg/leptonica.git
 cd leptonica
 ./autogen.sh
@@ -26,6 +27,7 @@ cd ..
 
 # Clone Tesseract repository
 echo "Cloning Tesseract repository..."
+rm -rf tesseract  # Remove if exists
 git clone --depth 1 https://github.com/tesseract-ocr/tesseract.git
 cd tesseract
 
@@ -42,6 +44,7 @@ export PATH="$HOME/local/bin:$PATH"
 # Download English language data
 echo "Downloading language data..."
 cd $HOME/tesseract
+rm -rf tessdata  # Remove if exists
 git clone --depth 1 https://github.com/tesseract-ocr/tessdata.git
 export TESSDATA_PREFIX="$HOME/tesseract/tessdata"
 
