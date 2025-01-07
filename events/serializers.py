@@ -36,7 +36,8 @@ class SubEventFacultySerializer(serializers.ModelSerializer):
     faculty_name = serializers.SerializerMethodField()
     faculty_email = serializers.EmailField(source='faculty.email', read_only=True)
     
-    
+    faculty = UserSerializer(read_only=True)  # Add this line
+
 
     class Meta:
         model = SubEventFaculty
@@ -44,7 +45,17 @@ class SubEventFacultySerializer(serializers.ModelSerializer):
         read_only_fields = ['assigned_at']
 
     def get_faculty_name(self, obj):
-        return obj.faculty.get_full_name()
+        try:
+            return f"{obj.faculty.first_name} {obj.faculty.last_name}".strip()
+        except:
+            return "Unknown Faculty"
+
+    def get_faculty_email(self, obj):
+        try:
+            return obj.faculty.email
+        except:
+            return None
+
     
 class SubEventSerializer(serializers.ModelSerializer):
     images = SubEventImageSerializer(many=True, read_only=True)
@@ -54,11 +65,12 @@ class SubEventSerializer(serializers.ModelSerializer):
     prize_pool_description = serializers.CharField(style={'base_template': 'textarea.html'})
     format_description = serializers.CharField(style={'base_template': 'textarea.html'})
     rules = serializers.CharField(style={'base_template': 'textarea.html'})
-    faculty_judges = SubEventFacultySerializer(many=True, read_only=True)
+    faculty_judges = SubEventFacultySerializer(source='subeventfaculty_set',many=True, read_only=True)
     class Meta:
         model = SubEvent
         fields = '__all__'
         read_only_fields = ('slug',)
+        
 
 class SubmissionFileSerializer(serializers.ModelSerializer):
     class Meta:
