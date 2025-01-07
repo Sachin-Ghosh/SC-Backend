@@ -31,10 +31,14 @@ services:
         value: ghoshsachin2301@gmail.com  # Change this
       - key: DJANGO_SUPERUSER_PASSWORD
         generateValue: true
-    plan: free
+    buildFilter:
+      paths:
+        - requirements.txt
+        - build.sh
+        - sc_backend/**
     preInstallCommand: |
-      # Install system dependencies
-      apt-get update -y && apt-get install -y tesseract-ocr tesseract-ocr-eng
+      apt-get update -y
+      apt-get install -y tesseract-ocr tesseract-ocr-eng
     healthCheckPath: /admin/
     autoDeploy: false
 
