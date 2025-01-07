@@ -9,12 +9,15 @@
     
     <p>Your registration for {{ event.name }} - {{ sub_event.name }} has been confirmed.</p>
     
-    <p>Registration Details:</p>
+    <p><strong>Registration Details:</strong></p>
     <ul>
         <li>Registration Number: {{ registration_number }}</li>
         <li>Event: {{ event.name }}</li>
         <li>Sub Event: {{ sub_event.name }}</li>
         <li>Participant: {{ team_members.0.full_name }}</li>
+        <li>Department: {{ team_members.0.department }}</li>
+        <li>Year: {{ team_members.0.year_of_study }}</li>
+        <li>Division: {{ team_members.0.division }}</li>
     </ul>
 
     {% else %}
@@ -23,28 +26,29 @@
     
     <p>Your team's registration for {{ event.name }} - {{ sub_event.name }} has been confirmed.</p>
     
-    <p>Registration Details:</p>
+    <p><strong>Registration Details:</strong></p>
     <ul>
         <li>Registration Number: {{ registration_number }}</li>
         <li>Event: {{ event.name }}</li>
         <li>Sub Event: {{ sub_event.name }}</li>
-        <li>Team Name: {{ registration.team_name }}</li>
-        <li>Team Members:
-            <ul>
-            {% for member in team_members %}
-                <li>{{ member.full_name }}</li>
-            {% endfor %}
-            </ul>
-        </li>
+        {% if team_name %}
+        <li>Team Name: {{ team_name }}</li>
+        {% endif %}
+        <li><strong>Team Members:</strong></li>
+        <ul>
+        {% for member in team_members %}
+            <li>{{ member.full_name }} ({{ member.department }} - {{ member.year_of_study }} {{ member.division }})</li>
+        {% endfor %}
+        </ul>
     </ul>
     {% endif %}
     
-    <p>Event Details:</p>
+    <p><strong>Event Details:</strong></p>
     <ul>
-        <li>Date: {{ sub_event.date }}</li>
+        <li>Date: {{ sub_event.date|date:"M. d, Y" }}</li>
         <li>Venue: {{ sub_event.venue }}</li>
         {% if sub_event.reporting_time %}
-        <li>Reporting Time: {{ sub_event.reporting_time }}</li>
+        <li>Reporting Time: {{ sub_event.reporting_time|time:"g:i a" }}</li>
         {% endif %}
     </ul>
     
@@ -52,4 +56,4 @@
     
     <p>Best regards,<br>Student Council Team</p>
 </body>
-</html> 
+</html>

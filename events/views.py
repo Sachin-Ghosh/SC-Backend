@@ -1479,7 +1479,7 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
 
         # Send confirmation email
         try:
-            self._send_registration_email(registration)
+            self._send_registration_email(registration , sub_event )
         except Exception as e:
             print(f"Failed to send confirmation email: {str(e)}")
 
@@ -1606,11 +1606,27 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
             return False
         return sub_event.registration_start_time <= current_time <= sub_event.registration_end_time
 
-    def _send_registration_email(self, registration):
+    def _send_registration_email(self, registration , sub_event ):
+        
+        team_members = registration.team_members.all().select_related('department').values(
+            'id',
+            'first_name',
+            'last_name',
+            'email',
+            'department',
+            'year_of_study',
+            'division'
+        )
+        
+        # Add full name to each member
+        for member in team_members:
+            member['full_name'] = f"{member['first_name']} {member['last_name']}"
+
         context = {
             'registration': registration,
             'event': registration.sub_event.event,
             'sub_event': registration.sub_event,
+            'team_members': team_members,
             'is_solo': registration.sub_event.participation_type == 'SOLO',
             'registration_number': registration.registration_number,
             'primary_contact': registration.get_primary_contact(),

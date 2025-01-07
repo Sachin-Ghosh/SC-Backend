@@ -9,7 +9,7 @@ Registration Details:
 - Registration Number: {{ registration_number }}
 - Event: {{ event.name }}
 - Sub Event: {{ sub_event.name }}
-- Participant: {{ team_members.0.full_name }}
+- Participant: {{ team_members.0.full_name }} ({{ team_members.0.department }} - {{ team_members.0.year_of_study }} {{ team_members.0.division }})
 
 {% else %}
 Dear {{ team_members.0.first_name }},
@@ -22,7 +22,7 @@ Registration Details:
 - Sub Event: {{ sub_event.name }}
 - Team Name: {{ registration.team_name }}
 - Team Members:
-{% for member in team_members %}  * {{ member.full_name }}
+{% for member in team_members %}  * {{ member.full_name }} ({{ member.department }} - {{ member.year_of_study }} {{ member.division }})
 {% endfor %}
 {% endif %}
 
