@@ -2,10 +2,10 @@
 # exit on error
 set -o errexit
 
-# Install system dependencies with sudo
+# Install system dependencies without sudo
 echo "Installing system dependencies..."
-sudo apt-get update
-sudo apt-get install -y \
+apt-get update
+apt-get install -y \
     python3-pip \
     python3-dev \
     tesseract-ocr \
