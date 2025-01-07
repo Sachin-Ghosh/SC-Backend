@@ -2,17 +2,40 @@
 # exit on error
 set -o errexit
 
-# Add Tesseract repository
-echo "Adding Tesseract repository..."
-add-apt-repository -y ppa:alex-p/tesseract-ocr
+# Create directories
+echo "Creating directories..."
+mkdir -p $HOME/tesseract
+cd $HOME/tesseract
 
-# Update package lists
-echo "Updating package lists..."
-apt-get update
+# Clone Tesseract repository
+echo "Cloning Tesseract repository..."
+git clone --depth 1 https://github.com/tesseract-ocr/tesseract.git
+cd tesseract
 
-# Install Tesseract
-echo "Installing Tesseract..."
-apt-get install -y tesseract-ocr tesseract-ocr-eng
+# Install build dependencies
+echo "Installing build dependencies..."
+pip install Cython
+pip install numpy
+
+# Build and install Tesseract
+echo "Building Tesseract..."
+./autogen.sh
+./configure --prefix=$HOME/local/
+make
+make install
+
+# Add Tesseract to PATH
+export PATH="$HOME/local/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/local/lib:$LD_LIBRARY_PATH"
+
+# Download English language data
+echo "Downloading language data..."
+cd $HOME/tesseract
+git clone --depth 1 https://github.com/tesseract-ocr/tessdata.git
+export TESSDATA_PREFIX="$HOME/tesseract/tessdata"
+
+# Return to original directory
+cd -
 
 # Print tesseract version if available
 if command -v tesseract &> /dev/null; then
@@ -61,3 +84,10 @@ echo "Pip Version: $(pip --version)"
 # Print installed packages
 echo "Installed packages:"
 pip list
+
+# Update settings with Tesseract path
+echo "
+# Tesseract Configuration
+TESSERACT_CMD = '$HOME/local/bin/tesseract'
+TESSDATA_PREFIX = '$HOME/tesseract/tessdata'
+" >> sc_backend/settings.py

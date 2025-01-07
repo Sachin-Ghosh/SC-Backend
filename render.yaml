@@ -31,14 +31,22 @@ services:
         value: ghoshsachin2301@gmail.com  # Change this
       - key: DJANGO_SUPERUSER_PASSWORD
         generateValue: true
+    packages:
+      - autoconf
+      - automake
+      - libtool
+      - pkg-config
+      - libpng-dev
+      - libjpeg-dev
+      - libtiff-dev
+      - zlib1g-dev
+      - libleptonica-dev
+      - git
     buildFilter:
       paths:
         - requirements.txt
         - build.sh
         - sc_backend/**
-    packages:
-      - tesseract-ocr
-      - tesseract-ocr-eng
     healthCheckPath: /admin/
     autoDeploy: false
 
