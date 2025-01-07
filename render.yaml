@@ -22,7 +22,7 @@ services:
       - key: DEBUG
         value: false
       - key: ALLOWED_HOSTS
-        value: "student-council-backend.onrender.com,localhost,aurora.ucoe.co.in127.0.0.1"
+        value: "student-council-backend.onrender.com,localhost,aurora.ucoe.co.in,127.0.0.1"
       - key: RENDER_EXTERNAL_URL
         value: "https://student-council-backend.onrender.com"
       - key: DJANGO_SUPERUSER_USERNAME
@@ -30,14 +30,16 @@ services:
       - key: DJANGO_SUPERUSER_EMAIL
         value: ghoshsachin2301@gmail.com  # Change this
       - key: DJANGO_SUPERUSER_PASSWORD
-        generateValue: true  # This will generate a secure random password
-    healthCheckPath: /admin/
-    autoDeploy: false
+        generateValue: true
     packages:
       - tesseract-ocr
       - tesseract-ocr-eng
       - libtesseract-dev
       - libleptonica-dev
+      - pkg-config
+      - gcc
+    healthCheckPath: /admin/
+    autoDeploy: false
 
 databases:
   - name: student-council-db
