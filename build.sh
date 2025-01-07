@@ -7,26 +7,37 @@ echo "Creating directories..."
 mkdir -p $HOME/tesseract
 cd $HOME/tesseract
 
-# Clone Tesseract repository
-echo "Cloning Tesseract repository..."
-git clone --depth 1 https://github.com/tesseract-ocr/tesseract.git
-cd tesseract
-
 # Install build dependencies
 echo "Installing build dependencies..."
 pip install Cython
 pip install numpy
 
+# Install Leptonica first
+echo "Installing Leptonica..."
+git clone --depth 1 https://github.com/DanBloomberg/leptonica.git
+cd leptonica
+./autogen.sh
+./configure --prefix=$HOME/local/
+make
+make install
+export PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig:$PKG_CONFIG_PATH
+export LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH
+cd ..
+
+# Clone Tesseract repository
+echo "Cloning Tesseract repository..."
+git clone --depth 1 https://github.com/tesseract-ocr/tesseract.git
+cd tesseract
+
 # Build and install Tesseract
 echo "Building Tesseract..."
 ./autogen.sh
-./configure --prefix=$HOME/local/
+./configure --prefix=$HOME/local/ LIBLEPT_HEADERSDIR=$HOME/local/include/
 make
 make install
 
 # Add Tesseract to PATH
 export PATH="$HOME/local/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/local/lib:$LD_LIBRARY_PATH"
 
 # Download English language data
 echo "Downloading language data..."
