@@ -2,9 +2,6 @@
 # exit on error
 set -o errexit
 
-echo "Installing system dependencies..."
-apt-get update && apt-get install -y python3-pip python3-dev tesseract-ocr
-
 # Print tesseract version if available
 if command -v tesseract &> /dev/null; then
     echo "Tesseract is installed:"

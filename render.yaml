@@ -36,9 +36,9 @@ services:
         - requirements.txt
         - build.sh
         - sc_backend/**
-    preInstallCommand: |
-      apt-get update -y
-      apt-get install -y tesseract-ocr tesseract-ocr-eng
+    packages:
+      - tesseract-ocr
+      - tesseract-ocr-eng
     healthCheckPath: /admin/
     autoDeploy: false
 
