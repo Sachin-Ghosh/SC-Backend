@@ -40,6 +40,7 @@ ALLOWED_HOSTS = [
     'student-council-backend.onrender.com',  # Your Render domain
     'localhost',
     '127.0.0.1',
+    'aurora.ucoe.co.in',
     '*',  # Temporarily allow all hosts for testing
 ]
 
@@ -51,6 +52,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://student-council-backend.onrender.com",
+    "https://aurora.ucoe.co.in",
 ]
 
 # Application definition

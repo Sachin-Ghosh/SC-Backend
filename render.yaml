@@ -22,7 +22,7 @@ services:
       - key: DEBUG
         value: false
       - key: ALLOWED_HOSTS
-        value: "student-council-backend.onrender.com,localhost,127.0.0.1"
+        value: "student-council-backend.onrender.com,localhost,aurora.ucoe.co.in127.0.0.1"
       - key: RENDER_EXTERNAL_URL
         value: "https://student-council-backend.onrender.com"
       - key: DJANGO_SUPERUSER_USERNAME
