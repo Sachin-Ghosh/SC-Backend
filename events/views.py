@@ -1707,6 +1707,36 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
             "updated_at": timezone.now()
         })
 
+
+    @action(detail=False, methods=['get'])
+    def sub_event_registrations(self, request):
+        """Get registrations for a specific sub-event with filters"""
+        sub_event_id = request.query_params.get('sub_event_id')  # Get sub_event_id from query params
+        department = request.query_params.get('department')
+        year = request.query_params.get('year')
+        division = request.query_params.get('division')
+        status = request.query_params.get('status')  # e.g., 'PENDING', 'CONFIRMED'
+
+        if not sub_event_id:
+            return Response({'error': 'sub_event_id is required'}, status=400)
+
+        # Filter registrations based on the provided parameters
+        registrations = EventRegistration.objects.filter(sub_event_id=sub_event_id)
+
+        if department:
+            registrations = registrations.filter(department=department)
+        if year:
+            registrations = registrations.filter(year=year)
+        if division:
+            registrations = registrations.filter(division=division)
+        if status:
+            registrations = registrations.filter(status=status)
+
+        # Serialize the data (assuming you have a serializer for EventRegistration)
+        serializer = EventRegistrationSerializer(registrations, many=True)
+
+        return Response(serializer.data)
+    
     @action(detail=True, methods=['POST'])
     def reject(self, request, pk=None):
         """
