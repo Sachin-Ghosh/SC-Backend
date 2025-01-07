@@ -33,6 +33,11 @@ services:
         generateValue: true  # This will generate a secure random password
     healthCheckPath: /admin/
     autoDeploy: false
+    packages:
+      - tesseract-ocr
+      - tesseract-ocr-eng
+      - libtesseract-dev
+      - libleptonica-dev
 
 databases:
   - name: student-council-db

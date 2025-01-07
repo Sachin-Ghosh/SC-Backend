@@ -2,36 +2,45 @@
 # exit on error
 set -o errexit
 
+# Install system dependencies with sudo
 echo "Installing system dependencies..."
-apt-get update && apt-get install -y \
+sudo apt-get update
+sudo apt-get install -y \
     python3-pip \
     python3-dev \
     tesseract-ocr \
-    tesseract-ocr-eng \  # Add English language data
-    libtesseract-dev \   # Development files
-    libleptonica-dev \   # Required for tesseract
-    pkg-config \         # Required for building
-    gcc                  # Required for building
+    tesseract-ocr-eng \
+    libtesseract-dev \
+    libleptonica-dev \
+    pkg-config \
+    gcc
 
+# Verify Tesseract installation
 echo "Verifying Tesseract installation..."
 tesseract --version
 which tesseract
 
+# Upgrade pip
 echo "Upgrading pip..."
 python -m pip install --upgrade pip
 
+# Install Python dependencies
 echo "Installing Python dependencies..."
 pip install -r requirements.txt
 
+# Install gunicorn
 echo "Installing gunicorn..."
 pip install gunicorn
 
+# Collect static files
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
+# Run migrations
 echo "Running migrations..."
 python manage.py migrate --no-input
 
+# Create superuser if none exists
 echo "Creating superuser if none exists..."
 python manage.py create_superuser_if_none_exists
 
