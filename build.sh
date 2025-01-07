@@ -64,6 +64,22 @@ fi
 echo "Upgrading pip..."
 python -m pip install --upgrade pip
 
+# Create requirements.txt if it doesn't exist
+if [ ! -f requirements.txt ]; then
+    echo "Creating requirements.txt..."
+    cat > requirements.txt << EOL
+django>=4.2.0
+djangorestframework>=3.14.0
+django-cors-headers>=4.3.0
+pillow>=10.0.0
+pytesseract>=0.3.10
+python-dotenv>=1.0.0
+gunicorn>=21.2.0
+psycopg2-binary>=2.9.9
+whitenoise>=6.6.0
+EOL
+fi
+
 # Install Python dependencies
 echo "Installing Python dependencies..."
 pip install -r requirements.txt
