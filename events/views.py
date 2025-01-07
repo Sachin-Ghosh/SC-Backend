@@ -7,7 +7,7 @@ from rest_framework import status
 from django.db import models 
 from django.shortcuts import get_object_or_404
 from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage, EventHeat , SubmissionFile , User, SubEventFaculty, DepartmentScore, HeatParticipant
-from .serializers import EventSerializer, SubEventSerializer, EventRegistrationSerializer, EventScoreSerializer, EventDrawSerializer , OrganizationSerializer , SubEventImageSerializer, EventHeatSerializer, SubEventFacultySerializer, HeatParticipantSerializer
+from .serializers import EventSerializer, SubEventSerializer, EventRegistrationSerializer, EventScoreSerializer, EventDrawSerializer , OrganizationSerializer , SubEventImageSerializer, EventHeatSerializer, SubEventFacultySerializer, HeatParticipantSerializer, EventScoreSerializer , UserSerializer
 from rest_framework import viewsets, status     
 from django.db.models import Q, Count, Avg, Sum
 from django.core.mail import send_mail
@@ -1127,7 +1127,29 @@ class SubEventViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Heat not found'}, status=404)
         except Exception as e:
             return Response({'error': str(e)}, status=400)
-
+        
+    @action(detail=True, methods=['get'] , url_path='assigned-faculty')
+    def assigned_faculty(self, request, **kwargs):
+        """Get all faculty assigned to this sub-event"""
+        sub_event = self.get_object()
+        assignments = SubEventFaculty.objects.filter(
+            sub_event=sub_event,
+            is_active=True
+        ).select_related('faculty')
+        
+        faculty_data = []
+        for assignment in assignments:
+            faculty = assignment.faculty
+            faculty_data.append({
+                'id': faculty.id,
+                'name': f"{faculty.first_name} {faculty.last_name}",
+                'email': faculty.email,
+                'department': faculty.department,
+                'assigned_at': assignment.assigned_at
+            })
+        
+        return Response(faculty_data)
+    
     @action(detail=True, methods=['get'], url_path='get-heats')
     def get_heats(self, request, **kwargs):  # Change to use **kwargs
         """Get all heats for the sub-event with filters"""
@@ -2507,3 +2529,71 @@ class ScoreboardViewSet(viewsets.ViewSet):
 
         except Exception as e:
             return Response({'error': str(e)}, status=400)
+        
+class FacultyViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.filter(user_type='FACULTY')
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=True, methods=['get'])
+    def assigned_subevents(self, request, **kwargs):
+        """Get all sub-events assigned to this faculty"""
+        faculty = self.get_object()
+        assignments = SubEventFaculty.objects.filter(
+            faculty=faculty,
+            is_active=True
+        ).select_related(
+            'sub_event',
+            'sub_event__event'
+        )
+        
+        subevent_data = []
+        for assignment in assignments:
+            sub_event = assignment.sub_event
+            subevent_data.append({
+                'id': sub_event.id,
+                'name': sub_event.name,
+                'event': {
+                    'id': sub_event.event.id,
+                    'name': sub_event.event.name
+                },
+                'venue': sub_event.venue,
+                'assigned_at': assignment.assigned_at,
+                'schedule': sub_event.schedule
+            })
+        
+        return Response(subevent_data)
+
+    @action(detail=False, methods=['get'])
+    def my_subevents(self, request):
+        """Get all sub-events assigned to the logged-in faculty"""
+        if request.user.user_type != 'FACULTY':
+            return Response(
+                {"error": "Only faculty members can access this endpoint"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        assignments = SubEventFaculty.objects.filter(
+            faculty=request.user,
+            is_active=True
+        ).select_related(
+            'sub_event',
+            'sub_event__event'
+        )
+        
+        subevent_data = []
+        for assignment in assignments:
+            sub_event = assignment.sub_event
+            subevent_data.append({
+                'id': sub_event.id,
+                'name': sub_event.name,
+                'event': {
+                    'id': sub_event.event.id,
+                    'name': sub_event.event.name
+                },
+                'venue': sub_event.venue,
+                'assigned_at': assignment.assigned_at,
+                'schedule': sub_event.schedule
+            })
+        
+        return Response(subevent_data)
