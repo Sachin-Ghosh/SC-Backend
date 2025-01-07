@@ -5,27 +5,36 @@ set -o errexit
 echo "Installing system dependencies..."
 apt-get update && apt-get install -y python3-pip python3-dev tesseract-ocr
 
-# Verify Tesseract installation
-echo "Verifying Tesseract installation..."
-tesseract --version
-which tesseract
+# Print tesseract version if available
+if command -v tesseract &> /dev/null; then
+    echo "Tesseract is installed:"
+    tesseract --version
+    which tesseract
+else
+    echo "Warning: Tesseract is not installed"
+fi
 
-
+# Upgrade pip
 echo "Upgrading pip..."
 python -m pip install --upgrade pip
 
+# Install Python dependencies
 echo "Installing Python dependencies..."
 pip install -r requirements.txt
 
+# Install gunicorn
 echo "Installing gunicorn..."
 pip install gunicorn
 
+# Collect static files
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
+# Run migrations
 echo "Running migrations..."
 python manage.py migrate --no-input
 
+# Create superuser if none exists
 echo "Creating superuser if none exists..."
 python manage.py create_superuser_if_none_exists
 
@@ -39,8 +48,6 @@ echo "DJANGO_SETTINGS_MODULE: $DJANGO_SETTINGS_MODULE"
 echo "Current Directory: $(pwd)"
 echo "Python Version: $(python --version)"
 echo "Pip Version: $(pip --version)"
-echo "Tesseract Version: $(tesseract --version)"
-echo "Tesseract Path: $(which tesseract)"
 
 # Print installed packages
 echo "Installed packages:"

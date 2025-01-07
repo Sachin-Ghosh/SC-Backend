@@ -31,13 +31,10 @@ services:
         value: ghoshsachin2301@gmail.com  # Change this
       - key: DJANGO_SUPERUSER_PASSWORD
         generateValue: true
-    packages:
-      - tesseract-ocr
-      - tesseract-ocr-eng
-      - libtesseract-dev
-      - libleptonica-dev
-      - pkg-config
-      - gcc
+    plan: free
+    preInstallCommand: |
+      # Install system dependencies
+      apt-get update -y && apt-get install -y tesseract-ocr tesseract-ocr-eng
     healthCheckPath: /admin/
     autoDeploy: false
 
