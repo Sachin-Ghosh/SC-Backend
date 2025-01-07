@@ -3,7 +3,19 @@
 set -o errexit
 
 echo "Installing system dependencies..."
-apt-get update && apt-get install -y python3-pip python3-dev tesseract-ocr
+apt-get update && apt-get install -y \
+    python3-pip \
+    python3-dev \
+    tesseract-ocr \
+    tesseract-ocr-eng \  # Add English language data
+    libtesseract-dev \   # Development files
+    libleptonica-dev \   # Required for tesseract
+    pkg-config \         # Required for building
+    gcc                  # Required for building
+
+echo "Verifying Tesseract installation..."
+tesseract --version
+which tesseract
 
 echo "Upgrading pip..."
 python -m pip install --upgrade pip
@@ -33,6 +45,8 @@ echo "DJANGO_SETTINGS_MODULE: $DJANGO_SETTINGS_MODULE"
 echo "Current Directory: $(pwd)"
 echo "Python Version: $(python --version)"
 echo "Pip Version: $(pip --version)"
+echo "Tesseract Version: $(tesseract --version)"
+echo "Tesseract Path: $(which tesseract)"
 
 # Print installed packages
 echo "Installed packages:"

@@ -302,3 +302,6 @@ if config('ENVIRONMENT', default='development') == 'production':
 
 # Add to your URLs
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# Tesseract settings
+TESSERACT_CMD = '/usr/bin/tesseract'  # This is the default path after installation
