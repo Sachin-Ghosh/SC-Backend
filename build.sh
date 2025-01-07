@@ -2,6 +2,23 @@
 # exit on error
 set -o errexit
 
+# Create a temporary directory for downloads
+mkdir -p /tmp/tesseract
+cd /tmp/tesseract
+
+# Download and install Tesseract binary
+echo "Downloading and installing Tesseract..."
+wget https://github.com/tesseract-ocr/tesseract/releases/download/5.3.3/tesseract-5.3.3.tar.gz
+tar xvf tesseract-5.3.3.tar.gz
+cd tesseract-5.3.3
+./configure
+make
+make install
+ldconfig
+
+# Return to original directory
+cd -
+
 # Print tesseract version if available
 if command -v tesseract &> /dev/null; then
     echo "Tesseract is installed:"
