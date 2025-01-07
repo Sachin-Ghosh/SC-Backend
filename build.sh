@@ -2,22 +2,17 @@
 # exit on error
 set -o errexit
 
-# Create a temporary directory for downloads
-mkdir -p /tmp/tesseract
-cd /tmp/tesseract
+# Add Tesseract repository
+echo "Adding Tesseract repository..."
+add-apt-repository -y ppa:alex-p/tesseract-ocr
 
-# Download and install Tesseract binary
-echo "Downloading and installing Tesseract..."
-wget https://github.com/tesseract-ocr/tesseract/releases/download/5.3.3/tesseract-5.3.3.tar.gz
-tar xvf tesseract-5.3.3.tar.gz
-cd tesseract-5.3.3
-./configure
-make
-make install
-ldconfig
+# Update package lists
+echo "Updating package lists..."
+apt-get update
 
-# Return to original directory
-cd -
+# Install Tesseract
+echo "Installing Tesseract..."
+apt-get install -y tesseract-ocr tesseract-ocr-eng
 
 # Print tesseract version if available
 if command -v tesseract &> /dev/null; then
