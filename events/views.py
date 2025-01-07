@@ -9,7 +9,8 @@ from django.shortcuts import get_object_or_404
 from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage, EventHeat , SubmissionFile , User, SubEventFaculty, DepartmentScore, HeatParticipant
 from .serializers import EventSerializer, SubEventSerializer, EventRegistrationSerializer, EventScoreSerializer, EventDrawSerializer , OrganizationSerializer , SubEventImageSerializer, EventHeatSerializer, SubEventFacultySerializer, HeatParticipantSerializer, EventScoreSerializer , UserSerializer
 from rest_framework import viewsets, status     
-from django.db.models import Q, Count, Avg, Sum
+from django.db.models import Q, Count, Avg, Sum, IntegerField
+from decimal import Decimal
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from rest_framework.decorators import action
@@ -21,6 +22,7 @@ from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.models import User
 from rest_framework.exceptions import PermissionDenied
+from django.db.models.functions import Coalesce
 
 # Get the custom User model
 User = get_user_model()
@@ -2308,7 +2310,123 @@ class ScoreboardViewSet(viewsets.ViewSet):
             'updated_at': score.updated_at
         } for score in recent_scores])
         
-        
+    @action(detail=False, methods=['get'])
+    def complete_scoreboard(self, request):
+        """Get complete scoreboard with all details"""
+        try:
+            # Get all scores
+            scores = DepartmentScore.objects.all().select_related('sub_event', 'sub_event__event')
+            
+            # Get summary statistics
+            summary = {
+                'total_departments': scores.values('department').distinct().count(),
+                'total_sub_events': scores.values('sub_event').distinct().count(),
+                'total_points_awarded': scores.aggregate(
+                    total=Coalesce(Sum('total_score'), Decimal('0.00'))
+                )['total']
+            }
+            
+            # Get unique class groups (department-year-division combinations)
+            class_groups = scores.values(
+                'department', 'year', 'division'
+            ).distinct().order_by('department', 'year', 'division')
+            
+            # Get all sub-events
+            sub_events = scores.values(
+                'sub_event__id',
+                'sub_event__name',
+                'sub_event__event__name'
+            ).distinct()
+            
+            # Build scores matrix
+            sub_event_scores = {}
+            class_totals = {}
+            
+            # Initialize class totals
+            for group in class_groups:
+                key = f"{group['year']}_{group['department']}_{group['division']}"
+                class_totals[key] = Decimal('0.00')
+            
+            # Calculate scores and totals
+            for score in scores:
+                class_key = f"{score.year}_{score.department}_{score.division}"
+                sub_event_key = score.sub_event.id
+                
+                # Initialize sub_event dict if not exists
+                if sub_event_key not in sub_event_scores:
+                    sub_event_scores[sub_event_key] = {
+                        'name': score.sub_event.name,
+                        'event_name': score.sub_event.event.name,
+                        'scores': {}
+                    }
+                
+                # Add score to matrix
+                sub_event_scores[sub_event_key]['scores'][class_key] = score.total_score
+                
+                # Update class total
+                class_totals[class_key] += score.total_score
+            
+            # Calculate department rankings
+            department_rankings = []
+            for dept in scores.values('department').distinct():
+                dept_total = scores.filter(
+                    department=dept['department']
+                ).aggregate(
+                    total=Coalesce(Sum('total_score'), Decimal('0.00'))
+                )['total']
+                
+                department_rankings.append({
+                    'department': dept['department'],
+                    'total_points': dept_total,
+                    'rank': None  # Will be set after sorting
+                })
+            
+            # Sort and assign ranks
+            department_rankings.sort(key=lambda x: x['total_points'], reverse=True)
+            for i, dept in enumerate(department_rankings, 1):
+                dept['rank'] = i
+            
+            # Format response
+            response_data = {
+                'summary': summary,
+                'sub_event_scores': [
+                    {
+                        'id': sub_event_id,
+                        'name': data['name'],
+                        'event_name': data['event_name'],
+                        'scores': {
+                            class_key: {
+                                'score': score,
+                                'department': class_key.split('_')[1],
+                                'year': class_key.split('_')[0],
+                                'division': class_key.split('_')[2]
+                            }
+                            for class_key, score in data['scores'].items()
+                        }
+                    }
+                    for sub_event_id, data in sub_event_scores.items()
+                ],
+                'class_totals': [
+                    {
+                        'department': class_key.split('_')[1],
+                        'year': class_key.split('_')[0],
+                        'division': class_key.split('_')[2],
+                        'total_score': total
+                    }
+                    for class_key, total in class_totals.items()
+                ],
+                'department_rankings': department_rankings
+            }
+            
+            return Response(response_data)
+            
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=500
+            )
+    
+    
     @action(detail=False, methods=['GET'])
     def overall_scoreboard(self, request):
         """Get complete scoreboard with all breakdowns"""
@@ -2435,27 +2553,149 @@ class ScoreboardViewSet(viewsets.ViewSet):
             ).order_by('-total_score'))
         })
 
-    @action(detail=False, methods=['GET'])
-    def leaderboard(self, request):
-        """Get top performing departments/classes"""
+    @action(detail=False, methods=['get'])
+    def overall_summary(self, request):
+        """Get overall summary statistics"""
         scores = DepartmentScore.objects.all()
         
-        # Get top departments
-        top_departments = scores.values('department').annotate(
-            total_score=Sum('total_score')
-        ).order_by('-total_score')[:5]
+        return Response({
+            'total_departments': scores.values('department').distinct().count(),
+            'total_sub_events': scores.values('sub_event').distinct().count(),
+            'total_points': scores.aggregate(
+                total=Coalesce(
+                    Sum('total_score'), 
+                    0,
+                    output_field=IntegerField()
+                )
+            )['total']
+        })
 
-        # Get top classes
-        top_classes = scores.values(
+    @action(detail=False, methods=['get'])
+    def department_rankings(self, request):
+        """Get department-wise rankings"""
+        department = request.query_params.get('department')
+        year = request.query_params.get('year')
+        division = request.query_params.get('division')
+        
+        scores = DepartmentScore.objects.all()
+        
+        # Apply filters
+        if department:
+            scores = scores.filter(department=department)
+        if year:
+            scores = scores.filter(year=year)
+        if division:
+            scores = scores.filter(division=division)
+            
+        # Get department totals
+        rankings = scores.values(
             'department', 'year', 'division'
         ).annotate(
-            total_score=Sum('total_score')
-        ).order_by('-total_score')[:5]
+            total_score=Sum('total_score'),
+            event_count=Count('sub_event', distinct=True)
+        ).order_by('-total_score')
+        
+        return Response(rankings)
 
+    @action(detail=False, methods=['get'])
+    def subevent_scores(self, request):
+        """Get detailed sub-event wise scores"""
+        scores = DepartmentScore.objects.all()
+        sub_events = SubEvent.objects.all().order_by('name')
+        
+        # Get all unique class groups
+        class_groups = scores.values(
+            'year', 'department', 'division'
+        ).distinct().order_by('department', 'year', 'division')
+        
+        # Build scores matrix
+        scores_matrix = {}
+        for score in scores:
+            key = f"{score.year}_{score.department}_{score.division}"
+            if score.sub_event_id not in scores_matrix:
+                scores_matrix[score.sub_event_id] = {}
+            scores_matrix[score.sub_event_id][key] = float(score.total_score)
+        
+        # Calculate totals for each group
+        group_totals = {}
+        for group in class_groups:
+            key = f"{group['year']}_{group['department']}_{group['division']}"
+            total = 0
+            for sub_event_id in scores_matrix:
+                total += scores_matrix[sub_event_id].get(key, 0)
+            group_totals[key] = total
+        
+        response_data = {
+            'sub_events': [{
+                'id': sub_event.id,
+                'name': sub_event.name,
+                'scores': scores_matrix.get(sub_event.id, {})
+            } for sub_event in sub_events],
+            'class_groups': [{
+                'year': group['year'],
+                'department': group['department'],
+                'division': group['division'],
+                'total_score': group_totals.get(
+                    f"{group['year']}_{group['department']}_{group['division']}", 0
+                )
+            } for group in class_groups]
+        }
+        
+        return Response(response_data)
+
+    @action(detail=False, methods=['get'])
+    def filters(self, request):
+        """Get available filter options"""
+        scores = DepartmentScore.objects.all()
+        
         return Response({
-            'top_departments': top_departments,
-            'top_classes': top_classes
+            'departments': scores.values_list('department', flat=True).distinct(),
+            'years': scores.values_list('year', flat=True).distinct(),
+            'divisions': scores.values_list('division', flat=True).distinct(),
+            'sub_events': SubEvent.objects.values('id', 'name', 'event__name')
         })
+
+    @action(detail=False, methods=['get'])
+    def leaderboard(self, request):
+        """Get comprehensive leaderboard with multiple groupings"""
+        scores = DepartmentScore.objects.all()
+        
+        # Department-wise totals
+        department_totals = scores.values(
+            'department'
+        ).annotate(
+            total_score=Sum('total_score')
+        ).order_by('-total_score')
+        
+        # Year-wise totals
+        year_totals = scores.values(
+            'year'
+        ).annotate(
+            total_score=Sum('total_score')
+        ).order_by('-total_score')
+        
+        # Division-wise totals
+        division_totals = scores.values(
+            'division'
+        ).annotate(
+            total_score=Sum('total_score')
+        ).order_by('-total_score')
+        
+        # Combined class-wise totals
+        class_totals = scores.values(
+            'department', 'year', 'division'
+        ).annotate(
+            total_score=Sum('total_score'),
+            event_count=Count('sub_event', distinct=True)
+        ).order_by('-total_score')
+        
+        return Response({
+            'department_rankings': department_totals,
+            'year_rankings': year_totals,
+            'division_rankings': division_totals,
+            'class_rankings': class_totals
+        })
+        
     @action(detail=False, methods=['GET'])
     def matrix_scoreboard(self, request):
         """Get scoreboard in matrix format with sub-events as rows and class groups as columns"""
