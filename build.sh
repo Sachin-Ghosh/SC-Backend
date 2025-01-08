@@ -2,6 +2,9 @@
 # exit on error
 set -o errexit
 
+# Store the project root directory
+PROJECT_ROOT=$(pwd)
+
 # Create directories
 echo "Creating directories..."
 mkdir -p $HOME/tesseract
@@ -48,8 +51,8 @@ rm -rf tessdata  # Remove if exists
 git clone --depth 1 https://github.com/tesseract-ocr/tessdata.git
 export TESSDATA_PREFIX="$HOME/tesseract/tessdata"
 
-# Return to original directory
-cd -
+# Return to project directory
+cd $PROJECT_ROOT
 
 # Print tesseract version if available
 if command -v tesseract &> /dev/null; then
@@ -88,6 +91,9 @@ pip install -r requirements.txt
 echo "Installing gunicorn..."
 pip install gunicorn
 
+# Create necessary directories
+mkdir -p staticfiles media
+
 # Collect static files
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
@@ -99,9 +105,6 @@ python manage.py migrate --no-input
 # Create superuser if none exists
 echo "Creating superuser if none exists..."
 python manage.py create_superuser_if_none_exists
-
-# Create necessary directories
-mkdir -p staticfiles media
 
 # Print environment information
 echo "Environment Information:"
