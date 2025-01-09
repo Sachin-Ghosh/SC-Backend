@@ -30,23 +30,7 @@ services:
       - key: DJANGO_SUPERUSER_EMAIL
         value: ghoshsachin2301@gmail.com  # Change this
       - key: DJANGO_SUPERUSER_PASSWORD
-        generateValue: true
-    packages:
-      - autoconf
-      - automake
-      - libtool
-      - pkg-config
-      - libpng-dev
-      - libjpeg-dev
-      - libtiff-dev
-      - zlib1g-dev
-      - libleptonica-dev
-      - git
-    buildFilter:
-      paths:
-        - requirements.txt
-        - build.sh
-        - sc_backend/**
+        generateValue: true  # This will generate a secure random password
     healthCheckPath: /admin/
     autoDeploy: false
 

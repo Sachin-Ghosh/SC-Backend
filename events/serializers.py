@@ -66,11 +66,20 @@ class SubEventSerializer(serializers.ModelSerializer):
     format_description = serializers.CharField(style={'base_template': 'textarea.html'})
     rules = serializers.CharField(style={'base_template': 'textarea.html'})
     faculty_judges = SubEventFacultySerializer(source='subeventfaculty_set',many=True, read_only=True)
+    event_name = serializers.CharField(source='event.name', read_only=True)
+    total_participants = serializers.SerializerMethodField()
+    total_heats = serializers.SerializerMethodField()
+    
     class Meta:
         model = SubEvent
         fields = '__all__'
         read_only_fields = ('slug',)
         
+    def get_total_participants(self, obj):
+        return obj.eventregistration_set.count()
+    
+    def get_total_heats(self, obj):
+        return obj.eventheat_set.count()
 
 class SubmissionFileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -204,7 +213,9 @@ class EventScoreSerializer(serializers.ModelSerializer):
         return score
 
 class EventHeatSerializer(serializers.ModelSerializer):
+    sub_event_name = serializers.CharField(source='sub_event.name', read_only=True)
     participant_count = serializers.SerializerMethodField()
+    judges = serializers.SerializerMethodField()
     
     class Meta:
         model = EventHeat
@@ -212,6 +223,12 @@ class EventHeatSerializer(serializers.ModelSerializer):
     
     def get_participant_count(self, obj):
         return obj.heatparticipant_set.count()
+    
+    def get_judges(self, obj):
+        return SubEventFacultySerializer(
+            obj.sub_event.subeventfaculty_set.filter(is_active=True), 
+            many=True
+        ).data
 
 class HeatParticipantSerializer(serializers.ModelSerializer):
     participant_details = EventRegistrationSerializer(source='registration', read_only=True)

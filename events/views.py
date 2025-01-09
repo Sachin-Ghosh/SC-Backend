@@ -472,6 +472,7 @@ class SubEventViewSet(viewsets.ModelViewSet):
     lookup_field = 'id'
     
     def get_queryset(self):
+        user = self.request.user
         queryset = SubEvent.objects.all()
         
         # Get filter parameters
@@ -496,12 +497,53 @@ class SubEventViewSet(viewsets.ModelViewSet):
                     models.Q(gender_participation=gender.upper()) | 
                     models.Q(gender_participation='ALL')
                 )
-                
+         # Filter based on user role
+        if user.user_type == 'COUNCIL':
+            # Get sub-events where user is sub_head
+            queryset = queryset.filter(sub_heads=user)
+        elif user.user_type == 'FACULTY':
+            # Get sub-events where faculty is judge
+            queryset = queryset.filter(faculty_judges=user)
+            
+        # Apply additional filters
+        event_type = self.request.query_params.get('event_type', None)
+        status = self.request.query_params.get('status', None)
+        department = self.request.query_params.get('department', None)
+        
+        if event_type:
+            queryset = queryset.filter(category=event_type)  # Changed from event_type to category
+        if status:
+            queryset = queryset.filter(current_stage=status)  # Changed from status to current_stage
+        if department:
+            queryset = queryset.filter(allow_mixed_department=False)  # Adjust based on your requirements
+            
+            
+    
         return queryset.select_related('event').prefetch_related(
             'sub_heads',
             'images'
         )
+        # return queryset.distinct()
 
+    @action(detail=False, methods=['get'])
+    def my_events(self, request):
+        """Get events based on user's role and involvement"""
+        user = request.user
+        events = []
+        
+        if user.user_type == 'COUNCIL':
+            # Get events where user is sub_head
+            events = self.get_queryset().filter(sub_heads=user)
+        elif user.user_type == 'FACULTY':
+            # Get events where faculty is judge
+            events = self.get_queryset().filter(faculty_judges=user)
+        
+        serializer = self.get_serializer(events, many=True)
+        return Response({
+            'count': len(events),
+            'results': serializer.data
+        })
+    
     def retrieve(self, request, *args, **kwargs):
         """Get sub-event details by ID with optional filters"""
         try:
@@ -1241,7 +1283,67 @@ class SubEventViewSet(viewsets.ModelViewSet):
 class EventHeatViewSet(viewsets.ModelViewSet):
     queryset = EventHeat.objects.all()
     serializer_class = EventHeatSerializer
+    permission_classes = [IsAuthenticated]
     
+    def get_queryset(self):
+        user = self.request.user
+        queryset = EventHeat.objects.all()
+        
+        # Filter based on user role
+        if user.user_type == 'COUNCIL_MEMBER':
+            # Get heats for events where user is sub_head
+            queryset = queryset.filter(sub_event__sub_heads=user)
+        elif user.user_type == 'FACULTY':
+            # Get heats where faculty is judge
+            queryset = queryset.filter(sub_event__subeventfaculty__faculty=user)
+            
+        # Apply additional filters
+        sub_event = self.request.query_params.get('sub_event', None)
+        status = self.request.query_params.get('status', None)
+        round_type = self.request.query_params.get('round_type', None)
+        
+        if sub_event:
+            queryset = queryset.filter(sub_event_id=sub_event)
+        if status:
+            queryset = queryset.filter(status=status)
+        if round_type:
+            queryset = queryset.filter(round_type=round_type)
+            
+        return queryset.distinct()
+
+    @action(detail=False, methods=['get'])
+    def my_heats(self, request):
+        """Get heats based on user's role and involvement"""
+        user = request.user
+        heats = []
+        
+        if user.user_type == 'COUNCIL_MEMBER':
+            # Get heats for events where user is sub_head
+            heats = self.get_queryset().filter(sub_event__sub_heads=user)
+        elif user.user_type == 'FACULTY':
+            # Get heats where faculty is judge
+            heats = self.get_queryset().filter(sub_event__subeventfaculty__faculty=user)
+        elif user.user_type == 'STUDENT':
+            # Get heats where student is participating
+            heats = self.get_queryset().filter(
+                heatparticipant__registration__team_leader=user
+            )
+        
+        serializer = self.get_serializer(heats, many=True)
+        return Response({
+            'count': len(heats),
+            'results': serializer.data
+        })
+
+    @action(detail=True, methods=['get'])
+    def participants(self, request, pk=None):
+        """Get participants for a specific heat"""
+        heat = self.get_object()
+        participants = heat.heatparticipant_set.all()
+        from .serializers import HeatParticipantSerializer
+        serializer = HeatParticipantSerializer(participants, many=True)
+        return Response(serializer.data)
+
     @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):
         """Update heat status"""
