@@ -21,11 +21,67 @@ def grievance_list(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_grievance(request):
-    serializer = GrievanceSerializer(data=request.data)
+    # First handle the basic grievance data
+    grievance_data = {
+        'event': request.data.get('event'),  # This is sub_event_id
+        'grievance_type': request.data.get('grievance_type'),
+        'title': request.data.get('title'),
+        'description': request.data.get('description'),
+    }
+    
+    serializer = GrievanceSerializer(data=grievance_data)
     if serializer.is_valid():
-        serializer.save(submitted_by=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Save grievance with submitted_by user
+        grievance = serializer.save(
+            submitted_by=request.user,
+            status='PENDING'
+        )
+        
+        # Handle evidence files if provided
+        files = request.FILES.getlist('evidence_files')
+        if files:
+            media_files = []
+            for file in files:
+                file_type = get_file_type(file.name)
+                
+                # Get the Event instance from SubEvent
+                sub_event = grievance.event  # This is the SubEvent instance
+                event = sub_event.event      # Get the parent Event instance
+                
+                media_data = {
+                    'file': file,
+                    'file_type': file_type,
+                    'description': f"Evidence for grievance {grievance.id}",
+                    'uploaded_by': request.user,
+                    'size': file.size,
+                    'is_public': False,
+                    'event': event  # Pass the Event instance, not just ID
+                }
+                media_file = MediaFile.objects.create(**media_data)
+                media_files.append(media_file)
+            
+            # Link evidence files to grievance
+            grievance.evidence.add(*media_files)
+        
+        # Return updated grievance with evidence
+        return Response(
+            GrievanceSerializer(grievance).data, 
+            status=status.HTTP_201_CREATED
+        )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+def get_file_type(filename):
+    """Helper function to determine file type based on extension"""
+    extension = filename.lower().split('.')[-1]
+    if extension in ['jpg', 'jpeg', 'png', 'gif']:
+        return 'IMAGE'
+    elif extension in ['mp4', 'avi', 'mov']:
+        return 'VIDEO'
+    elif extension in ['pdf', 'doc', 'docx']:
+        return 'DOCUMENT'
+    elif extension in ['mp3', 'wav']:
+        return 'AUDIO'
+    return 'DOCUMENT'  # Default type
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -121,20 +177,30 @@ def add_evidence(request, pk):
     
     media_files = []
     for file in files:
+        file_type = get_file_type(file.name)
+        
+        # Get the Event instance from SubEvent
+        event = grievance.event.event  # Get the parent Event instance
+        
         media_data = {
             'file': file,
-            'file_type': request.data.get('file_type', 'DOCUMENT'),
-            'description': request.data.get('description'),
-            'uploaded_by': request.user.id,
-            'size': file.size
+            'file_type': file_type,
+            'description': request.data.get('description', f"Evidence for grievance {grievance.id}"),
+            'uploaded_by': request.user,
+            'size': file.size,
+            'is_public': False,
+            'event': event  # Pass the Event instance, not just ID
         }
-        serializer = MediaFileSerializer(data=media_data)
-        if serializer.is_valid():
-            media_file = serializer.save()
-            media_files.append(media_file)
+        media_file = MediaFile.objects.create(**media_data)
+        media_files.append(media_file)
     
+    # Link evidence files to grievance
     grievance.evidence.add(*media_files)
-    return Response({'message': f'{len(media_files)} files uploaded successfully'})
+    
+    return Response({
+        'message': f'{len(media_files)} files uploaded successfully',
+        'grievance': GrievanceSerializer(grievance).data
+    })
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])

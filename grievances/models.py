@@ -42,12 +42,12 @@ class MediaFile(models.Model):
     
     file = models.FileField(upload_to='media/')
     file_type = models.CharField(max_length=20, choices=FILE_TYPES)
-    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    upload_date = models.DateTimeField(auto_now_add=True)
     description = models.TextField(null=True, blank=True)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, null=True, blank=True)
     size = models.IntegerField()  # File size in bytes
     is_public = models.BooleanField(default=True)
+    upload_date = models.DateTimeField(auto_now_add=True)
+    
+    # Remove duplicate fields and keep only one with proper related_name
     event = models.ForeignKey(
         Event, 
         on_delete=models.CASCADE, 
@@ -60,3 +60,6 @@ class MediaFile(models.Model):
         on_delete=models.CASCADE,
         related_name='grievance_media_files'
     )
+
+    def __str__(self):
+        return f"{self.file_type} - {self.uploaded_by}"
