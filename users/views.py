@@ -25,9 +25,8 @@ from django.db.models import Q
 from datetime import datetime, timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
 from PIL import Image
+import pytesseract
 import re
-import easyocr
-import numpy as np
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -86,25 +85,18 @@ def send_registration_email(user, otp):
     
 def verify_college_id(image_file):
     try:
-        
-        reader = easyocr.Reader(['en'])
-
         image = Image.open(image_file)
-        image_array = np.array(image)
-        
-        results = reader.readtext(image_array)
-        text = ' '.join([result[1] for result in results])
- 
-        college_name_pattern = r"Universal College of Engineering"
-        
+        text = pytesseract.image_to_string(image)
+        college_name_pattern = r"Universal College of Engineering"  # For time being Just using the college name later we can add more steps        
         has_college_name = bool(re.search(college_name_pattern, text, re.IGNORECASE))
         
-        print("Extracted Text:", text)
-        print("College Name Found:", has_college_name)
+        # print("Extracted Text:", text)
+        # print("College Name Found:", has_college_name)
         
         if has_college_name:
             return True, "Valid college ID card"
-        return False, "Invalid college ID card - College name not found"
+        else:
+            return False, "Invalid college ID card"
             
     except Exception as e:
         return False, f"Error processing image: {str(e)}"
