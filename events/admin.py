@@ -46,44 +46,45 @@ class SubEventAdmin(SummernoteModelAdmin):
         return obj.faculty_assignments.filter(is_active=True).count()
     get_faculty_count.short_description = 'Active Faculty Count'
 
-    fieldsets = (
-        ('Basic Information', {
-            'fields': ('event', 'name', 'slug', 'short_description', 'description', 'images')
-        }),
-        ('Event Details', {
-            'fields': (
-                'category', 'participation_type', 'current_stage',
-                'schedule', 'venue', 'max_participants',
-                'min_team_size', 'max_team_size'
-            )
-        }),
-        ('Registration', {
-            'fields': (
-                'registration_deadline', 'registration_fee',
-                'registration_start_time', 'registration_end_time'
-            )
-        }),
-        ('Event Format', {
-            'fields': (
-                'round_format', 'participants_per_group',
-                'qualifiers_per_group', 'current_round',
-                'total_rounds', 'date', 'reporting_time'
-            )
-        }),
-        ('Rules & Criteria', {
-            'fields': (
-                'rules', 'scoring_criteria', 'prize_pool',
-                'prize_pool_description', 'format_description'
-            )
-        }),
-        ('Participation Rules', {
-            'fields': (
-                'gender_participation',
-                'allow_mixed_department', 'allow_mixed_year',
-                'allow_mixed_division', 'double_trouble_allowed'
-            )
-        })
-    )
+    # fieldsets = (
+    #     ('Basic Information', {
+    #         'fields': ('event', 'name', 'slug', 'short_description', 'description', 'images')
+    #     }),
+    #     ('Event Details', {
+    #         'fields': (
+    #             'category', 'participation_type', 'current_stage',
+    #             'schedule', 'venue', 'max_participants',
+    #             'min_team_size', 'max_team_size'
+    #         )
+    #     }),
+    #     ('Registration', {
+    #         'fields': (
+    #             'registration_deadline', 'registration_fee',
+    #             'registration_start_time', 'registration_end_time' 
+    #         )
+    #     }),
+    #     ('Event Format', {
+    #         'fields': (
+    #             'round_format', 'participants_per_group',
+    #             'qualifiers_per_group', 'current_round',
+    #             'total_rounds', 'date', 'reporting_time'
+    #         )
+    #     }),
+    #     ('Rules & Criteria', {
+    #         'fields': (
+    #             'rules', 'scoring_criteria', 'prize_pool',
+    #             'prize_pool_description', 'format_description'
+    #         )
+    #     }),
+    #     ('Participation Rules', {
+    #         'fields': (
+    #             'gender_participation',
+    #             'sub_heads',
+    #             'allow_mixed_department', 'allow_mixed_year',
+    #             'allow_mixed_division', 'double_trouble_allowed', 
+    #         )
+    #     })
+    # )
     
 @admin.register(SubEventFaculty)
 class SubEventFacultyAdmin(admin.ModelAdmin):
