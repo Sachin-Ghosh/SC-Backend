@@ -1,4 +1,5 @@
 # events/serializers.py
+from datetime import timezone
 from rest_framework import serializers
 from django_summernote.fields import SummernoteTextField
 from .models import (
@@ -213,22 +214,64 @@ class EventScoreSerializer(serializers.ModelSerializer):
         return score
 
 class EventHeatSerializer(serializers.ModelSerializer):
-    sub_event_name = serializers.CharField(source='sub_event.name', read_only=True)
-    participant_count = serializers.SerializerMethodField()
-    judges = serializers.SerializerMethodField()
+    # sub_event_name = serializers.CharField(source='sub_event.name', read_only=True)
+    # participant_count = serializers.SerializerMethodField()
+    # judges = serializers.SerializerMethodField()
     
     class Meta:
         model = EventHeat
         fields = '__all__'
     
-    def get_participant_count(self, obj):
-        return obj.heatparticipant_set.count()
+    # def get_participant_count(self, obj):
+    #     return obj.heatparticipant_set.count()
     
-    def get_judges(self, obj):
-        return SubEventFacultySerializer(
-            obj.sub_event.subeventfaculty_set.filter(is_active=True), 
-            many=True
-        ).data
+    # def get_judges(self, obj):
+    #     return SubEventFacultySerializer(
+    #         obj.sub_event.subeventfaculty_set.filter(is_active=True), 
+    #         many=True
+    #     ).data
+    # def validate(self, data):
+    #     """
+    #     Check that the heat doesn't already exist for this stage and round
+    #     """
+    #     sub_event = data.get('sub_event')
+    #     stage = data.get('stage')
+    #     round_number = data.get('round_number')
+
+    #     # Skip validation if any required field is missing
+    #     if not all([sub_event, stage, round_number]):
+    #         return data
+
+    #     # Check for existing heat only on creation
+    #     if not self.instance:  # self.instance is None for creation
+    #         existing_heat = EventHeat.objects.filter(
+    #             sub_event=sub_event,
+    #             stage=stage,
+    #             round_number=round_number
+    #         ).exists()
+            
+    #         if existing_heat:
+    #             raise serializers.ValidationError(
+    #                 f'Heat already exists for {stage} round {round_number}'
+    #             )
+
+    #     return data
+
+    # def validate_schedule(self, value):
+    #     """
+    #     Check that schedule is not in the past
+    #     """
+    #     if value < timezone.now():
+    #         raise serializers.ValidationError("Schedule cannot be in the past")
+    #     return value
+
+    # def validate_max_participants(self, value):
+    #     """
+    #     Check that max_participants is positive
+    #     """
+    #     if value <= 0:
+    #         raise serializers.ValidationError("Maximum participants must be greater than 0")
+    #     return value
 
 class HeatParticipantSerializer(serializers.ModelSerializer):
     participant_details = EventRegistrationSerializer(source='registration', read_only=True)

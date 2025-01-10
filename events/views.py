@@ -1121,21 +1121,144 @@ class SubEventViewSet(viewsets.ModelViewSet):
         """Create a new heat for the sub-event"""
         sub_event = self.get_object()
         
-        try:
-            heat = EventHeat.objects.create(
-                sub_event=sub_event,
-                heat_name=request.data.get('name'),
-                stage=request.data.get('stage'),
-                round_number=request.data.get('round_number'),
-                schedule=request.data.get('schedule'),
-                venue=request.data.get('venue'),
-                max_participants=request.data.get('max_participants', 0),
-                status='PENDING'
-            )
+         # Create new heat with provided data
+        heat_data = {
+            **request.data,
+            'sub_event': sub_event.id,
+        }
+        # try:
+        #     heat = EventHeat.objects.create(
+        #         sub_event=sub_event,
+        #         heat_name=request.data.get('name'),
+        #         stage=request.data.get('stage'),
+        #         round_number=request.data.get('round_number'),
+        #         schedule=request.data.get('schedule'),
+        #         venue=request.data.get('venue'),
+        #         max_participants=request.data.get('max_participants', 0),
+        #         status='PENDING'
+        #     )
             
-            return Response(EventHeatSerializer(heat).data, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        #     return Response(EventHeatSerializer(heat).data, status=status.HTTP_201_CREATED)
+        # except Exception as e:
+        #     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        # Check if a heat with same stage and round_number already exists
+        # existing_heats = EventHeat.objects.filter(
+        #     sub_event=sub_event,
+        #     stage=request.data.get('stage'),
+        #     round_number=request.data.get('round_number')
+        # ).count()
+        
+        # # Create new heat with incremented heat number
+        # heat_data = {
+        #     **request.data,
+        #     'sub_event': sub_event.id,
+        #     'name': f"Heat {existing_heats + 1}",  # Automatically number the heat
+        # }
+        
+        # serializer = EventHeatSerializer(data=heat_data)
+        # if serializer.is_valid():
+        #     heat = serializer.save()
+        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # If heat_name is not provided, generate one
+        if not heat_data.get('heat_name'):
+            # Count existing heats for this stage and round
+            existing_heats = EventHeat.objects.filter(
+                sub_event=sub_event,
+                stage=request.data.get('stage'),
+                round_number=request.data.get('round_number')
+            ).count()
+            heat_data['heat_name'] = f"Heat {existing_heats + 1}"
+        
+        serializer = EventHeatSerializer(data=heat_data)
+        if serializer.is_valid():
+            heat = serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    @action(detail=True, methods=['post'])
+    def promote_participants(self, request, pk=None):
+        """Promote selected participants to the next round"""
+        current_heat = self.get_object()
+        participant_ids = request.data.get('participant_ids', [])
+        next_stage = request.data.get('next_stage')
+        next_round = request.data.get('next_round')
+        
+        if not participant_ids:
+            return Response({
+                'error': 'No participants selected for promotion'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create a new heat for the next round
+        existing_heats = EventHeat.objects.filter(
+            sub_event=current_heat.sub_event,
+            stage=next_stage,
+            round_number=next_round
+        ).count()
+        
+        new_heat = EventHeat.objects.create(
+            sub_event=current_heat.sub_event,
+            stage=next_stage,
+            round_number=next_round,
+            heat_name=f"Heat {existing_heats + 1}",
+            schedule=request.data.get('schedule'),
+            venue=request.data.get('venue'),
+            max_participants=len(participant_ids),
+            status='PENDING'
+        )
+        
+        # Move selected participants to the new heat
+        for participant_id in participant_ids:
+            participant = get_object_or_404(HeatParticipant, id=participant_id)
+            HeatParticipant.objects.create(
+                heat=new_heat,
+                registration=participant.registration
+            )
+        
+        return Response({
+            'message': f'{len(participant_ids)} participants promoted to {next_stage} round {next_round}',
+            'new_heat': EventHeatSerializer(new_heat).data
+        })
+
+    @action(detail=True, methods=['get'])
+    def heat_scores(self, request, pk=None):
+        """Get scores for all participants in a heat"""
+        heat = self.get_object()
+        scores = EventScore.objects.filter(heat=heat).select_related(
+            'event_registration', 'judge'
+        )
+        
+        # Group scores by participant
+        participant_scores = {}
+        for score in scores:
+            reg_id = score.event_registration.id
+            if reg_id not in participant_scores:
+                participant_scores[reg_id] = {
+                    'registration': score.event_registration,
+                    'scores': [],
+                    'average_score': 0
+                }
+            participant_scores[reg_id]['scores'].append(score)
+        
+        # Calculate averages
+        for reg_id in participant_scores:
+            scores = participant_scores[reg_id]['scores']
+            total = sum(score.total_score for score in scores)
+            participant_scores[reg_id]['average_score'] = total / len(scores)
+        
+        # Sort by average score
+        sorted_scores = dict(sorted(
+            participant_scores.items(),
+            key=lambda x: x[1]['average_score'],
+            reverse=True
+        ))
+        
+        return Response({
+            'heat_details': EventHeatSerializer(heat).data,
+            'participant_scores': sorted_scores
+        })
 
     @action(detail=True, methods=['post'] , url_path='assign-participants-to-heat')
     def assign_participants_to_heat(self, request, **kwargs):

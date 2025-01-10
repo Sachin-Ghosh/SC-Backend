@@ -1,6 +1,7 @@
 # events/models.py
 from django.db import models
 from django.conf import settings
+from django.forms import ValidationError
 from django.utils.text import slugify
 from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
@@ -394,10 +395,13 @@ class EventHeat(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
-        unique_together = ['sub_event', 'stage', 'round_number']
+        ordering = ['stage', 'round_number', 'created_at']
 
     def __str__(self):
         return f"Heat {self.round_number} - {self.sub_event.name} ({self.stage})"
+    def clean(self):
+        if self.max_participants <= 0:
+            raise ValidationError('Maximum participants must be greater than 0')
 
 class HeatParticipant(models.Model):
     heat = models.ForeignKey(EventHeat, on_delete=models.CASCADE)
