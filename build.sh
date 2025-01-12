@@ -15,14 +15,13 @@ echo "Installing gunicorn..."
 pip install gunicorn
 
 # Create necessary directories
-mkdir -p staticfiles media
+mkdir -p static staticfiles media
 
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
 echo "Running migrations..."
 python manage.py migrate --no-input
-
 echo "Creating superuser if none exists..."
 python manage.py create_superuser_if_none_exists
 
