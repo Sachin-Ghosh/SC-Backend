@@ -272,9 +272,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-# Create static directory if it doesn't exist
-os.makedirs(os.path.join(BASE_DIR, 'static'), exist_ok=True)
-os.makedirs(os.path.join(BASE_DIR, 'staticfiles'), exist_ok=True)
+
+# Static and Media files
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Create directories
+os.makedirs(STATIC_ROOT, exist_ok=True)
+for static_dir in STATICFILES_DIRS:
+    os.makedirs(static_dir, exist_ok=True)
+os.makedirs(MEDIA_ROOT, exist_ok=True)
 # Add this if not already present
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
