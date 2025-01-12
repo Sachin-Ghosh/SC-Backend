@@ -45,6 +45,16 @@ ALLOWED_HOSTS = [
 ]
 
 
+# Add S3 settings
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = 'aurora2k24'
+AWS_S3_REGION_NAME = 'ap-south-1'  # e.g., 'us-east-1'
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = 'public-read'
+AWS_S3_VERIFY = True
+AWS_QUERYSTRING_AUTH = False
+
 PORT = int(os.environ.get('PORT', 8000))
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -234,6 +244,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Use S3 for static and media files
+if config('ENVIRONMENT', default='development') == 'production':
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# Optional: Custom domain
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -305,3 +322,5 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # Tesseract settings
 TESSERACT_CMD = '/usr/bin/tesseract'  # This is the default path after installation
+
+
