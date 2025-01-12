@@ -190,11 +190,14 @@ DATABASES = {
 if config('ENVIRONMENT', default='development') == 'production':
     # Use PostgreSQL in production
     DATABASES = {
-        'default': dj_database_url.config(
-            default=config('DATABASE_URL'),
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
+        'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'scbackend',
+        'USER': 'superuser',
+        'PASSWORD': config('DJANGO_SUPERUSER_PASS'),
+        'HOST': 'scbackend.cx04ay8uggno.ap-south-1.rds.amazonaws.com',
+        'PORT': '5432',
+    }
     }
 else:
     # Use SQLite in development
