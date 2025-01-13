@@ -348,6 +348,6 @@ if not all([EMAIL_HOST_USER, EMAIL_HOST_PASSWORD]):
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # Tesseract settings
-TESSERACT_CMD = '/usr/bin/tesseract'  # This is the default path after installation
+# TESSERACT_CMD = '/usr/bin/tesseract'  # This is the default path after installation
 
 
