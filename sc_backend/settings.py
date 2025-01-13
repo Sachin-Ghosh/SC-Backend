@@ -41,7 +41,14 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'aurora.ucoe.co.in',
+    'admin.ucoe.co.in'
     '*',  # Temporarily allow all hosts for testing
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://admin.ucoe.co.in",
+    "https://ucoe.co.in",
+    "https://aurora.ucoe.co.in",
 ]
 
 
@@ -63,6 +70,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://student-council-backend.onrender.com",
     "https://aurora.ucoe.co.in",
+    "https://admin.ucoe.co.in"
 ]
 
 # Application definition
