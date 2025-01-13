@@ -193,10 +193,10 @@ if os.environ.get('ENVIRONMENT', default='development') == 'production':
     DATABASES = {
         'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'scbackend',
+        'NAME': 'Backend',
         'USER': 'superuser',
         'PASSWORD': os.environ.get('DJANGO_SUPERUSER_PASS'),
-        'HOST': 'scbackend.cx04ay8uggno.ap-south-1.rds.amazonaws.com',
+        'HOST': 'backend.cx04ay8uggno.ap-south-1.rds.amazonaws.com',
         'PORT': '5432',
     }
     }
@@ -338,11 +338,11 @@ DEFAULT_FROM_EMAIL = 'Student Council <sachin.ghosh@universal.edu.in>'
 if not all([EMAIL_HOST_USER, EMAIL_HOST_PASSWORD]):
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-if os.environ.get('ENVIRONMENT', default='development') == 'production':
-    SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+# if os.environ.get('ENVIRONMENT', default='development') == 'production':
+#     SECURE_SSL_REDIRECT = True
+#     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+#     SESSION_COOKIE_SECURE = True
+#     CSRF_COOKIE_SECURE = True
 
 # Add to your URLs
 X_FRAME_OPTIONS = 'SAMEORIGIN'
