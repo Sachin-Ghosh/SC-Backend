@@ -41,7 +41,8 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'aurora.ucoe.co.in',
-    'admin.ucoe.co.in'
+    'admin.ucoe.co.in',
+    'ucoe.co.in',
     '*',  # Temporarily allow all hosts for testing
 ]
 
