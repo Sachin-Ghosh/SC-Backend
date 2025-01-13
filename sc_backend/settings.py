@@ -71,7 +71,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://student-council-backend.onrender.com",
     "https://aurora.ucoe.co.in",
-    "https://admin.ucoe.co.in"
+    "https://admin.ucoe.co.in",
+    "https://ucoe.co.in",
 ]
 
 # Application definition
