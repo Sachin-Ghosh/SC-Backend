@@ -24,6 +24,7 @@ class User(AbstractUser):
         ('IT', 'IT'),
         ('AIML', 'AIML'),
         ('DE', 'DE'),
+        ('CIVIL', 'Civil'),
         ('OTHER', 'Other')
     )
     DIVISION_TYPES = (
