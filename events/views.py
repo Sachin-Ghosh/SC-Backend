@@ -475,6 +475,9 @@ class SubEventViewSet(viewsets.ModelViewSet):
         user = self.request.user
         queryset = SubEvent.objects.all()
         
+        if user.user_type == 'STUDENT_COUNCIL':
+            return queryset
+        
         # Get filter parameters
         category = self.request.query_params.get('category', None)
         event_id = self.request.query_params.get('event', None)
@@ -498,12 +501,12 @@ class SubEventViewSet(viewsets.ModelViewSet):
                     models.Q(gender_participation='ALL')
                 )
          # Filter based on user role
-        if user.user_type == 'COUNCIL':
+        # if user.user_type == 'COUNCIL':
             # Get sub-events where user is sub_head
-            queryset = queryset.filter(sub_heads=user)
-        elif user.user_type == 'FACULTY':
-            # Get sub-events where faculty is judge
-            queryset = queryset.filter(faculty_judges=user)
+            # queryset = queryset.filter(sub_heads=user)
+        # if user.user_type == 'FACULTY':
+        #     # Get sub-events where faculty is judge
+        #     queryset = queryset.filter(faculty_judges=user)
             
         # Apply additional filters
         event_type = self.request.query_params.get('event_type', None)
