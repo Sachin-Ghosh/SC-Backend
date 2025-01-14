@@ -238,6 +238,7 @@ class EventRegistration(models.Model):
     )
     
     DEPARTMENT_TYPES = (
+        ('AS&H','AS&H'),
         ('COMPUTER', 'Comps'),
         ('IT', 'IT'),
         ('AIML', 'AIML'),
