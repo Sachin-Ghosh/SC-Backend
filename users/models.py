@@ -112,7 +112,7 @@ class CouncilMember(models.Model):
 class Faculty(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     designation = models.CharField(max_length=100)
-    subjects = models.CharField(max_length=200)
+    subjects = models.CharField(max_length=200, null=True, blank=True)
     office_location = models.CharField(max_length=100, null=True, blank=True)
     office_hours = models.CharField(max_length=100, null=True, blank=True)
     research_interests = models.SlugField(null=True, blank=True)

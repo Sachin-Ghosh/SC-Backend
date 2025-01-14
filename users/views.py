@@ -358,6 +358,7 @@ def verify_otp(request):
             'error': 'User not found'
         }, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
+        user.delete()
         return Response({
             'error': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
@@ -520,6 +521,7 @@ def resend_otp(request):
             'error': 'No user found with this email. Please register first.'
         }, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
+        user.delete()
         return Response({
             'error': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
