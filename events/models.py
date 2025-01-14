@@ -152,6 +152,7 @@ class SubEvent(models.Model):
     allow_mixed_year = models.BooleanField(default=False)
     allow_mixed_division = models.BooleanField(default=False)
     double_trouble_allowed = models.BooleanField(default=False)
+    upload_link = models.BooleanField(default=False)
     images = models.ManyToManyField(
         'SubEventImage',
         related_name='sub_events',
