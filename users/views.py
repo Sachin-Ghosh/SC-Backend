@@ -322,6 +322,10 @@ def verify_otp(request):
             user.subjects = request.data.get('subjects', [])
             
         elif user.user_type == 'COUNCIL':
+            user.year_of_study = request.data.get('year_of_study', '')
+            user.division = request.data.get('division', '')
+            user.roll_number = request.data.get('roll_number', '')
+            user.id_card_document = request.data.get('id_card_document', '')
             user.position = request.data.get('position', '')
             user.term_start = request.data.get('term_start')
             user.term_end = request.data.get('term_end')
