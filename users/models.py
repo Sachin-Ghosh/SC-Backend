@@ -20,6 +20,7 @@ class User(AbstractUser):
         ('FACULTY', 'Faculty')
     )
     DEPARTMENT_TYPES = (
+        ('AS&H','AS&H'),
         ('COMPUTER', 'Comps'),
         ('IT', 'IT'),
         ('AIML', 'AIML'),
