@@ -9,9 +9,9 @@ router.register(r'events', views.EventViewSet)
 router.register(r'sub-events', views.SubEventViewSet, basename='sub-event')
 router.register(r'registrations', views.EventRegistrationViewSet, basename='event-registration')
 router.register(r'draws', views.EventDrawViewSet)
-router.register(r'scores', views.EventScoreViewSet, basename='event-score')
+router.register(r'scores', views.EventScoreViewSet, basename='scores')
 router.register(r'faculty', views.FacultyViewSet, basename='faculty')
-# router.register(r'faculty-judges', views.SubEventFacultyViewSet, basename='sub-event-faculty')
+router.register(r'faculty-assignments', views.SubEventFacultyViewSet, basename='sub-event-faculty')
 router.register(r'scoreboard', views.ScoreboardViewSet, basename='scoreboard')
 router.register(r'heats', views.EventHeatViewSet)
 
@@ -64,4 +64,17 @@ urlpatterns = [
     path('registrations/available-team-members/', 
          views.EventRegistrationViewSet.as_view({'get': 'available_team_members'}),
          name='available-team-members'),
+    path('scores/submit_scores/', 
+         views.EventScoreViewSet.as_view({'post': 'submit_scores'}), 
+         name='submit-scores'),
+    # Scoreboard URLs
+    path('departments/<str:department>/statistics/', 
+         views.ScoreboardViewSet.as_view({'get': 'department_statistics'}),
+         name='department-statistics'),
+    path('events/<slug:slug>/leaderboard/', 
+         views.ScoreboardViewSet.as_view({'get': 'event_leaderboard'}),
+         name='event-leaderboard'),
+    path('overall-standings/', 
+         views.ScoreboardViewSet.as_view({'get': 'overall_standings'}),
+         name='overall-standings'),
 ]

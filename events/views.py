@@ -6,10 +6,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db import models 
 from django.shortcuts import get_object_or_404
-from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage, EventHeat , SubmissionFile , User, SubEventFaculty, DepartmentScore, HeatParticipant
-from .serializers import EventSerializer, SubEventSerializer, EventRegistrationSerializer, EventScoreSerializer, EventDrawSerializer , OrganizationSerializer , SubEventImageSerializer, EventHeatSerializer, SubEventFacultySerializer, HeatParticipantSerializer, EventScoreSerializer , UserSerializer
+from .models import Event, SubEvent, EventRegistration, EventScore, EventDraw , Organization , SubEventImage, EventHeat , SubmissionFile , User, SubEventFaculty, DepartmentScore, HeatParticipant, EventCriteria, DepartmentTotal
+from .serializers import EventSerializer, SubEventSerializer, EventRegistrationSerializer, EventScoreSerializer, EventDrawSerializer , OrganizationSerializer , SubEventImageSerializer, EventHeatSerializer, SubEventFacultySerializer, HeatParticipantSerializer, EventScoreSerializer , UserSerializer, EventCriteriaSerializer
 from rest_framework import viewsets, status     
-from django.db.models import Q, Count, Avg, Sum, IntegerField
+from django.db.models import Q, Count, Avg, Sum, IntegerField, Min , Max
 from decimal import Decimal
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -23,6 +23,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from rest_framework.exceptions import PermissionDenied
 from django.db.models.functions import Coalesce
+from rest_framework.exceptions import ValidationError
 
 # Get the custom User model
 User = get_user_model()
@@ -794,50 +795,50 @@ class SubEventViewSet(viewsets.ModelViewSet):
         
         return Response({'message': 'Stage updated successfully'})
 
-    @action(detail=True, methods=['post'])
-    def generate_heats(self, request, slug=None):
-        """Generate heats for the next round"""
-        sub_event = self.get_object()
-        round_number = request.data.get('round_number', sub_event.current_round)
+    # @action(detail=True, methods=['post'])
+    # def generate_heats(self, request, slug=None):
+    #     """Generate heats for the next round"""
+    #     sub_event = self.get_object()
+    #     round_number = request.data.get('round_number', sub_event.current_round)
         
-        # Get qualified participants for this round
-        if round_number == 1:
-            participants = EventRegistration.objects.filter(
-                sub_event=sub_event,
-                status='APPROVED'
-            )
-        else:
-            # Get participants who qualified from previous round
-            participants = EventRegistration.objects.filter(
-                sub_event=sub_event,
-                scores__round_number=round_number-1,
-                scores__qualified_for_next=True
-            ).distinct()
+    #     # Get qualified participants for this round
+    #     if round_number == 1:
+    #         participants = EventRegistration.objects.filter(
+    #             sub_event=sub_event,
+    #             status='APPROVED'
+    #         )
+    #     else:
+    #         # Get participants who qualified from previous round
+    #         participants = EventRegistration.objects.filter(
+    #             sub_event=sub_event,
+    #             scores__round_number=round_number-1,
+    #             scores__qualified_for_next=True
+    #         ).distinct()
         
-        # Shuffle participants
-        participants = list(participants)
-        random.shuffle(participants)
+    #     # Shuffle participants
+    #     participants = list(participants)
+    #     random.shuffle(participants)
         
-        # Create heats
-        heats_needed = (len(participants) + sub_event.participants_per_group - 1) // sub_event.participants_per_group
+    #     # Create heats
+    #     heats_needed = (len(participants) + sub_event.participants_per_group - 1) // sub_event.participants_per_group
         
-        heats = []
-        for heat_number in range(1, heats_needed + 1):
-            heat = EventHeat.objects.create(
-                sub_event=sub_event,
-                round_number=round_number,
-                heat_number=heat_number
-            )
+    #     heats = []
+    #     for heat_number in range(1, heats_needed + 1):
+    #         heat = EventHeat.objects.create(
+    #             sub_event=sub_event,
+    #             round_number=round_number,
+    #             heat_number=heat_number
+    #         )
             
-            # Assign participants to this heat
-            start_idx = (heat_number - 1) * sub_event.participants_per_group
-            end_idx = min(start_idx + sub_event.participants_per_group, len(participants))
-            heat_participants = participants[start_idx:end_idx]
-            heat.participants.set(heat_participants)
-            heats.append(heat)
+    #         # Assign participants to this heat
+    #         start_idx = (heat_number - 1) * sub_event.participants_per_group
+    #         end_idx = min(start_idx + sub_event.participants_per_group, len(participants))
+    #         heat_participants = participants[start_idx:end_idx]
+    #         heat.participants.set(heat_participants)
+    #         heats.append(heat)
         
-        serializer = EventHeatSerializer(heats, many=True)
-        return Response(serializer.data)
+    #     serializer = EventHeatSerializer(heats, many=True)
+    #     return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
     def record_heat_results(self, request, slug=None):
@@ -1063,28 +1064,28 @@ class SubEventViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=400)
 
-    @action(detail=True, methods=['post'])
-    def submit_scores(self, request, pk=None):
-        """Submit scores for participants"""
-        sub_event = self.get_object()
-        scores_data = request.data.get('scores', [])
+    # @action(detail=True, methods=['post'])
+    # def submit_scores(self, request, pk=None):
+    #     """Submit scores for participants"""
+    #     sub_event = self.get_object()
+    #     scores_data = request.data.get('scores', [])
         
-        results = []
-        for score_data in scores_data:
-            try:
-                score = EventScore.objects.create(
-                    sub_event=sub_event,
-                    event_registration_id=score_data['registration_id'],
-                    judge=request.user,
-                    total_score=score_data['total_score'],
-                    criteria_scores=score_data.get('criteria_scores', {}),
-                    remarks=score_data.get('remarks')
-                )
-                results.append(EventScoreSerializer(score).data)
-            except Exception as e:
-                results.append({'error': str(e)})
+    #     results = []
+    #     for score_data in scores_data:
+    #         try:
+    #             score = EventScore.objects.create(
+    #                 sub_event=sub_event,
+    #                 event_registration_id=score_data['registration_id'],
+    #                 judge=request.user,
+    #                 total_score=score_data['total_score'],
+    #                 criteria_scores=score_data.get('criteria_scores', {}),
+    #                 remarks=score_data.get('remarks')
+    #             )
+    #             results.append(EventScoreSerializer(score).data)
+    #         except Exception as e:
+    #             results.append({'error': str(e)})
         
-        return Response(results)
+    #     return Response(results)
 
     @action(detail=True, methods=['get'])
     def registrations(self, request, pk=None):
@@ -1319,7 +1320,40 @@ class SubEventViewSet(viewsets.ModelViewSet):
             })
         
         return Response(faculty_data)
-    
+    @action(detail=True, methods=['get'])
+    def get_scoring_criteria(self, request, **kwargs):
+        """Get scoring criteria for a sub-event"""
+        try:
+            sub_event = get_object_or_404(SubEvent, id=kwargs['id'])
+            
+            # Get the scoring criteria from the related model
+            scoring_criteria = None
+            criteria = {}
+            
+            if sub_event.scoring_criteria:
+                scoring_criteria = EventCriteria.objects.get(id=sub_event.scoring_criteria.id)
+                # The criteria is already in the correct format, just use it directly
+                criteria = scoring_criteria.criteria
+            
+            return Response({
+                'sub_event_id': sub_event.id,
+                'name': sub_event.name,
+                'scoring_type': sub_event.scoring_type,
+                'criteria': criteria,
+                'allow_negative_marking': sub_event.allow_negative_marking,
+                'scoring_criteria_id': scoring_criteria.id if scoring_criteria else None,
+                'scoring_criteria_name': scoring_criteria.name if scoring_criteria else None
+            })
+        except EventCriteria.DoesNotExist:
+            return Response(
+                {'error': 'Scoring criteria not found for this sub-event'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+        )
     @action(detail=True, methods=['get'], url_path='get-heats')
     def get_heats(self, request, **kwargs):  # Change to use **kwargs
         """Get all heats for the sub-event with filters"""
@@ -1507,6 +1541,324 @@ class EventHeatViewSet(viewsets.ModelViewSet):
         participants = HeatParticipant.objects.filter(heat=heat)
         
         return Response(HeatParticipantSerializer(participants, many=True).data)
+
+    @action(detail=False, methods=['post'])
+    def generate_heats(self, request):
+        """Generate heats for a round"""
+        sub_event_id = request.data.get('sub_event')
+        round_number = request.data.get('round_number')
+        participants_per_heat = request.data.get('participants_per_heat', 5)
+        
+        sub_event = get_object_or_404(SubEvent, id=sub_event_id)
+        
+        try:
+            with transaction.atomic():
+                # Get qualified participants from previous round
+                if round_number == 1:
+                    participants = EventRegistration.objects.filter(
+                        sub_event=sub_event,
+                        status='APPROVED'
+                    )
+                else:
+                    participants = EventRegistration.objects.filter(
+                        sub_event=sub_event,
+                        heatparticipant__heat__round_number=round_number-1,
+                        heatparticipant__qualified_for_next=True
+                    ).distinct()
+                
+                # Shuffle participants
+                participants = list(participants)
+                random.shuffle(participants)
+                
+                # Create heats
+                total_participants = len(participants)
+                num_heats = (total_participants + participants_per_heat - 1) // participants_per_heat
+                
+                heats = []
+                for heat_number in range(1, num_heats + 1):
+                    heat = EventHeat.objects.create(
+                        sub_event=sub_event,
+                        stage=sub_event.current_stage,
+                        round_number=round_number,
+                        heat_number=heat_number,
+                        max_participants=participants_per_heat,
+                        schedule=timezone.now() + timezone.timedelta(hours=1)  # Default schedule
+                    )
+                    heats.append(heat)
+                
+                # Assign participants to heats
+                for idx, participant in enumerate(participants):
+                    heat_idx = idx // participants_per_heat
+                    if heat_idx < len(heats):
+                        HeatParticipant.objects.create(
+                            heat=heats[heat_idx],
+                            registration=participant
+                        )
+                
+                return Response({
+                    'message': f'Generated {len(heats)} heats',
+                    'heats': EventHeatSerializer(heats, many=True).data
+                })
+                
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    @action(detail=True, methods=['post'])
+    def update_heat_results(self, request, pk=None):
+        """Update results for a heat"""
+        heat = self.get_object()
+        results = request.data.get('results', [])
+        
+        try:
+            with transaction.atomic():
+                for result in results:
+                    participant = get_object_or_404(
+                        HeatParticipant,
+                        heat=heat,
+                        registration_id=result['registration_id']
+                    )
+                    participant.position = result.get('position')
+                    participant.qualified_for_next = result.get('qualified', False)
+                    participant.remarks = result.get('remarks')
+                    participant.save()
+                
+                # Update heat status
+                heat.status = 'COMPLETED'
+                heat.save()
+                
+                # Check if all heats in round are completed
+                all_completed = EventHeat.objects.filter(
+                    sub_event=heat.sub_event,
+                    round_number=heat.round_number
+                ).exclude(status='COMPLETED').count() == 0
+                
+                if all_completed:
+                    # Trigger next round generation or finalize results
+                    pass
+                
+                return Response({'message': 'Heat results updated successfully'})
+                
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    # 1. Get Specific Heat
+    @action(detail=True, methods=['get'])
+    def get_heat_details(self, request, pk=None):
+        """Get specific heat details with participants"""
+        try:
+            heat = get_object_or_404(EventHeat, id=pk)
+            
+            participants = HeatParticipant.objects.filter(heat=heat).select_related(
+                'registration',
+                'registration__sub_event',
+                'registration__team_leader'  # Add team_leader for solo events
+            ).prefetch_related(
+                'registration__team_members'  # Add team members for team events
+            )
+            
+            data = {
+                'heat_id': heat.id,
+                'stage': heat.stage,
+                'round_number': heat.round_number,
+                'heat_number': heat.heat_number,
+                'schedule': heat.schedule,
+                'venue': heat.venue,
+                'status': heat.status,
+                'participants': []
+            }
+            
+            for p in participants:
+                registration = p.registration
+                participant_data = {
+                    'registration_id': registration.id,
+                    'department': registration.department,
+                    'year': registration.year,
+                    'division': registration.division,
+                    'position': p.position,
+                    'scores': []
+                }
+                
+                # Handle name based on participation type
+                if registration.sub_event.participation_type == 'SOLO':
+                    # For solo events, use team leader's name
+                    if registration.team_members.first():
+                        participant_data['participant_name'] = (
+                            f"{registration.team_members.first().first_name} {registration.team_members.first().last_name}".strip()
+                        )
+                        participant_data['team_name'] = None
+                else:
+                    # For team events, use team name
+                    participant_data['team_name'] = registration.team_name
+                    participant_data['participant_name'] = None
+                
+                data['participants'].append(participant_data)
+            
+            # Add scores if heat is completed or in progress
+            if heat.status in ['IN_PROGRESS', 'COMPLETED']:
+                scores = EventScore.objects.filter(heat=heat).select_related('judge')
+                for score in scores:
+                    participant = next(
+                        (p for p in data['participants'] 
+                         if p['registration_id'] == score.event_registration_id),
+                        None
+                    )
+                    if participant:
+                        # Skip empty scores
+                        if not score.criteria_scores and score.total_score is None:
+                            continue
+                        
+                        participant['scores'].append({
+                            'judge_id': score.judge.id,
+                            'judge_name': f"{score.judge.first_name} {score.judge.last_name}".strip(),
+                            'criteria_scores': score.criteria_scores,
+                            'total_score': score.total_score,
+                            'aura_points': score.aura_points,
+                            # 'submitted_at': score.created_at
+                        })
+            
+            return Response(data)
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    # 2. Get Scoring Criteria
+    
+
+    # 3. View Faculty Scores
+    @action(detail=True, methods=['get'])
+    def view_faculty_scores(self, request, pk=None):
+        """View scores submitted by faculty for a heat"""
+        try:
+            heat = get_object_or_404(EventHeat, id=pk)
+            scores = EventScore.objects.filter(heat=heat).select_related(
+                'judge', 
+                'event_registration',
+                'event_registration__sub_event'
+            )
+            
+            # Group scores by judge
+            scores_by_judge = {}
+            for score in scores:
+                judge_name = f"{score.judge.first_name} {score.judge.last_name}".strip()
+                if judge_name not in scores_by_judge:
+                    scores_by_judge[judge_name] = []
+                
+                registration = score.event_registration
+                
+                # Determine participant name based on event type
+                if registration.sub_event.participation_type == 'SOLO':
+                    if registration.team_leader:
+                        participant_name = f"{registration.team_leader.first_name} {registration.team_leader.last_name}".strip()
+                    else:
+                        participant_name = "Unknown Participant"
+                else:
+                    participant_name = registration.team_name or "Unknown Team"
+                
+                # Skip empty scores
+                if not score.criteria_scores and score.total_score is None:
+                    continue
+                    
+                scores_by_judge[judge_name].append({
+                    'participant_name': participant_name,
+                    'registration_id': registration.id,
+                    'criteria_scores': score.criteria_scores,
+                    'total_score': score.total_score,
+                    'aura_points': score.aura_points,
+                    # 'submitted_at': score.created_at,
+                    'department': registration.department,
+                    'year': registration.year,
+                    'division': registration.division
+                })
+            
+            return Response({
+                'heat_id': heat.id,
+                'sub_event': heat.sub_event.name,
+                'stage': heat.stage,
+                'round_number': heat.round_number,
+                'heat_number': heat.heat_number,
+                'status': heat.status,
+                'scores_by_judge': scores_by_judge
+            })
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    # 4. View Final Results
+    @action(detail=True, methods=['get'])
+    def view_final_results(self, request, pk=None):
+        """View final results for a heat"""
+        try:
+            heat = get_object_or_404(EventHeat, id=pk)
+            
+            if heat.status != 'COMPLETED':
+                return Response({
+                    'error': 'Heat is not completed yet'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Get average scores and positions
+            final_scores = EventScore.objects.filter(
+                heat=heat
+            ).values(
+                'event_registration'
+            ).annotate(
+                avg_score=Avg('total_score'),
+                aura_points=Max('aura_points'),  # Get the aura points directly from scores
+                final_position=Min('position')  # All scores for same registration should have same position
+            ).order_by('final_position', '-avg_score')
+            
+            results = []
+            for score in final_scores:
+                registration = EventRegistration.objects.select_related(
+                    'team_leader',
+                    'sub_event'
+                ).get(id=score['event_registration'])
+                
+                # Determine participant name based on event type
+                if registration.sub_event.participation_type == 'SOLO':
+                    if registration.team_members.first():
+                        participant_name = f"{registration.team_members.first().first_name} {registration.team_members.first().last_name}".strip()
+                    else:
+                        participant_name = "Unknown Participant"
+                    team_name = None
+                else:
+                    team_name = registration.team_name
+                    participant_name = None
+                
+                results.append({
+                    'position': score['final_position'],
+                    'registration_id': registration.id,
+                    'participant_name': participant_name,
+                    'team_name': team_name,
+                    'department': registration.department,
+                    'year': registration.year,
+                    'division': registration.division,
+                    'average_score': round(score['avg_score'], 2) if score['avg_score'] else None,
+                    'aura_points': score['aura_points'] or 0  # Use aura points from aggregation
+                })
+            
+            return Response({
+                'heat_id': heat.id,
+                'sub_event': heat.sub_event.name,
+                'stage': heat.stage,
+                'round_number': heat.round_number,
+                'heat_number': heat.heat_number,
+                'status': heat.status,
+                'results': results
+            })
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 class EventRegistrationViewSet(viewsets.ModelViewSet):
     queryset = EventRegistration.objects.all()
@@ -2033,7 +2385,10 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
         """Get list of users available for team selection"""
         sub_event_id = request.query_params.get('sub_event')
         if not sub_event_id:
-            return Response([], status=status.HTTP_200_OK)
+            return Response(
+                {"error": "sub_event parameter is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             sub_event = SubEvent.objects.get(id=sub_event_id)
@@ -2193,43 +2548,88 @@ class EventScoreViewSet(viewsets.ModelViewSet):
         score.save()
         
         return Response(EventScoreSerializer(score).data)
-    @action(detail=False, methods=['post'])
-    def bulk_submit(self, request):
-        """Submit multiple scores at once"""
-        try:
-            sub_event = get_object_or_404(SubEvent, id=request.data.get('sub_event'))
-            heat = get_object_or_404(EventHeat, id=request.data.get('heat'))
-            stage = request.data.get('stage')
-            round_number = request.data.get('round_number')
-            
-            scores_data = request.data.get('scores', [])
-            created_scores = []
-            
-            for score_data in scores_data:
-                score = EventScore.objects.create(
-                    sub_event=sub_event,
-                    heat=heat,
-                    stage=stage,
-                    round_number=round_number,
-                    event_registration_id=score_data['registration'],
-                    judge=request.user,
-                    total_score=score_data['total_score'],
-                    criteria_scores=score_data.get('criteria_scores', {}),
-                    position=score_data.get('position'),
-                    qualified_for_next=score_data.get('qualified_for_next', False)
-                )
-                created_scores.append(score)
-            
+    
+    @action(detail=False, methods=['get'])
+    def heat_participants(self, request):
+        """Get participants for scoring based on heat"""
+        heat_id = request.query_params.get('heat')
+        if not heat_id:
             return Response(
-                EventScoreSerializer(created_scores, many=True).data,
-                status=status.HTTP_201_CREATED
+                {"error": "Heat ID required"}, 
+                status=status.HTTP_400_BAD_REQUEST
             )
             
+        heat = get_object_or_404(EventHeat, id=heat_id)
+        participants = HeatParticipant.objects.filter(heat=heat)
+        
+        return Response(HeatParticipantSerializer(participants, many=True).data)
+    
+    @action(detail=False, methods=['post'])
+    def submit_scores(self, request):
+        """Submit scores for multiple participants"""
+        heat_id = request.data.get('heat_id')
+        scores_data = request.data.get('scores', [])
+        
+        try:
+            # Get the heat and verify it exists
+            heat = get_object_or_404(EventHeat, id=heat_id)
+            
+            with transaction.atomic():
+                created_scores = []
+                for score_data in scores_data:
+                    registration_id = score_data.get('registration_id')
+                    criteria_scores = score_data.get('criteria_scores', {})
+                    remarks = score_data.get('remarks', '')
+                    
+                    # Verify the registration exists in this heat
+                    if not HeatParticipant.objects.filter(
+                        heat=heat,
+                        registration_id=registration_id
+                    ).exists():
+                        raise ValidationError(f"Registration {registration_id} not found in heat {heat_id}")
+                    
+                    # Calculate total score based on criteria weights
+                    total_score = 0
+                    for criterion, score in criteria_scores.items():
+                        # You might want to get weights from sub_event criteria configuration
+                        total_score += score  # For now, simple average
+                    
+                    total_score = total_score / len(criteria_scores) if criteria_scores else 0
+                    
+                    # Create score
+                    score = EventScore.objects.create(
+                        sub_event=heat.sub_event,
+                        event_registration_id=registration_id,
+                        heat=heat,
+                        judge=request.user,
+                        criteria_scores=criteria_scores,
+                        total_score=total_score,
+                        remarks=remarks
+                    )
+                    created_scores.append(score)
+                
+                return Response({
+                    'message': 'Scores submitted successfully',
+                    'heat_id': heat_id,
+                    'scores_submitted': len(created_scores)
+                })
+                
+        except EventHeat.DoesNotExist:
+            return Response(
+                {'error': 'Heat not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except ValidationError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
             return Response(
                 {'error': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
     def perform_create(self, serializer):
         user = self.request.user
         sub_event = serializer.validated_data['sub_event']
@@ -2274,47 +2674,47 @@ class EventScoreViewSet(viewsets.ModelViewSet):
         serializer.save(judge=request.user, updated_by=request.user)
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    @action(detail=False, methods=['post'] , url_path='submit-score')
-    def submit_score(self, request):
+    # @action(detail=False, methods=['post'] , url_path='submit-score')
+    # def submit_score(self, request):
         
-        sub_event = get_object_or_404(SubEvent, id=request.data.get('sub_event'))
-        """
-        Submit scores for a participant/team
-        """
-        sub_event_id = request.data.get('sub_event')
-        registration_id = request.data.get('registration')
+    #     sub_event = get_object_or_404(SubEvent, id=request.data.get('sub_event'))
+    #     """
+    #     Submit scores for a participant/team
+    #     """
+    #     sub_event_id = request.data.get('sub_event')
+    #     registration_id = request.data.get('registration')
         
-        # Validate permissions
-        if not self._can_submit_score(request.user, sub_event_id):
-            return Response(
-                {"error": "You are not authorized to submit scores for this event"},
-                status=status.HTTP_403_FORBIDDEN
-            )
+    #     # Validate permissions
+    #     if not self._can_submit_score(request.user, sub_event_id):
+    #         return Response(
+    #             {"error": "You are not authorized to submit scores for this event"},
+    #             status=status.HTTP_403_FORBIDDEN
+    #         )
 
-        # Get or create score object
-        score_data = {
-            'sub_event': request.data.get('sub_event'),
-            'event_registration': request.data.get('registration'),  # Changed from registration to event_registration
-            'judge': request.user.id,  # Add judge ID explicitly
-            'stage': request.data.get('stage'),
-            'score_type': request.data.get('score_type'),
-            'round_number': request.data.get('round_number'),
-            'heat': request.data.get('heat'),
-            'total_score': request.data.get('total_score'),
-            'criteria_scores': request.data.get('criteria_scores', {}),
-            'position': request.data.get('position'),
-            'remarks': request.data.get('remarks'),
-            'qualified_for_next': request.data.get('qualified_for_next', False)
-        }
+    #     # Get or create score object
+    #     score_data = {
+    #         'sub_event': request.data.get('sub_event'),
+    #         'event_registration': request.data.get('registration'),  # Changed from registration to event_registration
+    #         'judge': request.user.id,  # Add judge ID explicitly
+    #         'stage': request.data.get('stage'),
+    #         'score_type': request.data.get('score_type'),
+    #         'round_number': request.data.get('round_number'),
+    #         'heat': request.data.get('heat'),
+    #         'total_score': request.data.get('total_score'),
+    #         'criteria_scores': request.data.get('criteria_scores', {}),
+    #         'position': request.data.get('position'),
+    #         'remarks': request.data.get('remarks'),
+    #         'qualified_for_next': request.data.get('qualified_for_next', False)
+    #     }
 
-        serializer = EventScoreSerializer(
-            data=score_data,
-            context={'sub_event': sub_event, 'request': request}
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     serializer = EventScoreSerializer(
+    #         data=score_data,
+    #         context={'sub_event': sub_event, 'request': request}
+    #     )
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=['get'])
     def participant_scores(self, request):
@@ -2386,6 +2786,372 @@ class EventScoreViewSet(viewsets.ModelViewSet):
         
         return False
 
+    @action(detail=False, methods=['post'])
+    def record_sports_results(self, request):
+        """Record results for sports events"""
+        heat_id = request.data.get('heat')
+        results = request.data.get('results', [])
+        
+        try:
+            heat = get_object_or_404(EventHeat, id=heat_id)
+            sub_event = heat.sub_event
+            
+            # First, validate that all registration_ids exist in the heat
+            heat_participants = HeatParticipant.objects.filter(heat=heat).values_list('registration_id', flat=True)
+            
+            for result in results:
+                registration_id = result.get('registration_id')
+                if registration_id not in heat_participants:
+                    return Response(
+                        {
+                            'error': f'Registration ID {registration_id} not found in heat {heat_id}. '
+                            f'Valid registrations are: {list(heat_participants)}'
+                        }, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            with transaction.atomic():
+                for result in results:
+                    registration_id = result['registration_id']
+                    position = result.get('position')
+                    
+                    # Get the actual registration from HeatParticipant
+                    heat_participant = HeatParticipant.objects.get(
+                        heat=heat,
+                        registration_id=registration_id
+                    )
+                    
+                    # Get the event registration
+                    registration = EventRegistration.objects.get(id=registration_id)
+                    
+                    # Calculate AURA points
+                    aura_points = 0
+                    if position == 1:  # Winner
+                        aura_points = sub_event.aura_points_winner
+                    elif position == 2:  # Runner-up
+                        aura_points = sub_event.aura_points_runner
+                    
+                    # Add match points if applicable
+                    if (sub_event.match_points_enabled and 
+                        position == 1 and 
+                        heat.stage != 'FINALS'):
+                        aura_points += 20
+                    
+                    # Create EventScore
+                    event_score = EventScore.objects.create(
+                        sub_event=sub_event,
+                        event_registration_id=heat_participant.registration_id,
+                        heat=heat,
+                        position=position,
+                        aura_points=aura_points,
+                        judge=request.user
+                    )
+                    
+                    # Update or create DepartmentScore
+                    dept_score, created = DepartmentScore.objects.get_or_create(
+                        department=registration.department,
+                        year=registration.year,
+                        division=registration.division,
+                        sub_event=sub_event,
+                        defaults={
+                            'total_score': 0,
+                            'aura_points': 0
+                        }
+                    )
+                    
+                    # Update department score
+                    if position in [1, 2]:  # Only update for winners and runners-up
+                        dept_score.aura_points = aura_points
+                        # For sports events, total_score can be based on position
+                        dept_score.total_score = 10 - position  # 1st gets 9, 2nd gets 8
+                        dept_score.save()
+                    
+                    # Update heat participant position
+                    heat_participant.position = position
+                    heat_participant.save()
+                
+                # Update heat status
+                heat.status = 'COMPLETED'
+                heat.save()
+                
+                return Response({
+                    'message': 'Sports results recorded successfully',
+                    'heat_id': heat_id,
+                    'results_recorded': len(results)
+                })
+                
+        except EventHeat.DoesNotExist:
+            return Response(
+                {'error': f'Heat {heat_id} not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except HeatParticipant.DoesNotExist:
+            return Response(
+                {'error': 'Invalid registration ID for this heat'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except EventRegistration.DoesNotExist:
+            return Response(
+                {'error': 'Event registration not found'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=False, methods=['post'])
+    def submit_cultural_scores(self, request):
+        """Submit scores for cultural events"""
+        heat_id = request.data.get('heat_id')
+        scores_data = request.data.get('scores', [])
+        
+        try:
+            heat = get_object_or_404(EventHeat, id=heat_id)
+            sub_event = heat.sub_event
+            criteria = sub_event.get_scoring_criteria()
+            
+            # Validate participants are in the heat
+            heat_participants = HeatParticipant.objects.filter(heat=heat).values_list('registration_id', flat=True)
+            
+            for score_data in scores_data:
+                registration_id = score_data.get('registration_id')
+                if registration_id not in heat_participants:
+                    return Response(
+                        {
+                            'error': f'Registration ID {registration_id} not found in heat {heat_id}. '
+                            f'Valid registrations are: {list(heat_participants)}'
+                        }, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            with transaction.atomic():
+                created_scores = []
+                for participant_score in scores_data:
+                    registration_id = participant_score['registration_id']
+                    criteria_scores = participant_score['criteria_scores']
+                    
+                    # Calculate total score
+                    total_score = 0
+                    for criterion, score in criteria_scores.items():
+                        if criterion == 'Negative Marking':
+                            continue
+                        weight = criteria[criterion]['weight']
+                        total_score += score * weight
+                    
+                    # Apply negative marking if any
+                    if sub_event.allow_negative_marking:
+                        negative_marks = criteria_scores.get('Negative Marking', 0)
+                        total_score -= negative_marks
+                    
+                    # Create score
+                    score = EventScore.objects.create(
+                        sub_event=sub_event,
+                        event_registration_id=registration_id,
+                        heat=heat,
+                        criteria_scores=criteria_scores,
+                        total_score=total_score,
+                        judge=request.user
+                    )
+                    created_scores.append(score)
+                
+                # Check if all judges have submitted scores for all participants
+                total_judges = heat.sub_event.sub_heads.count()
+                total_participants = heat_participants.count()
+                
+                scores_submitted = EventScore.objects.filter(
+                    heat=heat
+                ).values('judge', 'event_registration').distinct().count()
+                
+                expected_total_scores = total_judges * total_participants
+                
+                # If all scores are submitted, finalize the heat
+                if scores_submitted >= expected_total_scores:
+                    # Calculate average scores for each participant
+                    final_scores = EventScore.objects.filter(
+                        heat=heat
+                    ).values(
+                        'event_registration'
+                    ).annotate(
+                        avg_score=Avg('total_score')
+                    ).order_by('-avg_score')
+                    
+                    # Get winner and runner-up
+                    if final_scores:
+                        winner_score = final_scores[0]
+                        winner_registration = winner_score['event_registration']
+                        winner_avg_score = winner_score['avg_score']
+                        
+                        runner_up_registration = None
+                        runner_up_avg_score = None
+                        if len(final_scores) > 1:
+                            runner_up_score = final_scores[1]
+                            runner_up_registration = runner_up_score['event_registration']
+                            runner_up_avg_score = runner_up_score['avg_score']
+                        
+                        # Update positions and AURA points
+                        for score in final_scores:
+                            registration_id = score['event_registration']
+                            registration = EventRegistration.objects.get(id=registration_id)
+                            position = None
+                            aura_points = 0
+                            
+                            if registration_id == winner_registration:
+                                position = 1
+                                aura_points = sub_event.aura_points_winner
+                            elif registration_id == runner_up_registration:
+                                position = 2
+                                aura_points = sub_event.aura_points_runner
+                            
+                            # Update all EventScores for this registration
+                            EventScore.objects.filter(
+                                heat=heat,
+                                event_registration_id=registration_id
+                            ).update(
+                                position=position,
+                                aura_points=aura_points
+                            )
+                            
+                            # Update heat participant position
+                            if position:
+                                HeatParticipant.objects.filter(
+                                    heat=heat,
+                                    registration_id=registration_id
+                                ).update(position=position)
+                            
+                            # Update or create department score
+                            dept_score, _ = DepartmentScore.objects.get_or_create(
+                                department=registration.department,
+                                year=registration.year,
+                                division=registration.division,
+                                sub_event=sub_event,
+                                defaults={
+                                    'total_score': score['avg_score'],
+                                    'aura_points': aura_points
+                                }
+                            )
+                            
+                            if not _:  # If already exists, update it
+                                dept_score.total_score = score['avg_score']
+                                # Add AURA points to existing points
+                                dept_score.aura_points += aura_points
+                                dept_score.save()
+                            
+                            # Also update the department's total AURA points
+                            department_total, _ = DepartmentTotal.objects.get_or_create(
+                                department=registration.department,
+                                year=registration.year,
+                                division=registration.division,
+                                defaults={'total_aura_points': 0}
+                            )
+                            department_total.total_aura_points += aura_points
+                            department_total.save()
+                    
+                    # Update heat status
+                    heat.status = 'COMPLETED'
+                    heat.save()
+                    
+                    return Response({
+                        'message': 'Cultural scores submitted and heat completed',
+                        'heat_id': heat_id,
+                        'scores_submitted': len(created_scores),
+                        'heat_completed': True,
+                        'final_results': {
+                            'winner': {
+                                'registration_id': winner_registration,
+                                'score': winner_avg_score,
+                                'aura_points': sub_event.aura_points_winner
+                            },
+                            'runner_up': {
+                                'registration_id': runner_up_registration,
+                                'score': runner_up_avg_score,
+                                'aura_points': sub_event.aura_points_runner
+                            } if runner_up_registration else None
+                        }
+                    })
+                
+                return Response({
+                    'message': 'Cultural scores submitted successfully',
+                    'heat_id': heat_id,
+                    'scores_submitted': len(created_scores),
+                    'heat_completed': False,
+                    'remaining_scores': expected_total_scores - scores_submitted
+                })
+                
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=True, methods=['post'])
+    def finalize_results(self, request, pk=None):
+        """Finalize results and assign AURA points"""
+        sub_event = self.get_object()
+        
+        try:
+            with transaction.atomic():
+                # Get all scores for this sub_event
+                scores = EventScore.objects.filter(
+                    sub_event=sub_event
+                ).values('event_registration').annotate(
+                    avg_score=Avg('total_score')
+                ).order_by('-avg_score')
+                
+                # Handle joint winners
+                winners = []
+                runners_up = []
+                top_score = scores[0]['avg_score'] if scores else 0
+                
+                for score in scores:
+                    if score['avg_score'] == top_score:
+                        winners.append(score['event_registration'])
+                    elif not runners_up and score['avg_score'] < top_score:
+                        runners_up.append(score['event_registration'])
+                    elif runners_up and score['avg_score'] == scores[len(winners)]['avg_score']:
+                        runners_up.append(score['event_registration'])
+                    else:
+                        break
+                
+                # Assign AURA points
+                winner_points = sub_event.aura_points_winner
+                runner_points = sub_event.aura_points_runner
+                
+                # Adjust points for joint winners
+                if len(winners) > 1 and sub_event.allow_joint_winners:
+                    winner_points = (winner_points + runner_points) // 2
+                
+                # Update scores with final positions and AURA points
+                for reg_id in winners:
+                    EventScore.objects.filter(
+                        sub_event=sub_event,
+                        event_registration_id=reg_id
+                    ).update(
+                        position=1,
+                        aura_points=winner_points
+                    )
+                
+                for reg_id in runners_up:
+                    EventScore.objects.filter(
+                        sub_event=sub_event,
+                        event_registration_id=reg_id
+                    ).update(
+                        position=2,
+                        aura_points=runner_points
+                    )
+                
+                return Response({
+                    'message': 'Results finalized successfully',
+                    'winners': winners,
+                    'runners_up': runners_up
+                })
+                
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 # Additional API Views
 @api_view(['GET'])
@@ -3111,3 +3877,213 @@ class FacultyViewSet(viewsets.ModelViewSet):
             })
         
         return Response(subevent_data)
+
+class EventCriteriaViewSet(viewsets.ModelViewSet):
+    queryset = EventCriteria.objects.all()
+    serializer_class = EventCriteriaSerializer
+    permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def get_criteria_by_event(self, request):
+        """Get scoring criteria for a specific event"""
+        event_name = request.query_params.get('event_name')
+        if not event_name:
+            return Response(
+                {"error": "event_name parameter is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            criteria = EventCriteria.objects.get(
+                name=event_name,
+                is_active=True
+            )
+            return Response(criteria.criteria)
+        except EventCriteria.DoesNotExist:
+            return Response(
+                {"error": f"No criteria found for event: {event_name}"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+class ScoreboardViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def overall_standings(self, request):
+        """Get overall department standings"""
+        # Get query parameters
+        year = request.query_params.get('year')
+        division = request.query_params.get('division')
+        event_id = request.query_params.get('event')
+        
+        # Base query
+        scores = DepartmentScore.objects.all()
+        
+        # Apply filters
+        if year:
+            scores = scores.filter(year=year)
+        if division:
+            scores = scores.filter(division=division)
+        if event_id:
+            scores = scores.filter(sub_event__event_id=event_id)
+            
+        # Get department-wise totals
+        department_scores = scores.values(
+            'department'
+        ).annotate(
+            total_aura_points=Sum('aura_points'),
+            total_events=Count('sub_event', distinct=True)
+        ).order_by('-total_aura_points')
+        
+        # Get detailed breakdown
+        detailed_scores = scores.values(
+            'department', 'year', 'division'
+        ).annotate(
+            total_aura_points=Sum('aura_points'),
+            total_events=Count('sub_event', distinct=True)
+        ).order_by('-total_aura_points')
+        
+        return Response({
+            'department_standings': department_scores,
+            'detailed_standings': detailed_scores
+        })
+    
+    @action(detail=False, methods=['get'])
+    def department_statistics(self, request):
+        """Get detailed statistics for a department"""
+        department = request.query_params.get('department')
+        if not department:
+            return Response(
+                {"error": "Department parameter is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # Get all scores for the department
+        scores = DepartmentScore.objects.filter(department=department)
+        
+        # Event type breakdown
+        event_type_stats = scores.values(
+            'sub_event__category'
+        ).annotate(
+            total_points=Sum('aura_points'),
+            event_count=Count('sub_event', distinct=True)
+        )
+        
+        # Top performing events
+        top_events = scores.values(
+            'sub_event__name',
+            'sub_event__category'
+        ).annotate(
+            points=Sum('aura_points')
+        ).order_by('-points')[:5]
+        
+        # Year/Division performance
+        year_division_stats = scores.values(
+            'year', 'division'
+        ).annotate(
+            total_points=Sum('aura_points'),
+            event_count=Count('sub_event', distinct=True)
+        ).order_by('-total_points')
+        
+        return Response({
+            'department': department,
+            'total_points': scores.aggregate(total=Sum('aura_points'))['total'] or 0,
+            'event_type_breakdown': event_type_stats,
+            'top_events': top_events,
+            'year_division_performance': year_division_stats
+        })
+    
+    @action(detail=False, methods=['get'])
+    def event_leaderboard(self, request):
+        """Get leaderboard for a specific event"""
+        event_id = request.query_params.get('event')
+        if not event_id:
+            return Response(
+                {"error": "Event parameter is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        scores = DepartmentScore.objects.filter(
+            sub_event__event_id=event_id
+        )
+        
+        # Department standings
+        department_standings = scores.values(
+            'department'
+        ).annotate(
+            total_points=Sum('aura_points'),
+            sub_events_participated=Count('sub_event', distinct=True)
+        ).order_by('-total_points')
+        
+        # Sub-event breakdown
+        sub_event_breakdown = scores.values(
+            'sub_event__name',
+            'department'
+        ).annotate(
+            points=Sum('aura_points')
+        ).order_by('sub_event__name', '-points')
+        
+        return Response({
+            'department_standings': department_standings,
+            'sub_event_breakdown': sub_event_breakdown
+        })
+
+class SubEventFacultyViewSet(viewsets.ModelViewSet):
+    queryset = SubEventFaculty.objects.all()
+    serializer_class = SubEventFacultySerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        if self.request.user.user_type == 'FACULTY':
+            return self.queryset.filter(faculty=self.request.user, is_active=True)
+        return self.queryset
+    
+    @action(detail=False, methods=['get'])
+    def my_assignments(self, request):
+        """Get faculty's judging assignments"""
+        if request.user.user_type != 'FACULTY':
+            return Response(
+                {"error": "Only faculty members can access assignments"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        assignments = self.queryset.filter(
+            faculty=request.user,
+            # is_active=True,
+            # sub_event__current_stage__in=['ONGOING', 'SCORING']
+        )
+        
+        return Response(self.serializer_class(assignments, many=True).data)
+    
+    @action(detail=True, methods=['post'])
+    def submit_scores(self, request, pk=None):
+        """Submit scores for assigned sub-event"""
+        faculty_assignment = self.get_object()
+        
+        if request.user != faculty_assignment.faculty:
+            return Response(
+                {"error": "Unauthorized to submit scores"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        scores_data = request.data.get('scores', [])
+        
+        try:
+            with transaction.atomic():
+                for score_data in scores_data:
+                    registration_id = score_data.pop('registration_id')
+                    EventScore.objects.create(
+                        sub_event=faculty_assignment.sub_event,
+                        event_registration_id=registration_id,
+                        judge=request.user,
+                        criteria_scores=score_data.get('criteria_scores', {}),
+                        remarks=score_data.get('remarks', '')
+                    )
+                
+                return Response({'message': 'Scores submitted successfully'})
+                
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )

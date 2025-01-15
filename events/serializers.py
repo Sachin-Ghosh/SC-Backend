@@ -5,7 +5,7 @@ from django_summernote.fields import SummernoteTextField
 from .models import (
     Organization, Event, SubEvent, SubEventImage, EventRegistration,
     SubmissionFile, EventDraw, EventScore, EventHeat, SubEventFaculty,
-    HeatParticipant
+    HeatParticipant, EventCriteria, DepartmentScore
 )
 from users.serializers import UserSerializer
 
@@ -37,27 +37,15 @@ class SubEventFacultySerializer(serializers.ModelSerializer):
     faculty_name = serializers.SerializerMethodField()
     faculty_email = serializers.EmailField(source='faculty.email', read_only=True)
     
-    faculty = UserSerializer(read_only=True)  # Add this line
-
-
     class Meta:
         model = SubEventFaculty
-        fields = ['id', 'faculty', 'faculty_name', 'faculty_email', 'sub_event', 'is_active', 'remarks']
+        fields = ['id', 'faculty', 'faculty_name', 'faculty_email', 
+                 'sub_event', 'is_active', 'remarks']
         read_only_fields = ['assigned_at']
 
     def get_faculty_name(self, obj):
-        try:
-            return f"{obj.faculty.first_name} {obj.faculty.last_name}".strip()
-        except:
-            return "Unknown Faculty"
+        return obj.faculty.get_full_name()
 
-    def get_faculty_email(self, obj):
-        try:
-            return obj.faculty.email
-        except:
-            return None
-
-    
 class SubEventSerializer(serializers.ModelSerializer):
     images = SubEventImageSerializer(many=True, read_only=True)
     sub_heads = UserSerializer(many=True, read_only=True)
@@ -213,49 +201,57 @@ class EventScoreSerializer(serializers.ModelSerializer):
         score = super().create(validated_data)
         return score
 
+class HeatParticipantSerializer(serializers.ModelSerializer):
+    participant_name = serializers.SerializerMethodField()
+    department = serializers.CharField(source='registration.department')
+    year = serializers.CharField(source='registration.year')
+    division = serializers.CharField(source='registration.division')
+    
+    class Meta:
+        model = HeatParticipant
+        fields = '__all__'
+    
+    def get_participant_name(self, obj):
+        return obj.registration.get_participant_display()
+
 class EventHeatSerializer(serializers.ModelSerializer):
-    # sub_event_name = serializers.CharField(source='sub_event.name', read_only=True)
-    # participant_count = serializers.SerializerMethodField()
-    # judges = serializers.SerializerMethodField()
+    participants = HeatParticipantSerializer(
+        source='heatparticipant_set',
+        many=True,
+        read_only=True
+    )
     
     class Meta:
         model = EventHeat
         fields = '__all__'
+        read_only_fields = ('created_at', 'updated_at')
     
-    # def get_participant_count(self, obj):
-    #     return obj.heatparticipant_set.count()
-    
-    # def get_judges(self, obj):
-    #     return SubEventFacultySerializer(
-    #         obj.sub_event.subeventfaculty_set.filter(is_active=True), 
-    #         many=True
-    #     ).data
-    # def validate(self, data):
-    #     """
-    #     Check that the heat doesn't already exist for this stage and round
-    #     """
-    #     sub_event = data.get('sub_event')
-    #     stage = data.get('stage')
-    #     round_number = data.get('round_number')
+    def validate(self, data):
+        """
+        Check that the heat doesn't already exist for this stage and round
+        """
+        sub_event = data.get('sub_event')
+        stage = data.get('stage')
+        round_number = data.get('round_number')
 
-    #     # Skip validation if any required field is missing
-    #     if not all([sub_event, stage, round_number]):
-    #         return data
+        # Skip validation if any required field is missing
+        if not all([sub_event, stage, round_number]):
+            return data
 
-    #     # Check for existing heat only on creation
-    #     if not self.instance:  # self.instance is None for creation
-    #         existing_heat = EventHeat.objects.filter(
-    #             sub_event=sub_event,
-    #             stage=stage,
-    #             round_number=round_number
-    #         ).exists()
+        # Check for existing heat only on creation
+        if not self.instance:  # self.instance is None for creation
+            existing_heat = EventHeat.objects.filter(
+                sub_event=sub_event,
+                stage=stage,
+                round_number=round_number
+            ).exists()
             
-    #         if existing_heat:
-    #             raise serializers.ValidationError(
-    #                 f'Heat already exists for {stage} round {round_number}'
-    #             )
+            if existing_heat:
+                raise serializers.ValidationError(
+                    f'Heat already exists for {stage} round {round_number}'
+                )
 
-    #     return data
+        return data
 
     # def validate_schedule(self, value):
     #     """
@@ -269,13 +265,66 @@ class EventHeatSerializer(serializers.ModelSerializer):
     #     """
     #     Check that max_participants is positive
     #     """
-    #     if value <= 0:
-    #         raise serializers.ValidationError("Maximum participants must be greater than 0")
+    #     if value < 2:
+    #         raise serializers.ValidationError("Heat must have at least 2 participants")
     #     return value
 
-class HeatParticipantSerializer(serializers.ModelSerializer):
-    participant_details = EventRegistrationSerializer(source='registration', read_only=True)
+class EventCriteriaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventCriteria
+        fields = '__all__'
+    
+    def validate_criteria(self, value):
+        """Validate criteria format"""
+        for criterion, details in value.items():
+            if not isinstance(details, dict):
+                raise serializers.ValidationError(
+                    f"Invalid criteria format for {criterion}"
+                )
+            if 'weight' not in details or 'max_score' not in details:
+                raise serializers.ValidationError(
+                    f"Missing weight or max_score for {criterion}"
+                )
+            
+            # Validate weights sum to 1 (excluding negative marking)
+            if criterion != 'Negative Marking':
+                if not (0 <= details['weight'] <= 1):
+                    raise serializers.ValidationError(
+                        f"Weight for {criterion} must be between 0 and 1"
+                    )
+        
+        # Check total weight
+        total_weight = sum(
+            details['weight'] 
+            for criterion, details in value.items() 
+            if criterion != 'Negative Marking'
+        )
+        if not (0.99 <= total_weight <= 1.01):  # Allow small floating-point errors
+            raise serializers.ValidationError("Weights must sum to 1.0")
+        
+        return value
+
+class DepartmentScoreSerializer(serializers.ModelSerializer):
+    event_name = serializers.CharField(source='sub_event.event.name')
+    sub_event_name = serializers.CharField(source='sub_event.name')
     
     class Meta:
-        model = HeatParticipant
-        fields = ['id', 'heat', 'registration', 'participant_details', 'created_at']
+        model = DepartmentScore
+        fields = [
+            'department', 'year', 'division', 'aura_points',
+            'event_name', 'sub_event_name', 'updated_at'
+        ]
+
+class ScoreboardSerializer(serializers.Serializer):
+    department = serializers.CharField()
+    total_aura_points = serializers.IntegerField()
+    total_events = serializers.IntegerField()
+    sports_points = serializers.IntegerField(required=False)
+    cultural_points = serializers.IntegerField(required=False)
+    special_points = serializers.IntegerField(required=False)
+    
+    class Meta:
+        fields = [
+            'department', 'total_aura_points', 'total_events',
+            'sports_points', 'cultural_points', 'special_points'
+        ]

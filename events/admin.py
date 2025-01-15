@@ -3,11 +3,14 @@ from django.contrib import admin
 from django.db.models import Sum
 from django.utils.html import format_html
 from django_summernote.admin import SummernoteModelAdmin
+from django.core.exceptions import ValidationError
+from django import forms
 
 from .models import (
     Organization, Event, SubEvent, EventRegistration, 
     EventScore, EventDraw, SubEventImage, SubmissionFile,
-    SubEventFaculty, EventHeat, DepartmentScore, HeatParticipant
+    SubEventFaculty, EventHeat, DepartmentScore, HeatParticipant,
+    EventCriteria
 )
 
 class SubEventFacultyInline(admin.TabularInline):
@@ -124,7 +127,8 @@ class EventScoreAdmin(admin.ModelAdmin):
     list_display = ('get_participant', 'get_event_name', 'stage', 'total_score', 'position', 'qualified_for_next')
     list_filter = ('sub_event', 'stage', 'qualified_for_next')
     search_fields = ('event_registration__team_name', 'sub_event__name')
-    readonly_fields = ('updated_at',)
+    # readonly_fields = ('updated_at',)
+    
 
     def get_participant(self, obj):
         if obj.event_registration:
@@ -136,30 +140,29 @@ class EventScoreAdmin(admin.ModelAdmin):
         return f"{obj.sub_event.name}"
     get_event_name.short_description = 'Event'
 
-    fieldsets = (
-        ('Event Information', {
-            'fields': ('sub_event', 'event_registration', 'stage')
-        }),
-        ('Score Details', {
-            'fields': ('score_type', 'total_score', 'criteria_scores', 'position')
-        }),
-        ('Heat Information', {
-            'fields': ('heat', 'round_number', 'time_taken')
-        }),
-        ('Status', {
-            'fields': ('qualified_for_next', 'is_bye', 'points_awarded')
-        }),
-        ('Additional Information', {
-            'fields': ('remarks', 'judge', 'updated_by', 'updated_at')
-        })
-    )
+    # fieldsets = (
+    #     ('Event Information', {
+    #         'fields': ('sub_event', 'event_registration', 'stage', 'criteria')
+    #     }),
+    #     ('Score Details', {
+    #         'fields': ('score_type', 'total_score', 'criteria_scores', 'position')
+    #     }),
+    #     ('Heat Information', {
+    #         'fields': ('heat', 'round_number', 'time_taken')
+    #     }),
+    #     ('Status', {
+    #         'fields': ('qualified_for_next', 'is_bye')
+    #     }),
+    #     ('Additional Information', {
+    #         'fields': ('remarks', 'judge', 'updated_at')
+    #     })
+    # )
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related(
             'sub_event',
             'event_registration',
             'judge',
-            'updated_by',
             'heat'
         )
 @admin.register(EventDraw)
@@ -199,17 +202,18 @@ class EventHeatAdmin(admin.ModelAdmin):
 
 @admin.register(HeatParticipant)
 class HeatParticipantAdmin(admin.ModelAdmin):
-    list_display = ['heat', 'registration', 'created_at']
+    list_display = ['heat', 'registration']
     list_filter = ['heat__sub_event', 'heat__stage', 'heat__round_number']
     search_fields = ['heat__sub_event__name', 'registration__team_name']
-    readonly_fields = ['created_at']
+    # readonly_fields = ['created_at']
+    
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('heat', 'registration')
 
 @admin.register(DepartmentScore)
 class DepartmentScoreAdmin(admin.ModelAdmin):
-    list_display = ('department', 'year', 'division', 'sub_event', 'total_score', 'updated_at')
+    list_display = ('department', 'year', 'division', 'sub_event', 'total_score', 'updated_at', 'aura_points')
     list_filter = ('department', 'year', 'division', 'sub_event__event')
     search_fields = ('department', 'sub_event__name')
     readonly_fields = ('updated_at',)
@@ -325,3 +329,25 @@ class ScoreboardAdmin(admin.ModelAdmin):
         css = {
             'all': ('admin/css/scoreboard.css',)
         }
+
+@admin.register(EventCriteria)
+class EventCriteriaAdmin(admin.ModelAdmin):
+    list_display = ('name', 'event_type', 'is_active')
+    list_filter = ('event_type', 'is_active')
+    search_fields = ('name',)
+    
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields['criteria'].widget = forms.Textarea(attrs={'rows': 10})
+        return form
+    
+    def save_model(self, request, obj, form, change):
+        # Validate JSON structure
+        criteria = obj.criteria
+        for criterion, details in criteria.items():
+            if not isinstance(details, dict):
+                raise ValidationError(f"Invalid criteria format for {criterion}")
+            if 'weight' not in details or 'max_score' not in details:
+                raise ValidationError(f"Missing weight or max_score for {criterion}")
+        
+        super().save_model(request, obj, form, change)
