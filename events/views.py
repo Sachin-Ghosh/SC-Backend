@@ -555,7 +555,7 @@ class SubEventViewSet(viewsets.ModelViewSet):
             
             # Get query parameters for filtering
             stage = request.query_params.get('stage')
-            status = request.query_params.get('status')
+            status_filter = request.query_params.get('status')
             registration_open = request.query_params.get('registration_open')
             has_results = request.query_params.get('has_results')
             
@@ -569,9 +569,9 @@ class SubEventViewSet(viewsets.ModelViewSet):
                 registrations = registrations.filter(current_stage=stage)
                 heats = heats.filter(stage=stage)
             
-            if status:
-                registrations = registrations.filter(status=status)
-                heats = heats.filter(status=status)
+            if status_filter:
+                registrations = registrations.filter(status=status_filter)
+                heats = heats.filter(status=status_filter)
             
             if registration_open is not None:
                 registration_open = registration_open.lower() == 'true'
@@ -593,7 +593,6 @@ class SubEventViewSet(viewsets.ModelViewSet):
                 },
                 'stage_counts': {
                     stage: registrations.filter(current_stage=stage).count()
-                    # for stage in sub_event.stages
                 } if sub_event.event else {}
             }
             
@@ -610,17 +609,17 @@ class SubEventViewSet(viewsets.ModelViewSet):
                     many=True
                 ).data,
                 'recent_heats': EventHeatSerializer(
-                    heats.order_by('-created_at')[:5],  # Changed from created_at to id
+                    heats.order_by('-id')[:5],  # Order by id instead of created_at
                     many=True
                 ).data,
                 'recent_scores': EventScoreSerializer(
-                    scores.order_by('-updated_at')[:5],  # Changed from created_at to updated_at
+                    scores.order_by('-id')[:5],  # Order by id instead of updated_at
                     many=True
                 ).data
             })
             
             return Response(data)
-            
+                
         except Exception as e:
             return Response(
                 {'error': str(e)},
