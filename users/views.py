@@ -3,6 +3,7 @@ from django.forms import ValidationError
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from django.utils import timezone
+from urllib.parse import unquote
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from .utils import generate_otp
@@ -1059,6 +1060,12 @@ def faculty_schedule(request, faculty_id):
             status=status.HTTP_404_NOT_FOUND
         )
 
+def clean_filter_param(param):
+    """Clean and standardize filter parameters"""
+    if param is None:
+        return ''
+    return unquote(str(param)).strip()
+
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def filter_users(request):
@@ -1070,7 +1077,7 @@ def filter_users(request):
         users = User.objects.all()
 
         # Basic Filters
-        department = request.query_params.get('department')
+        department = unquote(request.query_params.get('department', ''))
         year = request.query_params.get('year')
         division = request.query_params.get('division')
         gender = request.query_params.get('gender')
@@ -1091,7 +1098,7 @@ def filter_users(request):
 
         # Apply filters
         if department:
-            users = users.filter(department=department)
+            users = users.filter(department__iexact=department)
         
         if year:
             users = users.filter(year_of_study=year)
