@@ -4086,3 +4086,89 @@ class SubEventFacultyViewSet(viewsets.ModelViewSet):
                 {'error': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def overall_standings(request):
+    try:
+        # Get all sub events
+        sub_events = SubEvent.objects.filter(
+            event__category='SPORTS'  # Adjust if needed for different categories
+        )
+        
+        # Define all departments
+        all_departments = [
+            'FE-A', 'FE-B', 'FE-C', 'FE-D', 'FE-E', 'FE-F',
+            'SE-COMPS-A', 'SE-COMPS-B', 'SE-AIML-C', 'SE-AIML-D', 'SE-IT', 'SE-DE',
+            'TE-COMPS-A', 'TE-COMPS-B', 'TE-AIML-C', 'TE-AIML-D', 'TE-IT', 'TE-DE',
+            'BE-COMPS-A', 'BE-COMPS-B', 'BE-AIML-C', 'BE-AIML-D', 'BE-IT', 'BE-DE'
+        ]
+
+        # Initialize response structure
+        sub_event_scores = []
+        
+        # Get scores for each sub event
+        for sub_event in sub_events:
+            scores_dict = {}
+            
+            # Get scores for this sub event
+            department_scores = DepartmentScore.objects.filter(
+                sub_event=sub_event
+            ).select_related('department')
+            
+            # Populate scores for each department
+            for department in all_departments:
+                dept_score = department_scores.filter(
+                    department=department
+                ).first()
+                
+                scores_dict[department] = {
+                    'score': dept_score.total_score if dept_score else None,
+                    'aura_points': dept_score.aura_points if dept_score else None
+                }
+            
+            sub_event_scores.append({
+                'name': sub_event.name,
+                'scores': scores_dict
+            })
+
+        # Calculate class totals
+        class_totals = []
+        for department in all_departments:
+            total_score = DepartmentScore.objects.filter(
+                department=department
+            ).aggregate(
+                total_score=Sum('total_score')
+            )['total_score'] or 0
+            
+            class_totals.append({
+                'department': department,
+                'total_score': total_score
+            })
+
+        # Calculate department rankings
+        department_rankings = []
+        sorted_totals = sorted(
+            class_totals,
+            key=lambda x: x['total_score'],
+            reverse=True
+        )
+        
+        for rank, dept_data in enumerate(sorted_totals, 1):
+            department_rankings.append({
+                'rank': rank,
+                'department': dept_data['department'],
+                'total_points': dept_data['total_score']
+            })
+
+        return Response({
+            'sub_event_scores': sub_event_scores,
+            'class_totals': class_totals,
+            'department_rankings': department_rankings
+        })
+
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )

@@ -74,7 +74,5 @@ urlpatterns = [
     path('events/<slug:slug>/leaderboard/', 
          views.ScoreboardViewSet.as_view({'get': 'event_leaderboard'}),
          name='event-leaderboard'),
-    path('overall-standings/', 
-         views.ScoreboardViewSet.as_view({'get': 'overall_standings'}),
-         name='overall-standings'),
+    path('overall-standings/', views.overall_standings, name='overall-standings'),
 ]
