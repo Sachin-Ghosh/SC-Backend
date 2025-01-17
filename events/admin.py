@@ -2,6 +2,7 @@
 from django.contrib import admin
 from django.db.models import Sum
 from django.utils.html import format_html
+from users.models import User  # Import User model
 from django_summernote.admin import SummernoteModelAdmin
 from django.core.exceptions import ValidationError
 from django import forms
@@ -41,8 +42,18 @@ class SubEventAdmin(SummernoteModelAdmin):
     summernote_fields = ('description',)
     list_display = ('name', 'event', 'category', 'participation_type', 'current_stage', 'get_faculty_count')
     list_filter = ('event', 'category', 'participation_type', 'current_stage')
-    search_fields = ('name', 'event__name')
+    search_fields = ('name', 'event__name' )
     inlines = [SubEventFacultyInline]
+    autocomplete_fields = ['sub_heads'] 
+    
+    
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "sub_heads":
+            kwargs["queryset"] = User.objects.filter(
+                user_type='COUNCIL',
+                is_active=True
+            ).order_by('first_name')
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
     
     def get_faculty_count(self, obj):
         # Changed from subeventfaculty to faculty_assignments (the related_name we defined)

@@ -153,8 +153,11 @@ class SubEvent(models.Model):
     max_team_size = models.IntegerField(default=1 , null=True , blank=True)
     registration_deadline = models.DateTimeField(null=True , blank=True)
     sub_heads = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
-        related_name='sub_headed_events' , blank=True
+        'users.User',
+        related_name='managed_sub_events',
+        blank=True,
+        limit_choices_to={'user_type': 'COUNCIL', 'is_active': True},
+        help_text="Select council members who will manage this sub-event"
     )
     gender_participation = models.CharField(
         max_length=10,
