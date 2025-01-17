@@ -543,7 +543,7 @@ class EventHeat(models.Model):
     updated_at = models.DateTimeField(auto_now=True , null=True , blank=True)
     
     class Meta:
-        unique_together = ['sub_event', 'stage', 'round_number', 'heat_number']
+        # unique_together = ['sub_event', 'stage', 'round_number', 'heat_number']
         ordering = ['round_number', 'heat_number']
     
     def __str__(self):
