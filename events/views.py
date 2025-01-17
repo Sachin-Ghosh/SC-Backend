@@ -1122,63 +1122,50 @@ class SubEventViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='create-heat')
     def create_heat(self, request, **kwargs):
         """Create a new heat for the sub-event"""
-        sub_event = self.get_object()
-        
-         # Create new heat with provided data
-        heat_data = {
-            **request.data,
-            'sub_event': sub_event.id,
-        }
-        # try:
-        #     heat = EventHeat.objects.create(
-        #         sub_event=sub_event,
-        #         heat_name=request.data.get('name'),
-        #         stage=request.data.get('stage'),
-        #         round_number=request.data.get('round_number'),
-        #         schedule=request.data.get('schedule'),
-        #         venue=request.data.get('venue'),
-        #         max_participants=request.data.get('max_participants', 0),
-        #         status='PENDING'
-        #     )
+        try:
+            sub_event = self.get_object()
+            stage = request.data.get('stage')
+            round_number = request.data.get('round_number')
             
-        #     return Response(EventHeatSerializer(heat).data, status=status.HTTP_201_CREATED)
-        # except Exception as e:
-        #     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        # Check if a heat with same stage and round_number already exists
-        # existing_heats = EventHeat.objects.filter(
-        #     sub_event=sub_event,
-        #     stage=request.data.get('stage'),
-        #     round_number=request.data.get('round_number')
-        # ).count()
-        
-        # # Create new heat with incremented heat number
-        # heat_data = {
-        #     **request.data,
-        #     'sub_event': sub_event.id,
-        #     'name': f"Heat {existing_heats + 1}",  # Automatically number the heat
-        # }
-        
-        # serializer = EventHeatSerializer(data=heat_data)
-        # if serializer.is_valid():
-        #     heat = serializer.save()
-        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If heat_name is not provided, generate one
-        if not heat_data.get('heat_name'):
-            # Count existing heats for this stage and round
+            if not stage or not round_number:
+                return Response({
+                    'error': 'stage and round_number are required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Get the next heat number for this stage and round
             existing_heats = EventHeat.objects.filter(
                 sub_event=sub_event,
-                stage=request.data.get('stage'),
-                round_number=request.data.get('round_number')
-            ).count()
-            heat_data['heat_name'] = f"Heat {existing_heats + 1}"
-        
-        serializer = EventHeatSerializer(data=heat_data)
-        if serializer.is_valid():
-            heat = serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                stage=stage,
+                round_number=round_number
+            )
+            next_heat_number = existing_heats.count() + 1
+
+            # Create new heat with provided data
+            heat_data = {
+                **request.data,
+                'sub_event': sub_event.id,
+                'heat_number': next_heat_number,  # Add sequential heat number
+                'heat_name': request.data.get('heat_name', f"Heat {next_heat_number}"),
+                'status': 'PENDING'
+            }
+            
+            serializer = EventHeatSerializer(data=heat_data)
+            if serializer.is_valid():
+                heat = serializer.save()
+                
+                # Return response with heat details
+                return Response({
+                    'message': f'Heat {next_heat_number} created successfully for {stage} round {round_number}',
+                    'heat': serializer.data,
+                    'total_heats_in_round': next_heat_number
+                }, status=status.HTTP_201_CREATED)
+                
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
     @action(detail=True, methods=['post'])

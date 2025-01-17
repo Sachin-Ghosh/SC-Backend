@@ -535,6 +535,7 @@ class EventHeat(models.Model):
     heat_number = models.IntegerField( default=1 , blank=True)
     schedule = models.DateTimeField( null=True , blank=True)
     venue = models.CharField(max_length=100 , null=True , blank=True)
+    heat_name = models.CharField(max_length=100 , null=True , blank=True)
     max_participants = models.IntegerField( null=True , blank=True)
     status = models.CharField(max_length=20, choices=HEAT_STATUS, default='PENDING' , null=True , blank=True)
     remarks = models.TextField(null=True, blank=True)
