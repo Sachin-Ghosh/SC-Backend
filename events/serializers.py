@@ -226,32 +226,32 @@ class EventHeatSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at')
     
-    def validate(self, data):
-        """
-        Check that the heat doesn't already exist for this stage and round
-        """
-        sub_event = data.get('sub_event')
-        stage = data.get('stage')
-        round_number = data.get('round_number')
+    # def validate(self, data):
+    #     """
+    #     Check that the heat doesn't already exist for this stage and round
+    #     """
+    #     sub_event = data.get('sub_event')
+    #     stage = data.get('stage')
+    #     round_number = data.get('round_number')
 
-        # Skip validation if any required field is missing
-        if not all([sub_event, stage, round_number]):
-            return data
+    #     # Skip validation if any required field is missing
+    #     if not all([sub_event, stage, round_number]):
+    #         return data
 
-        # Check for existing heat only on creation
-        if not self.instance:  # self.instance is None for creation
-            existing_heat = EventHeat.objects.filter(
-                sub_event=sub_event,
-                stage=stage,
-                round_number=round_number
-            ).exists()
+    #     # Check for existing heat only on creation
+    #     if not self.instance:  # self.instance is None for creation
+    #         existing_heat = EventHeat.objects.filter(
+    #             sub_event=sub_event,
+    #             stage=stage,
+    #             round_number=round_number
+    #         ).exists()
             
-            if existing_heat:
-                raise serializers.ValidationError(
-                    f'Heat already exists for {stage} round {round_number}'
-                )
+    #         if existing_heat:
+    #             raise serializers.ValidationError(
+    #                 f'Heat already exists for {stage} round {round_number}'
+    #             )
 
-        return data
+    #     return data
 
     # def validate_schedule(self, value):
     #     """

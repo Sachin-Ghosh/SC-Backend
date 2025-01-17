@@ -1132,7 +1132,7 @@ class SubEventViewSet(viewsets.ModelViewSet):
                     'error': 'stage and round_number are required'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            # Get the next heat number for this stage and round
+            # Get the next heat number for this specific stage and round
             existing_heats = EventHeat.objects.filter(
                 sub_event=sub_event,
                 stage=stage,
@@ -1144,16 +1144,14 @@ class SubEventViewSet(viewsets.ModelViewSet):
             heat_data = {
                 **request.data,
                 'sub_event': sub_event.id,
-                'heat_number': next_heat_number,  # Add sequential heat number
-                'heat_name': request.data.get('heat_name', f"Heat {next_heat_number}"),
-                'status': 'PENDING'
+                'heat_number': next_heat_number,
+                'heat_name': request.data.get('heat_name', f"Heat {next_heat_number}")
             }
             
             serializer = EventHeatSerializer(data=heat_data)
             if serializer.is_valid():
                 heat = serializer.save()
                 
-                # Return response with heat details
                 return Response({
                     'message': f'Heat {next_heat_number} created successfully for {stage} round {round_number}',
                     'heat': serializer.data,
