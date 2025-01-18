@@ -544,7 +544,7 @@ class EventHeat(models.Model):
     
     class Meta:
         # unique_together = ['sub_event', 'stage', 'round_number', 'heat_number']
-        unique_together = ['sub_event', 'heat_number']  # Only make heat_number unique within a sub_event
+        # unique_together = ['sub_event', 'heat_number']  # Only make heat_number unique within a sub_event
         ordering = ['round_number', 'heat_number']
     
     def __str__(self):
