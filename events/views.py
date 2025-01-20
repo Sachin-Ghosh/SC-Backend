@@ -2905,7 +2905,7 @@ class EventScoreViewSet(viewsets.ModelViewSet):
             heat_participants = HeatParticipant.objects.filter(heat=heat).values_list('registration_id', flat=True)
             
             # Calculate expected total scores
-            total_judges = heat.sub_event.sub_heads.count()
+            total_judges = heat.sub_event.faculty_judges.count()
             total_participants = heat_participants.count()
             expected_total_scores = total_judges * total_participants
             
@@ -2946,9 +2946,9 @@ class EventScoreViewSet(viewsets.ModelViewSet):
                         if criterion == 'Negative Marking':
                             continue
                         weight = criteria[criterion]['weight']
-                        max_score = criteria[criterion].get('max_score', 10)
-                        weighted_score = (score * weight * max_score)
-                        total_score += weighted_score
+                        max_score = criteria[criterion].get('max_score', 150)
+                        # weighted_score = (score * weight * max_score)
+                        total_score += score
                     
                     # Apply negative marking if any
                     if sub_event.allow_negative_marking:
