@@ -42,6 +42,7 @@ db.sqlite3
 # static
 static
 media
+exports/
 
 
 # misc

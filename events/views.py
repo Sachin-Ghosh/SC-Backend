@@ -24,6 +24,11 @@ from django.contrib.auth.models import User
 from rest_framework.exceptions import PermissionDenied
 from django.db.models.functions import Coalesce
 from rest_framework.exceptions import ValidationError
+from django.http import HttpResponse
+import csv
+from datetime import datetime
+from django.db.models import Max
+from collections import OrderedDict
 
 # Get the custom User model
 User = get_user_model()
@@ -2916,13 +2921,15 @@ class EventScoreViewSet(viewsets.ModelViewSet):
                     registration_id = participant_score['registration_id']
                     criteria_scores = participant_score['criteria_scores']
                     
-                    # Calculate total score
+                    # Calculate total score based on criteria weights
                     total_score = 0
                     for criterion, score in criteria_scores.items():
                         if criterion == 'Negative Marking':
                             continue
                         weight = criteria[criterion]['weight']
-                        total_score += score * weight
+                        max_score = criteria[criterion].get('max_score', 150)  # Default max score is 10
+                        weighted_score = (score * weight * max_score)
+                        total_score += weighted_score
                     
                     # Apply negative marking if any
                     if sub_event.allow_negative_marking:
@@ -2940,7 +2947,7 @@ class EventScoreViewSet(viewsets.ModelViewSet):
                     )
                     created_scores.append(score)
                 
-                # Check if all judges have submitted scores for all participants
+                # Check if all judges have submitted scores
                 total_judges = heat.sub_event.sub_heads.count()
                 total_participants = heat_participants.count()
                 
@@ -2952,27 +2959,27 @@ class EventScoreViewSet(viewsets.ModelViewSet):
                 
                 # If all scores are submitted, finalize the heat
                 if scores_submitted >= expected_total_scores:
-                    # Calculate average scores for each participant
+                    # Calculate total scores for each participant
                     final_scores = EventScore.objects.filter(
                         heat=heat
                     ).values(
                         'event_registration'
                     ).annotate(
-                        avg_score=Avg('total_score')
-                    ).order_by('-avg_score')
+                        total_final_score=Sum('total_score')  # Use Sum instead of Avg
+                    ).order_by('-total_final_score')
                     
                     # Get winner and runner-up
                     if final_scores:
                         winner_score = final_scores[0]
                         winner_registration = winner_score['event_registration']
-                        winner_avg_score = winner_score['avg_score']
+                        winner_total_score = winner_score['total_final_score']
                         
                         runner_up_registration = None
-                        runner_up_avg_score = None
+                        runner_up_total_score = None
                         if len(final_scores) > 1:
                             runner_up_score = final_scores[1]
                             runner_up_registration = runner_up_score['event_registration']
-                            runner_up_avg_score = runner_up_score['avg_score']
+                            runner_up_total_score = runner_up_score['total_final_score']
                         
                         # Update positions and AURA points
                         for score in final_scores:
@@ -3004,65 +3011,54 @@ class EventScoreViewSet(viewsets.ModelViewSet):
                                     registration_id=registration_id
                                 ).update(position=position)
                             
-                            # Update or create department score
+                            # Update department score
                             dept_score, _ = DepartmentScore.objects.get_or_create(
                                 department=registration.department,
                                 year=registration.year,
                                 division=registration.division,
                                 sub_event=sub_event,
                                 defaults={
-                                    'total_score': score['avg_score'],
+                                    'total_score': score['total_final_score'],  # Use total score
                                     'aura_points': aura_points
                                 }
                             )
                             
                             if not _:  # If already exists, update it
-                                dept_score.total_score = score['avg_score']
-                                # Add AURA points to existing points
-                                dept_score.aura_points += aura_points
+                                dept_score.total_score = score['total_final_score']  # Use total score
+                                dept_score.aura_points = aura_points
                                 dept_score.save()
-                            
-                            # Also update the department's total AURA points
-                            department_total, _ = DepartmentTotal.objects.get_or_create(
-                                department=registration.department,
-                                year=registration.year,
-                                division=registration.division,
-                                defaults={'total_aura_points': 0}
-                            )
-                            department_total.total_aura_points += aura_points
-                            department_total.save()
-                    
-                    # Update heat status
-                    heat.status = 'COMPLETED'
-                    heat.save()
-                    
-                    return Response({
-                        'message': 'Cultural scores submitted and heat completed',
-                        'heat_id': heat_id,
-                        'scores_submitted': len(created_scores),
-                        'heat_completed': True,
-                        'final_results': {
-                            'winner': {
-                                'registration_id': winner_registration,
-                                'score': winner_avg_score,
-                                'aura_points': sub_event.aura_points_winner
-                            },
-                            'runner_up': {
-                                'registration_id': runner_up_registration,
-                                'score': runner_up_avg_score,
-                                'aura_points': sub_event.aura_points_runner
-                            } if runner_up_registration else None
-                        }
-                    })
+                
+                # Update heat status
+                heat.status = 'COMPLETED'
+                heat.save()
                 
                 return Response({
-                    'message': 'Cultural scores submitted successfully',
+                    'message': 'Cultural scores submitted and heat completed',
                     'heat_id': heat_id,
                     'scores_submitted': len(created_scores),
-                    'heat_completed': False,
-                    'remaining_scores': expected_total_scores - scores_submitted
+                    'heat_completed': True,
+                    'final_results': {
+                        'winner': {
+                            'registration_id': winner_registration,
+                            'total_score': winner_total_score,
+                            'aura_points': sub_event.aura_points_winner
+                        },
+                        'runner_up': {
+                            'registration_id': runner_up_registration,
+                            'total_score': runner_up_total_score,
+                            'aura_points': sub_event.aura_points_runner
+                        } if runner_up_registration else None
+                    }
                 })
-                
+            
+            return Response({
+                'message': 'Cultural scores submitted successfully',
+                'heat_id': heat_id,
+                'scores_submitted': len(created_scores),
+                'heat_completed': False,
+                'remaining_scores': expected_total_scores - scores_submitted
+            })
+            
         except Exception as e:
             return Response(
                 {'error': str(e)}, 
@@ -3836,7 +3832,7 @@ class FacultyViewSet(viewsets.ModelViewSet):
                 {"error": "Only faculty members can access this endpoint"},
                 status=status.HTTP_403_FORBIDDEN
             )
-            
+    
         assignments = SubEventFaculty.objects.filter(
             faculty=request.user,
             is_active=True
@@ -4152,6 +4148,122 @@ def overall_standings(request):
             'department_rankings': department_rankings
         })
 
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def export_registrations(request):
+    """Export all sub-event registrations to CSV"""
+    try:
+        # Get all sub events
+        sub_events = SubEvent.objects.all().order_by('name')
+        
+        # Create the HttpResponse object with CSV header
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="event_registrations_{timestamp}.csv"'
+        
+        # Create CSV writer
+        writer = csv.writer(response)
+        
+        # Define common headers
+        headers = [
+            'Registration No.',
+            'Registration Date',
+            'Participant/Team Name',
+            'Department',
+            'Year',
+            'Division',
+            'Contact Number',
+            'Email',
+            'Team Members',  # For team events
+            'Team Members Departments',  # For team events
+            'Team Members Years',  # For team events
+            'Team Members Divisions',  # For team events
+            'Status',
+            'Current Stage',
+            'Last Updated'
+        ]
+        
+        # Write data for each sub-event
+        for sub_event in sub_events:
+            # Add sub-event header
+            writer.writerow([])  # Empty row for spacing
+            writer.writerow([f'Sub Event: {sub_event.name}'])
+            writer.writerow([f'Event Type: {sub_event.participation_type}'])
+            writer.writerow([f'Category: {sub_event.category}'])
+            writer.writerow([])  # Empty row for spacing
+            
+            # Write headers
+            writer.writerow(headers)
+            
+            # Get registrations for this sub-event, handling duplicates
+            registrations = EventRegistration.objects.filter(
+                sub_event=sub_event
+            ).values(
+                'team_leader_id',
+                'team_name'
+            ).annotate(
+                latest_id=Max('id')  # Get the latest registration for each team/individual
+            ).values_list('latest_id', flat=True)
+            
+            # Get full registration objects
+            registrations = EventRegistration.objects.filter(
+                id__in=registrations
+            ).order_by('registration_number')
+            
+            # Write registration data
+            for reg in registrations:
+                team_members = reg.team_members.all()
+                
+                # Format team members data
+                if sub_event.participation_type == 'GROUP':
+                    team_members_names = ', '.join([
+                        f"{member.first_name} {member.last_name}" 
+                        for member in team_members
+                    ])
+                    team_members_depts = ', '.join([
+                        str(member.department) for member in team_members
+                    ])
+                    team_members_years = ', '.join([
+                        str(member.year_of_study) for member in team_members
+                    ])
+                    team_members_divisions = ', '.join([
+                        str(member.division) for member in team_members
+                    ])
+                else:
+                    # For individual events, use participant's data
+                    participant = team_members.first()
+                    team_members_names = f"{participant.first_name} {participant.last_name}" if participant else ''
+                    team_members_depts = participant.department if participant else ''
+                    team_members_years = participant.year_of_study if participant else ''
+                    team_members_divisions = participant.division if participant else ''
+                
+                row = [
+                    reg.registration_number,
+                    # reg.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                    reg.team_name if sub_event.participation_type == 'GROUP' else team_members_names,
+                    reg.department,
+                    reg.year,
+                    reg.division,
+                    # reg.team_leader.phone,
+                    # reg.team_leader.email,
+                    team_members_names,
+                    team_members_depts,
+                    team_members_years,
+                    team_members_divisions,
+                    reg.status,
+                    reg.current_stage,
+                    reg.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+                ]
+                writer.writerow(row)
+        
+        return response
+        
     except Exception as e:
         return Response(
             {'error': str(e)},

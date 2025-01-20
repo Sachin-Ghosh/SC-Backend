@@ -75,4 +75,5 @@ urlpatterns = [
          views.ScoreboardViewSet.as_view({'get': 'event_leaderboard'}),
          name='event-leaderboard'),
     path('overall-standings/', views.overall_standings, name='overall-standings'),
+    path('export-registrations/', views.export_registrations, name='export-registrations'),
 ]
