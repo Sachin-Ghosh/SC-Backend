@@ -2904,21 +2904,40 @@ class EventScoreViewSet(viewsets.ModelViewSet):
             # Validate participants are in the heat
             heat_participants = HeatParticipant.objects.filter(heat=heat).values_list('registration_id', flat=True)
             
-            for score_data in scores_data:
-                registration_id = score_data.get('registration_id')
-                if registration_id not in heat_participants:
-                    return Response(
-                        {
-                            'error': f'Registration ID {registration_id} not found in heat {heat_id}. '
-                            f'Valid registrations are: {list(heat_participants)}'
-                        }, 
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+            # Calculate expected total scores
+            total_judges = heat.sub_event.sub_heads.count()
+            total_participants = heat_participants.count()
+            expected_total_scores = total_judges * total_participants
+            
+            # Get current scores submitted
+            current_scores = EventScore.objects.filter(
+                heat=heat
+            ).values('judge', 'event_registration').distinct().count()
+            
+            # Check if this judge has already submitted scores
+            judge_scores = EventScore.objects.filter(
+                heat=heat,
+                judge=request.user
+            ).exists()
+            
+            if judge_scores:
+                return Response({
+                    'error': 'You have already submitted scores for this heat',
+                    'scores_submitted': current_scores,
+                    'expected_total': expected_total_scores,
+                    'remaining_scores': expected_total_scores - current_scores
+                }, status=status.HTTP_400_BAD_REQUEST)
             
             with transaction.atomic():
                 created_scores = []
                 for participant_score in scores_data:
                     registration_id = participant_score['registration_id']
+                    if registration_id not in heat_participants:
+                        return Response({
+                            'error': f'Registration ID {registration_id} not found in heat {heat_id}',
+                            'valid_registrations': list(heat_participants)
+                        }, status=status.HTTP_400_BAD_REQUEST)
+                    
                     criteria_scores = participant_score['criteria_scores']
                     
                     # Calculate total score based on criteria weights
@@ -2927,7 +2946,7 @@ class EventScoreViewSet(viewsets.ModelViewSet):
                         if criterion == 'Negative Marking':
                             continue
                         weight = criteria[criterion]['weight']
-                        max_score = criteria[criterion].get('max_score', 150)  # Default max score is 10
+                        max_score = criteria[criterion].get('max_score', 10)
                         weighted_score = (score * weight * max_score)
                         total_score += weighted_score
                     
@@ -2947,123 +2966,111 @@ class EventScoreViewSet(viewsets.ModelViewSet):
                     )
                     created_scores.append(score)
                 
-                # Check if all judges have submitted scores
-                total_judges = heat.sub_event.sub_heads.count()
-                total_participants = heat_participants.count()
-                
-                scores_submitted = EventScore.objects.filter(
+                # Update counts after creating new scores
+                current_scores = EventScore.objects.filter(
                     heat=heat
                 ).values('judge', 'event_registration').distinct().count()
                 
-                expected_total_scores = total_judges * total_participants
+                # Check if all scores are submitted
+                all_scores_submitted = current_scores >= expected_total_scores
                 
-                # If all scores are submitted, finalize the heat
-                if scores_submitted >= expected_total_scores:
-                    # Calculate total scores for each participant
+                response_data = {
+                    'message': 'Cultural scores submitted successfully',
+                    'heat_id': heat_id,
+                    'scores_submitted': current_scores,
+                    'expected_total': expected_total_scores,
+                    'remaining_scores': expected_total_scores - current_scores,
+                    'heat_completed': False,
+                    'your_scores_submitted': len(created_scores)
+                }
+                
+                # If all scores are submitted, calculate final results
+                if all_scores_submitted:
                     final_scores = EventScore.objects.filter(
                         heat=heat
                     ).values(
                         'event_registration'
                     ).annotate(
-                        total_final_score=Sum('total_score')  # Use Sum instead of Avg
+                        total_final_score=Sum('total_score')
                     ).order_by('-total_final_score')
                     
-                    # Get winner and runner-up
                     if final_scores:
-                        winner_score = final_scores[0]
-                        winner_registration = winner_score['event_registration']
-                        winner_total_score = winner_score['total_final_score']
-                        
-                        runner_up_registration = None
-                        runner_up_total_score = None
-                        if len(final_scores) > 1:
-                            runner_up_score = final_scores[1]
-                            runner_up_registration = runner_up_score['event_registration']
-                            runner_up_total_score = runner_up_score['total_final_score']
+                        # Get winner and runner-up details
+                        winner_data = final_scores[0]
+                        runner_up_data = final_scores[1] if len(final_scores) > 1 else None
                         
                         # Update positions and AURA points
                         for score in final_scores:
                             registration_id = score['event_registration']
                             registration = EventRegistration.objects.get(id=registration_id)
-                            position = None
-                            aura_points = 0
                             
-                            if registration_id == winner_registration:
+                            # Determine position and AURA points
+                            if score == winner_data:
                                 position = 1
                                 aura_points = sub_event.aura_points_winner
-                            elif registration_id == runner_up_registration:
+                            elif score == runner_up_data:
                                 position = 2
                                 aura_points = sub_event.aura_points_runner
+                            else:
+                                position = None
+                                aura_points = 0
                             
-                            # Update all EventScores for this registration
-                            EventScore.objects.filter(
-                                heat=heat,
-                                event_registration_id=registration_id
-                            ).update(
-                                position=position,
-                                aura_points=aura_points
-                            )
-                            
-                            # Update heat participant position
+                            # Update scores and positions
                             if position:
+                                EventScore.objects.filter(
+                                    heat=heat,
+                                    event_registration_id=registration_id
+                                ).update(position=position, aura_points=aura_points)
+                                
                                 HeatParticipant.objects.filter(
                                     heat=heat,
                                     registration_id=registration_id
                                 ).update(position=position)
-                            
-                            # Update department score
-                            dept_score, _ = DepartmentScore.objects.get_or_create(
-                                department=registration.department,
-                                year=registration.year,
-                                division=registration.division,
-                                sub_event=sub_event,
-                                defaults={
-                                    'total_score': score['total_final_score'],  # Use total score
-                                    'aura_points': aura_points
-                                }
-                            )
-                            
-                            if not _:  # If already exists, update it
-                                dept_score.total_score = score['total_final_score']  # Use total score
-                                dept_score.aura_points = aura_points
-                                dept_score.save()
+                                
+                                # Update department score
+                                dept_score, _ = DepartmentScore.objects.get_or_create(
+                                    department=registration.department,
+                                    year=registration.year,
+                                    division=registration.division,
+                                    sub_event=sub_event,
+                                    defaults={
+                                        'total_score': score['total_final_score'],
+                                        'aura_points': aura_points
+                                    }
+                                )
+                                if not _:
+                                    dept_score.total_score = score['total_final_score']
+                                    dept_score.aura_points = aura_points
+                                    dept_score.save()
+                        
+                        # Update heat status
+                        heat.status = 'COMPLETED'
+                        heat.save()
+                        
+                        # Add final results to response
+                        response_data.update({
+                            'heat_completed': True,
+                            'final_results': {
+                                'winner': {
+                                    'registration_id': winner_data['event_registration'],
+                                    'total_score': winner_data['total_final_score'],
+                                    'aura_points': sub_event.aura_points_winner
+                                },
+                                'runner_up': {
+                                    'registration_id': runner_up_data['event_registration'],
+                                    'total_score': runner_up_data['total_final_score'],
+                                    'aura_points': sub_event.aura_points_runner
+                                } if runner_up_data else None
+                            }
+                        })
                 
-                # Update heat status
-                heat.status = 'COMPLETED'
-                heat.save()
+                return Response(response_data, status=status.HTTP_201_CREATED)
                 
-                return Response({
-                    'message': 'Cultural scores submitted and heat completed',
-                    'heat_id': heat_id,
-                    'scores_submitted': len(created_scores),
-                    'heat_completed': True,
-                    'final_results': {
-                        'winner': {
-                            'registration_id': winner_registration,
-                            'total_score': winner_total_score,
-                            'aura_points': sub_event.aura_points_winner
-                        },
-                        'runner_up': {
-                            'registration_id': runner_up_registration,
-                            'total_score': runner_up_total_score,
-                            'aura_points': sub_event.aura_points_runner
-                        } if runner_up_registration else None
-                    }
-                })
-            
-            return Response({
-                'message': 'Cultural scores submitted successfully',
-                'heat_id': heat_id,
-                'scores_submitted': len(created_scores),
-                'heat_completed': False,
-                'remaining_scores': expected_total_scores - scores_submitted
-            })
-            
         except Exception as e:
-            return Response(
-                {'error': str(e)}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({
+                'error': str(e),
+                'detail': 'An error occurred while submitting scores'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post'])
     def finalize_results(self, request, pk=None):
