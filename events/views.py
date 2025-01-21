@@ -2915,18 +2915,24 @@ class EventScoreViewSet(viewsets.ModelViewSet):
             ).values('judge', 'event_registration').distinct().count()
             
             # Check if this judge has already submitted scores
-            judge_scores = EventScore.objects.filter(
+           # Get scores submitted by current judge
+            judge_scored_participants = EventScore.objects.filter(
                 heat=heat,
                 judge=request.user
-            ).exists()
+            ).values_list('event_registration_id', flat=True)
             
-            if judge_scores:
-                return Response({
-                    'error': 'You have already submitted scores for this heat',
-                    'scores_submitted': current_scores,
-                    'expected_total': expected_total_scores,
-                    'remaining_scores': expected_total_scores - current_scores
-                }, status=status.HTTP_400_BAD_REQUEST)
+            # Validate no duplicate scoring for same participant
+            for participant_score in scores_data:
+                registration_id = participant_score['registration_id']
+                if registration_id in judge_scored_participants:
+                    return Response({
+                        'error': f'You have already submitted scores for participant {registration_id}',
+                        'scores_submitted': current_scores,
+                        'expected_total': expected_total_scores,
+                        'remaining_scores': expected_total_scores - current_scores,
+                        'your_scored_participants': list(judge_scored_participants)
+                    }, status=status.HTTP_400_BAD_REQUEST)
+        
             
             with transaction.atomic():
                 created_scores = []
