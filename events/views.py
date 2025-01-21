@@ -2814,11 +2814,12 @@ class EventScoreViewSet(viewsets.ModelViewSet):
                     registration = EventRegistration.objects.get(id=registration_id)
                     
                     # Calculate AURA points
-                    aura_points = 0
-                    if position == 1:  # Winner
-                        aura_points = sub_event.aura_points_winner
-                    elif position == 2:  # Runner-up
-                        aura_points = sub_event.aura_points_runner
+                    if(heat.stage == 'FINALS'):
+                        aura_points = 0
+                        if position == 1:  # Winner
+                            aura_points = sub_event.aura_points_winner
+                        elif position == 2:  # Runner-up
+                            aura_points = sub_event.aura_points_runner
                     
                     # Add match points if applicable
                     if (sub_event.match_points_enabled and 
