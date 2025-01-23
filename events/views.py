@@ -2549,47 +2549,7 @@ class EventScoreViewSet(viewsets.ModelViewSet):
         serializer.save(judge=request.user, updated_by=request.user)
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    # @action(detail=False, methods=['post'] , url_path='submit-score')
-    # def submit_score(self, request):
-        
-    #     sub_event = get_object_or_404(SubEvent, id=request.data.get('sub_event'))
-    #     """
-    #     Submit scores for a participant/team
-    #     """
-    #     sub_event_id = request.data.get('sub_event')
-    #     registration_id = request.data.get('registration')
-        
-    #     # Validate permissions
-    #     if not self._can_submit_score(request.user, sub_event_id):
-    #         return Response(
-    #             {"error": "You are not authorized to submit scores for this event"},
-    #             status=status.HTTP_403_FORBIDDEN
-    #         )
-
-    #     # Get or create score object
-    #     score_data = {
-    #         'sub_event': request.data.get('sub_event'),
-    #         'event_registration': request.data.get('registration'),  # Changed from registration to event_registration
-    #         'judge': request.user.id,  # Add judge ID explicitly
-    #         'stage': request.data.get('stage'),
-    #         'score_type': request.data.get('score_type'),
-    #         'round_number': request.data.get('round_number'),
-    #         'heat': request.data.get('heat'),
-    #         'total_score': request.data.get('total_score'),
-    #         'criteria_scores': request.data.get('criteria_scores', {}),
-    #         'position': request.data.get('position'),
-    #         'remarks': request.data.get('remarks'),
-    #         'qualified_for_next': request.data.get('qualified_for_next', False)
-    #     }
-
-    #     serializer = EventScoreSerializer(
-    #         data=score_data,
-    #         context={'sub_event': sub_event, 'request': request}
-    #     )
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
     
     @action(detail=False, methods=['get'])
     def participant_scores(self, request):
