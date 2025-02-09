@@ -1,0 +1,687 @@
+ID,Email,First Name,Last Name,Roll Number,Department,Year,Division,Phone,User Type,Is Active,Date Joined
+107,shukla.kamlesh@universal.edu.in,Kamlesh ,Shukla,40,IT,SE,A,9987873214,STUDENT,True,2025-01-15 15:49:49.724890+00:00
+50,shashank.mishra@universal.edu.in,Shashank,Mishra,48,AIML,TE,C,09284967526,STUDENT,True,2025-01-15 10:37:15.499444+00:00
+22,sachin.ghosh@universal.edu.in,Sachin,Ghosh,23,COMPUTER,TE,A,07208253036,COUNCIL,True,2025-01-14 09:14:26.276254+00:00
+78,kshaunish.yadav@universal.edu.in,Kshaunish,Yadav,102,AIML,SE,D,7559480023,STUDENT,True,2025-01-15 13:23:00.807680+00:00
+80,jangid.mohit@universal.edu.in,Mohit,Jangid,33,COMPUTER,SE,A,8459367927,COUNCIL,True,2025-01-15 13:27:41.631436+00:00
+84,harsh.vichare@universal.edu.in,HARSH,Vichare,98,AIML,SE,D,7208328186,STUDENT,True,2025-01-15 13:45:30.263517+00:00
+86,sachani.nayan@universal.edu.in,Nayan ,Sachani,107,COMPUTER,SE,B,9321633746,STUDENT,True,2025-01-15 13:57:07.398597+00:00
+45,singh.ad@universal.edu.in,ADITYA ,SINGH ,112,COMPUTER,SE,B,7397871390,STUDENT,True,2025-01-15 10:29:09.009837+00:00
+39,siddharth.bairi@universal.edu.in,Siddharth ,Bairi,2,IT,BE,A,9356674334,STUDENT,True,2025-01-15 09:26:08.646999+00:00
+31,patel.adarsh@universal.edu.in,adarsh,patel,63,AIML,SE,C,9322358653,COUNCIL,True,2025-01-15 05:09:11+00:00
+53,rohan.junna@universal.edu.in,Roahn,Junna,29,AIML,TE,C,8104441021,STUDENT,True,2025-01-15 10:44:37.659236+00:00
+49,shelte.aryan@universal.edu.in,Aryan,Shelte ,116,COMPUTER,SE,B,9321568315,STUDENT,True,2025-01-15 10:36:40.871643+00:00
+223,aman.jadhav@universal.edu.in,Aman,Jadhav,02,CIVIL,TE,A,7558779584,STUDENT,True,2025-01-16 05:16:21.209063+00:00
+231,parth.khaire@universal.edu.in,Parth,Khaire,31,AIML,TE,C,9619290802,STUDENT,True,2025-01-16 05:41:10.057593+00:00
+237,roshan.jsingh@universal.edu.in,Roshan,singh,80,AIML,TE,C,8652045001,STUDENT,True,2025-01-16 05:51:25.574275+00:00
+26,devansh.ashar@universal.edu.in,Devansh,Ashar,12,AIML,BE,C,7208107252,COUNCIL,True,2025-01-14 16:44:30.299463+00:00
+348,vidhan.bhoir@universal.edu.in,Vidhan,Bhoir,6,DE,SE,E,8369767283,STUDENT,True,2025-01-16 09:37:41.500329+00:00
+890,sachin.pawar@universal.edu.in,Sachin,Pawar,,CIVIL,,,9096400980,FACULTY,True,2025-01-16 16:47:30.474981+00:00
+906,prathmesh.bhoir@universal.edu.in,Prathmesh,Bhoir,1,CIVIL,BE,A,7385034940,STUDENT,True,2025-01-16 17:00:43.604369+00:00
+33,abhijeet.yadav@universal.edu.in,Abhijeet,Yadav,101,AIML,SE,D,7977162721,COUNCIL,True,2025-01-15 08:17:53.557709+00:00
+23,ghoshsachin2301@gmail.com,,,,,,,,,True,2025-01-14 09:17:09.513677+00:00
+35,umesh.mohite@universal.edu.in,umesh,mohite,,DATA,,,8999526370,FACULTY,True,2025-01-15 08:52:07.468834+00:00
+41,rohit.saundalkar@universal.edu.in,Rohit ,Saundalkar ,37,IT,TE,A,7722014336,STUDENT,True,2025-01-15 09:40:36.459566+00:00
+51,ritesh.yadav@universal.edu.in,Yadav,Ritesh,54,IT,TE,A,8779328189,STUDENT,True,2025-01-15 10:40:38.274997+00:00
+55,aakash.aniraj@universal.edu.in,AAKASH ,Aniraj,1,COMPUTER,SE,A,9778020478,STUDENT,True,2025-01-15 10:49:57.332212+00:00
+61,samajdar.swarnadeep@universal.edu.in,Swarndeep,Samajdar,72,AIML,SE,D,09987682435,STUDENT,True,2025-01-15 11:10:26.569936+00:00
+71,aditya.thakur@universal.edu.in,Aditya,Thakur,1,COMPUTER,BE,A,7972889376,STUDENT,True,2025-01-15 12:32:00.756101+00:00
+85,rai.harsh@universal.edu.in,Harsh ,Rai,99,COMPUTER,SE,B,7021054345,STUDENT,True,2025-01-15 13:54:01.794097+00:00
+77,gharat.vedika@universal.edu.in,Vedika ,Gharat,133,AIML,SE,D,7756061569,STUDENT,True,2025-01-15 13:06:29.566704+00:00
+59,sumit1.singh@universal.edu.in,Sumit,Singh,46,IT,TE,A,08425951568,STUDENT,True,2025-01-15 11:02:19.196173+00:00
+67,khush.limbani@universal.edu.in,khush,limbani,46,AIML,SE,C,9167531363,STUDENT,True,2025-01-15 12:13:06.677619+00:00
+60,singh.pranav@universal.edu.in,Pranav,Singh,129,COMPUTER,SE,B,07263985284,STUDENT,True,2025-01-15 11:05:41.418076+00:00
+56,vikram.mali@universal.edu.in,Vikram,Mali,42,AIML,TE,C,07045305495,STUDENT,True,2025-01-15 10:51:27.622537+00:00
+62,manav.ghetiya@universal.edu.in,Manav ,Ghetiya,52,COMPUTER,BE,A,9372863386,STUDENT,True,2025-01-15 11:16:11.368972+00:00
+68,shirke.harsh@universal.edu.in,SHIRKE HARSH,SANDESH,84,AIML,SE,D,08390432804,STUDENT,True,2025-01-15 12:14:10.325879+00:00
+66,devarsh.dubey@universal.edu.in,Devarsh,Dubey,18,DE,SE,E,9970935197,STUDENT,True,2025-01-15 12:12:17+00:00
+64,harsh.pwaghela@universal.edu.in,Harsh,Waghela,93,COMPUTER,TE,B,8779173233,STUDENT,True,2025-01-15 11:54:28.530138+00:00
+224,TIWARI.PRIYA@universal.edu.in,Priya,Tiwari,139,COMPUTER,SE,B,9359697549,STUDENT,True,2025-01-16 05:20:22.345985+00:00
+352,ved.narvekar@universal.edu.in,Ved,Narvekar,160,AS&H,FE,C,9323021709,STUDENT,True,2025-01-16 09:41:00.939525+00:00
+70,shritesh.singh@universal.edu.in,Shritesh ,Singh,44,IT,TE,A,9322497970,STUDENT,True,2025-01-15 12:24:08.836087+00:00
+83,sonawane.kaushal@universal.edu.in,Kaushal ,SONAWANE ,133,COMPUTER,SE,B,7977495242,STUDENT,True,2025-01-15 13:40:30.356701+00:00
+91,twisha.salde@universal.edu.in,Twisha,Salde,66,AIML,BE,C,8010875067,STUDENT,True,2025-01-15 14:37:37.208700+00:00
+90,hamdulay.mohammed@universal.edu.in,mohammed,ali,31,AIML,SE,C,7028669228,STUDENT,True,2025-01-15 14:37:02.128910+00:00
+891,rathod.kashish@universal.edu.in,Kashish ,Rathod ,104,COMPUTER,SE,B,77700 95904,STUDENT,True,2025-01-16 16:48:33.281984+00:00
+1086,meet.adesai@universal.edu.in,Meet ,Desai,11,IT,TE,A,9167123581,STUDENT,True,2025-01-20 05:26:37.976609+00:00
+92,khushi.dgupta@universal.edu.in,KHUSHI,GUPTA,11,IT,TE,A,7715071310,STUDENT,True,2025-01-15 14:54:02.010859+00:00
+94,tushar.dubey@universal.edu.in,Tushar,Dubey,18,COMPUTER,TE,A,8591061456,COUNCIL,True,2025-01-15 15:05:29.311338+00:00
+79,gaurav.gogde@universal.edu.in,Gaurav,Gogde,12,DE,SE,E,9834361024,STUDENT,True,2025-01-15 13:27:25+00:00
+96,rohan.rpatil@universal.edu.in,Rohan,Patil,33,IT,TE,A,7400262029,COUNCIL,True,2025-01-15 15:11:06.781305+00:00
+306,mohammad.ansariu@universal.edu.in,Umar,Ansari,2,COMPUTER,TE,A,7263995156,STUDENT,True,2025-01-16 08:44:14.447715+00:00
+263,ganesh.vishwakarma@universal.edu.in,ShreeGanesh,Vishwakarma ,146,COMPUTER,SE,B,9653173102,STUDENT,True,2025-01-16 06:59:10.344425+00:00
+238,rieo.godur@universal.edu.in,Rieo,Godur,22,AIML,BE,C,6304687275,STUDENT,True,2025-01-16 05:54:41.004053+00:00
+246,krish.choudhari@universal.edu.in,Krish,Choudhari,09,IT,BE,A,8177930937,STUDENT,True,2025-01-16 06:15:57.947358+00:00
+283,soham.kawadakar@universal.edu.in,Soham,Kawadakar,40,AIML,SE,C,9321236819,STUDENT,True,2025-01-16 07:41:38.162217+00:00
+251,Bhavesh.sonawane@universal.edu.in,Bhavesh ,Sonawane ,40,DE,SE,E,9518734599,STUDENT,True,2025-01-16 06:26:59.254532+00:00
+270,hitesh.kchoudhary@universal.edu.in,Hitesh,Choudhary,06,IT,TE,A,8862022096,STUDENT,True,2025-01-16 07:17:39.009328+00:00
+225,aadesh.vishwakarma@universal.edu.in,Aadesh,Vishwakarma,44098,AIML,TE,C,844 603 4192,STUDENT,True,2025-01-16 05:21:44.428681+00:00
+255,rajeshwar.bura@universal.edu.in,Rajeshwar,Bura,10,AIML,TE,C,9960796613,STUDENT,True,2025-01-16 06:44:13.382046+00:00
+342,ashay.dhotre@universal.edu.in,Ashay,Dhotre,16,DE,SE,E,7030058796,STUDENT,True,2025-01-16 09:26:50.803649+00:00
+294,parihar.nikesh@universal.edu.in,Nikesh,Parihar,26,IT,SE,A,9607532361,STUDENT,True,2025-01-16 08:08:59.713250+00:00
+266,aditya.gaur@universal.edu.in,ADITYA,GAUR,18,AIML,BE,C,8433883241,STUDENT,True,2025-01-16 07:13:51.738504+00:00
+192,smit.patil@universal.edu.in,Smit,Patil,198,AS&H,FE,D,7218953999,STUDENT,True,2025-01-16 04:10:31+00:00
+291,rushikesh.kharat@universal.edu.in,Rushikesh ,Kharat,40,IT,BE,A,8433682566,STUDENT,True,2025-01-16 08:05:45.852377+00:00
+1068,shruti.raut@universal.edu.in,SHRUTI,RAUT,68,AIML,BE,D,9324452325,STUDENT,True,2025-01-18 17:48:32.251057+00:00
+297,prajot.mhatre@universal.edu.in,Prajot,Mhatre,32,DE,SE,E,9307903457,STUDENT,True,2025-01-16 08:12:21.008443+00:00
+278,sameer.rai@universal.edu.in,Sameer ,Rai,221,AS&H,FE,D,7888024373,STUDENT,True,2025-01-16 07:34:23.611647+00:00
+310,vaishnavi.bhagat@universal.edu.in,Vaishnavi ,Bhagat,06,COMPUTER,TE,A,9579310947,STUDENT,True,2025-01-16 08:49:11.776881+00:00
+319,parth.rajbhar@universal.edu.in,Parth,Rajbhar,225,AS&H,FE,E,9004008698,STUDENT,True,2025-01-16 08:58:06.567666+00:00
+316,akash.raut@universal.edu.in,Akash,Raut,2,DE,SE,E,9082256475,STUDENT,True,2025-01-16 08:55:37.466762+00:00
+313,arpit.mishra@universal.edu.in,Arpit ,Mishra,143,AS&H,FE,C,+91 70218-19255,STUDENT,True,2025-01-16 08:54:41.882416+00:00
+323,saish.patel@universal.edu.in,Saish,Patel,180,AS&H,FE,D,7738517875,STUDENT,True,2025-01-16 09:04:19.509900+00:00
+562,jimit.ray@universal.edu.in,jimit ,ray,232,AS&H,FE,E,8591314824,STUDENT,True,2025-01-16 14:50:01.740966+00:00
+97,arin.thamke@universal.edu.in,Arin,Thamke,09,AIML,TE,C,8097032232,STUDENT,True,2025-01-15 15:14:13.670670+00:00
+122,neha.pise@universal.edu.in,neha,pise,206,AS&H,FE,D,8956374468,STUDENT,True,2025-01-15 16:39:32+00:00
+226,harsh.sthakur@universal.edu.in,Harsh,Thakur,54,DE,TE,D,8857033343,STUDENT,True,2025-01-16 05:22:12.154022+00:00
+532,laxmi.sahani@universal.edu.in,Laxmi,Sahani,33,DE,SE,E,8591606931,STUDENT,True,2025-01-16 14:20:38.526405+00:00
+284,sahil.hashmi@universal.edu.in,Sahil,Hashmi ,25,AIML,TE,C,8452996948,STUDENT,True,2025-01-16 07:42:21.574232+00:00
+239,chirag.yadav@universal.edu.in,Chirag,Yadav,85,AIML,BE,C,7058944823,STUDENT,True,2025-01-16 05:56:14.494762+00:00
+244,hamza.ansari@universal.edu.in,Hamza ,Ansari ,004,AIML,TE,C,7028648082,STUDENT,True,2025-01-16 06:11:10.777533+00:00
+248,meet.bhakhar@universal.edu.in,MEET,Bhakhar,15,AS&H,FE,A,9137041583,STUDENT,True,2025-01-16 06:17:26+00:00
+384,sheetal.dalvi@universal.edu.in,Sheetal,Dalvi,,AS&H,,,8806244366,FACULTY,True,2025-01-16 10:23:13.832447+00:00
+1069,hulavale.sarvesh@universal.edu.in,sarvesh,hulavale,26,AIML,TE,C,9082235612,STUDENT,True,2025-01-18 17:57:58.003726+00:00
+252,jigar.yadav@universal.edu.in,Jigar,Yadav,331,AS&H,FE,F,7400103701,STUDENT,True,2025-01-16 06:38:02.957970+00:00
+257,shrikanth.reddy@universal.edu.in,Srikanth ,Reddy ,106,COMPUTER,SE,B,9834936591,STUDENT,True,2025-01-16 06:49:02.784848+00:00
+288,krishna.bichkar@universal.edu.in,Krishna,Bichkar,10,COMPUTER,TE,A,93217 71849,STUDENT,True,2025-01-16 08:03:04.648392+00:00
+261,aarya.khanvilkar@universal.edu.in,Aarya,Khanvilkar,40,COMPUTER,TE,A,9594382125,STUDENT,True,2025-01-16 06:58:13.505933+00:00
+271,mujaddid.shaikh@universal.edu.in,MUJADDID ,SHAIKH ,251,AS&H,FE,E,7741833876,STUDENT,True,2025-01-16 07:21:00.183735+00:00
+267,aman.a.tiwari@universal.edu.in,Aman,Tiwari,305,AS&H,FE,F,8928999174,STUDENT,True,2025-01-16 07:15:03+00:00
+299,mufij.topinkatti@universal.edu.in,Mufiz,Topinkatti ,82,DE,SE,E,8407950361,STUDENT,True,2025-01-16 08:23:36.966223+00:00
+292,pratik.patil@universal.edu.in,Pratik,Patil,32,IT,TE,A,8010508981,STUDENT,True,2025-01-16 08:06:26.185768+00:00
+279,omkar.dhondaale@universal.edu.in,Omkar,Dhondaaley,15,DE,SE,E,8237485851,STUDENT,True,2025-01-16 07:35:21.386150+00:00
+303,slok.mishra@universal.edu.in,Slok,Mishra,146,AS&H,FE,C,9172312168,STUDENT,True,2025-01-16 08:42:03.025949+00:00
+349,yash.mandole@universal.edu.in,Yash,Mandole,129,AS&H,FE,C,7448207604,STUDENT,True,2025-01-16 09:40:13.570452+00:00
+314,shetty.srujan@universal.edu.in,Srujan,Shetty,118,COMPUTER,SE,B,7977290646,COUNCIL,True,2025-01-16 08:54:54.591342+00:00
+356,deepak.kushwaha@universal.edu.in,Deepak,Kushwaha,39,AIML,TE,C,8355831140,STUDENT,True,2025-01-16 09:48:25.426116+00:00
+353,mayur.choudhari@universal.edu.in,Mayu,Chaudhari,5,IT,BE,A,7058862520,STUDENT,True,2025-01-16 09:43:39.077241+00:00
+98,jain.nikunj@universal.edu.in,NIKUNJ ,jain,32,COMPUTER,SE,A,9834679875,STUDENT,True,2025-01-15 15:20:42.029169+00:00
+165,uday.erram@universal.edu.in,Uday,Erram,64,AS&H,FE,B,9511236348,STUDENT,True,2025-01-16 02:11:28+00:00
+234,kaushal.dwivedi@universal.edu.in,Kaushal ,Dwivedi ,19,COMPUTER,TE,A,8604108392,STUDENT,True,2025-01-16 05:44:06.491414+00:00
+163,dhiraj.datta@universal.edu.in,Dhiraj ,Datta ,48,AS&H,FE,A,9321629129,STUDENT,True,2025-01-16 01:23:43.643578+00:00
+240,himesh.tangadi@universal.edu.in,Himesh ,Tangadi,296,AS&H,FE,F,93732 20190,STUDENT,True,2025-01-16 06:00:23.263001+00:00
+551,siddhi.pal@universal.edu.in,Siddhi ,Pal,167,AS&H,FE,C,9324404850,STUDENT,True,2025-01-16 14:38:35.061416+00:00
+296,fawwaz.ansari@universal.edu.in,Fawwaz,Ansari,07,AS&H,FE,A,9423355593,STUDENT,True,2025-01-16 08:11:46.719682+00:00
+308,ansari.mohdrafey@universal.edu.in,Ansari,Rafey,08,AS&H,FE,A,7378583198,STUDENT,True,2025-01-16 08:47:59.203388+00:00
+329,roshan.padala@universal.edu.in,Roshan,Padala,163,AS&H,FE,C,8261847108,STUDENT,True,2025-01-16 09:11:03.480205+00:00
+304,Krishna.maddeshiya@universal.edu.in,MADDESHIYA,CHHATULAL,41,COMPUTER,TE,A,07028306886,STUDENT,True,2025-01-16 08:42:07.333708+00:00
+253,aryan.jsingh@universal.edu.in,Aryan ,Singh,127,COMPUTER,SE,B,9637738822,STUDENT,True,2025-01-16 06:41:25.339860+00:00
+249,prakash.gehlot@universal.edu.in,Prakash,Gehlot,67,AS&H,FE,B,7021572110,STUDENT,True,2025-01-16 06:24:00+00:00
+280,vedant.khamkar@universal.edu.in,Vedant,Khamkar,35,COMPUTER,TE,A,7666112393,STUDENT,True,2025-01-16 07:35:37.511774+00:00
+285,sarthak.poojary@universal.edu.in,Sarthak,Poojary,47,DE,SE,E,8766073743,STUDENT,True,2025-01-16 07:46:25.087082+00:00
+543,vaishnavi_r.patil@universal.edu.in,Vaishnavi ,Patil,34,IT,BE,A,8856834567,STUDENT,True,2025-01-16 14:32:00.657877+00:00
+289,salunkhe.piyush@universal.edu.in,Piyush,Salunkhe,35,DE,SE,E,7738335978,STUDENT,True,2025-01-16 08:05:16.051255+00:00
+290,yatin.mhatre@universal.edu.in,Yatin,Mhatre,52,AIML,SE,C,9076106908,STUDENT,True,2025-01-16 08:05:16.931935+00:00
+315,aditi.dhekane@universal.edu.in,Aditi ,Dhekane ,16,COMPUTER,TE,A,8180085651,STUDENT,True,2025-01-16 08:55:12.298046+00:00
+324,krishna.maddeshiya@universal.edu.in,krishna,maddeshiya,41,COMPUTER,TE,A,7028306886,STUDENT,True,2025-01-16 09:04:49.271015+00:00
+318,mrugesh.patil@universal.edu.in,Mrugesh ,Patil,195,AS&H,FE,D,9226730418,STUDENT,True,2025-01-16 08:58:04.662298+00:00
+321,singh.adi@universal.edu.in,ADITYA,SINGH,125,COMPUTER,SE,B,9970443690,STUDENT,True,2025-01-16 08:59:28.938683+00:00
+555,vivek.maurya@universal.edu.in,Vivek,Maurya,69,COMPUTER,BE,A,08655685272,STUDENT,True,2025-01-16 14:43:54.135292+00:00
+258,prakash.bhatu@universal.edu.in,Prakash,Bhatu,19,AS&H,FE,A,7972011930,STUDENT,True,2025-01-16 06:50:37.019935+00:00
+124,adarshkumar.thakur@universal.edu.in,Adarsh,Thakur,301,AS&H,FE,F,7276405128,STUDENT,True,2025-01-15 16:42:39+00:00
+880,shivam.varma@universal.edu.in,Shivam,Varma,56,DE,TE,D,9637101672,STUDENT,True,2025-01-16 16:37:41+00:00
+32,sudheesh.shetty@universal.edu.in,Sudheeh,Shetty,73,AIML,TE,C,9987652382,COUNCIL,True,2025-01-15 08:07:11+00:00
+125,yaksh.jakharia@universal.edu.in,Yaksh,Jakharia,94,AS&H,FE,B,7709357574,STUDENT,True,2025-01-15 16:47:55.496051+00:00
+100,chinmay.dmhatre@universal.edu.in,Chinmay,Mhatre,45,COMPUTER,TE,A,9321754310,STUDENT,True,2025-01-15 15:24:53.855225+00:00
+101,shetty.aryaman@universal.edu.in,Aryaman ,Shetty,117,COMPUTER,SE,B,9372610090,COUNCIL,True,2025-01-15 15:26:52.477113+00:00
+344,krish.kesharwani@universal.edu.in,Krish,Kesharwani,114,AS&H,FE,C,8010107301,STUDENT,True,2025-01-16 09:33:04.273963+00:00
+102,ali.ansari@universal.edu.in,ansari,ali,03,AIML,TE,C,9860411920,STUDENT,True,2025-01-15 15:29:49.742322+00:00
+103,patro.aditya@universal.edu.in,Aditya,Patro,31,IT,SE,A,8097232966,STUDENT,True,2025-01-15 15:30:19.054906+00:00
+104,advay.kawli@universal.edu.in,Advay,Kawli,54,IT,SE,A,9699032917,STUDENT,True,2025-01-15 15:31:57.415158+00:00
+105,yashas.mayekar@universal.edu.in,Yashas,Mayekar ,45,AIML,TE,C,8657432602,COUNCIL,True,2025-01-15 15:35:44.046995+00:00
+354,yash.adagale@universal.edu.in,Yash ,Adagale,2,AS&H,FE,A,7888180354,STUDENT,True,2025-01-16 09:44:47.249988+00:00
+106,siddharth.snair@universal.edu.in,siddharth,Nair,49,COMPUTER,TE,A,08669002345,STUDENT,True,2025-01-15 15:42:18.888871+00:00
+118,usakoyal.nishant@universal.edu.in,Nishant,Usakoysl,72,IT,SE,A,9511668131,STUDENT,True,2025-01-15 16:29:31.313091+00:00
+112,tripti.rai@universal.edu.in,Tripti ,Rai,222,AS&H,FE,D,8369600034,STUDENT,True,2025-01-15 16:08:26.248329+00:00
+116,rishi.upadhyay@universal.edu.in,Rishi,Upadhyay,96,AIML,SE,D,8104638602,STUDENT,True,2025-01-15 16:18:01.470510+00:00
+114,pratik.gupta@universal.edu.in,Pratik,Gupta,82,AS&H,FE,B,8208073952,STUDENT,True,2025-01-15 16:13:04.902776+00:00
+115,divyansh.prajapati@universal.edu.in,Divyansh ,Prajapati ,65,AIML,TE,C,7208397573,STUDENT,True,2025-01-15 16:13:16.284756+00:00
+1063,swapnil.patil@universal.edu.in,Swapnil,Patil,,AS&H,,,7767050175,FACULTY,True,2025-01-18 07:14:45.110980+00:00
+120,anjali_s.mishra@universal.edu.in,Anjali,Mishra,43,AIML,BE,C,8090187256,STUDENT,True,2025-01-15 16:31:45.771376+00:00
+126,siddhesh.ghadge@universal.edu.in,Siddhesh,Ghadge,68,AS&H,FE,B,8010315615,STUDENT,True,2025-01-15 16:51:15.150382+00:00
+121,parth.kini@universal.edu.in,Parth ,Kini,38,AIML,BE,C,7757806948,STUDENT,True,2025-01-15 16:38:41.206207+00:00
+109,bhavesh.sonawane@universal.edu.in,BHAVESH,Sonawane,40,DE,SE,E,9518734599,STUDENT,True,2025-01-15 15:58:13+00:00
+128,yogvedant.patel@universal.edu.in,Yogvedant,Patel,54,AIML,BE,C,9326597678,STUDENT,True,2025-01-15 16:53:26.872912+00:00
+137,pragati.maurya@universal.edu.in,Pragati ,Maurya ,42,AIML,BE,C,9665207553,STUDENT,True,2025-01-15 17:20:37.886002+00:00
+134,yogini.sankhe@universal.edu.in,yogini,sankhe,241,AS&H,FE,E,9405188211,STUDENT,True,2025-01-15 17:03:43+00:00
+131,chirayu.vartak@universal.edu.in,chirayu ,vartak,103,AIML,BE,C,7030185824,STUDENT,True,2025-01-15 16:56:18.342406+00:00
+129,shegale.nirbhay@universal.edu.in,Nirbhay ,Shegale,83,AIML,SE,D,8928885736,STUDENT,True,2025-01-15 16:55:51.747796+00:00
+130,bera.rohit@universal.edu.in,Rohit,Bera,07,COMPUTER,SE,A,9155323038,STUDENT,True,2025-01-15 16:56:12.867859+00:00
+141,darshan.rathod@universal.edu.in,Darshan ,Rathod ,230,AS&H,FE,E,8108409583,STUDENT,True,2025-01-15 17:32:26.972362+00:00
+132,rakhra.virendar@universal.edu.in,Virendar Singh ,Rakhra ,69,AIML,SE,D,8169414460,STUDENT,True,2025-01-15 17:00:35.660888+00:00
+569,cijin.devasahayam@universal.edu.in,Cijin,Devasahayam ,43,AS&H,FE,A,9342550849,STUDENT,True,2025-01-16 14:54:53.937997+00:00
+154,amberkumar.pandit@universal.edu.in,Amber,Pandit,173,AS&H,FE,D,9321475754,STUDENT,True,2025-01-15 18:17:27+00:00
+157,gawade.rakhamaji@universal.edu.in,Rakhamaji,Gawade,239,AS&H,FE,C,9529319828,STUDENT,True,2025-01-15 18:38:37+00:00
+152,singh.prabhat@universal.edu.in,Prabhat,Singh,91,AIML,SE,D,8591612869,COUNCIL,True,2025-01-15 18:14:05+00:00
+358,patil.k@universal.edu.in,Krish ,Patil,61,AIML,SE,C,8237900274,STUDENT,True,2025-01-16 09:51:03.956858+00:00
+136,yash.patil@universal.edu.in,Yash,Patil,00001,CIVIL,TE,A,9730713888,STUDENT,True,2025-01-15 17:13:29.404910+00:00
+144,damini.tawde@universal.edu.in,Damini,Tawde,55,AIML,BE,C,95273 51643,STUDENT,True,2025-01-15 17:39:55.123673+00:00
+151,souvik.mon@universal.edu.in,Souvik,Mondal,,IT,,,7774980931,FACULTY,True,2025-01-15 18:11:42.808306+00:00
+140,prashant.tripathi@universal.edu.in,Prashant,Tripathi,315,AS&H,FE,F,7738666291,STUDENT,True,2025-01-15 17:31:46.074850+00:00
+143,aryan.ssingh@universal.edu.in,Aryan,Singh,277,AS&H,FE,E,9651523167,STUDENT,True,2025-01-15 17:36:11+00:00
+148,rudra.chiman@universal.edu.in,RUDRA,CHIMAN,37,AS&H,FE,A,8356030029,STUDENT,True,2025-01-15 18:03:23.995731+00:00
+149,sharma.atharva@universal.edu.in,Atharva,Sharma,254,AS&H,FE,E,9920440509,STUDENT,True,2025-01-15 18:07:53.723742+00:00
+155,jidnyasee.jagtap@universal.edu.in,jidnyasee,jagtap,12,IT,TE,A,8291768886,STUDENT,True,2025-01-15 18:31:28.766597+00:00
+156,pankaj.jha@universal.edu.in,Pankaj,Jha, 4,IT,BE,A,07050548194,STUDENT,True,2025-01-15 18:34:48.496751+00:00
+158,ojas.satardekar@universal.edu.in,Ojas,Satardekar,75,AIML,BE,C,9137127115,STUDENT,True,2025-01-15 19:23:56.107072+00:00
+159,krish.chitroda@universal.edu.in,Krish,Chitroda,39,AS&H,FE,A,7304481839,STUDENT,True,2025-01-15 19:25:00.192649+00:00
+160,aryan.mpatil@universal.edu.in,Aryan,Patil,13,COMPUTER,TE,A, 90212 93273,STUDENT,True,2025-01-15 19:44:18.230711+00:00
+169,singh.vivek@universal.edu.in,Vivek ,Singh,132,COMPUTER,SE,B,9082636164,STUDENT,True,2025-01-16 02:51:16.268637+00:00
+161,bhargav.naik@universal.edu.in,Bhargav,Naik,66,AIML,BE,D,9082066598,STUDENT,True,2025-01-15 19:51:44.153453+00:00
+162,prasann.khamkar@universal.edu.in,Prasann,Khamkar,36,AIML,BE,C,7758868793,STUDENT,True,2025-01-16 00:14:40.043533+00:00
+533,ritika.mishra@universal.edu.in,Ritika,mishra,21,IT,TE,A,8767009551,STUDENT,True,2025-01-16 14:20:58.046113+00:00
+228,rishi_k.parajia@universal.edu.in,Rishi,Parajia,60,AIML,TE,C,8600314603,STUDENT,True,2025-01-16 05:27:40.366614+00:00
+235,tanay.patil@universal.edu.in,Tanay ,Patil,62,AIML,SE,C,9175022456,STUDENT,True,2025-01-16 05:48:10.294461+00:00
+164,saha.shubhodeep@universal.edu.in,Shubhodep ,Saha,33,IT,SE,B,7709480731,COUNCIL,True,2025-01-16 01:53:14.512105+00:00
+174,krish.hegde@universal.edu.in,Krish ,Hegde ,87,AS&H,FE,B,8983661369,STUDENT,True,2025-01-16 03:28:26.170741+00:00
+172,nayan.gharat@universal.edu.in,nayan,gharat,70,AS&H,FE,B,08421951294,STUDENT,True,2025-01-16 03:14:14+00:00
+171,ruchita.parmar@universal.edu.in,Ruchita,Parmar,25,IT,TE,A,9833928183,STUDENT,True,2025-01-16 03:01:08.017525+00:00
+166,harsh.shekhada@universal.edu.in,Harsh,Shekhada,259,AS&H,FE,E,8591035241,STUDENT,True,2025-01-16 02:31:26.699652+00:00
+168,shlok.t@universal.edu.in,Shlok,Tiwari,311,AS&H,FE,F,8625841463,STUDENT,True,2025-01-16 02:48:48.760742+00:00
+871,jagannath.masani@universal.edu.in,Jagannath ,Masani,132,AS&H,FE,C,9370731339,STUDENT,True,2025-01-16 16:31:31.618966+00:00
+892,vrajesh.shetty@universal.edu.in,Vrajesh,Shetty,26,COMPUTER,BE,A,9137118747,STUDENT,True,2025-01-16 16:49:02.469635+00:00
+175,rai.richa@universal.edu.in,Richa ,Rai,100,COMPUTER,SE,B,7558635192,STUDENT,True,2025-01-16 03:30:54.466270+00:00
+173,bhagyesh.salian@universal.edu.in,Bhagyesh,Salian,239,AS&H,FE,E,8668853983,STUDENT,True,2025-01-16 03:22:59.894520+00:00
+176,sumit.s.sharma@universal.edu.in,Sumit ,Sharma,257,AS&H,FE,E,9004591924,STUDENT,True,2025-01-16 03:32:39.498984+00:00
+180,thushar.achary@universal.edu.in,Thushar,achary,1,AS&H,FE,A,8484015017,STUDENT,True,2025-01-16 03:42:31.095657+00:00
+361,deepankar.shirke@universal.edu.in,deepankar,shirke,265,AS&H,FE,E,9167680986,STUDENT,True,2025-01-16 09:55:35.989721+00:00
+182,sachinkumar.gupta@universal.edu.in,sachin,gupta,27,COMPUTER,TE,A,9819384073,STUDENT,True,2025-01-16 03:47:33.127529+00:00
+183,harshita.salian@universal.edu.in,Harshita,Salian,240,AS&H,FE,E,7208706013,STUDENT,True,2025-01-16 03:48:45.515257+00:00
+229,harish.nadar@universal.edu.in,Harish,Nadar,57,AIML,TE,C,07039369562,COUNCIL,True,2025-01-16 05:31:46+00:00
+194,singh.tanu@universal.edu.in,Tanu ,Singh,131,COMPUTER,SE,B,9136018144,STUDENT,True,2025-01-16 04:18:20.330925+00:00
+189,deep.thakare@universal.edu.in,Deep,Thakare,299,AS&H,FE,F,9373871217,STUDENT,True,2025-01-16 04:06:06+00:00
+195,mohammad.sansari@universal.edu.in,arsh,ansari,05,AIML,TE,C,9588679279,STUDENT,True,2025-01-16 04:18:36.733752+00:00
+196,pati.arpita@universal.edu.in,Arpita,Pati,87,COMPUTER,SE,B,7249531619,STUDENT,True,2025-01-16 04:19:08.492821+00:00
+187,prajapati.rohan@universal.edu.in,Rohan,Prajapati ,95,COMPUTER,SE,B,7276633833,STUDENT,True,2025-01-16 03:59:28.076797+00:00
+193,piyush.gharat@universal.edu.in,Piyush,Gharat,71,AS&H,FE,B,9021091161,STUDENT,True,2025-01-16 04:16:16+00:00
+190,tarang.pokar@universal.edu.in,Tarang ,Pokar ,207,AS&H,FE,D,8928024887,STUDENT,True,2025-01-16 04:09:13.239416+00:00
+198,vaibhav.phadke@universal.edu.in,Vaibhav,Phadke,203,AS&H,FE,D,8767501495,STUDENT,True,2025-01-16 04:21:54+00:00
+191,divyank.singh@universal.edu.in,DIVYANK,SINGH,278,AS&H,FE,E,8591743934,STUDENT,True,2025-01-16 04:09:53.917966+00:00
+1075,vandana.tripathI@universal.edu.in,Vandana,Tripathi,4,COMPUTER,BE,A,9004779954,STUDENT,True,2025-01-19 18:29:55.347076+00:00
+201,Manas.phansekar@universal.edu.in,Manas,Phansekar,205,AS&H,FE,D,7045040226,STUDENT,True,2025-01-16 04:30:39+00:00
+269,jeet.dhruv@universal.edu.in,Jeet,Dhruv,20,COMPUTER,SE,A,9137904585,STUDENT,True,2025-01-16 07:16:03.040844+00:00
+214,hitesh.rangdale@universal.edu.in,Hitesh ,Rangdale ,228,AS&H,FE,E,7021130996,STUDENT,True,2025-01-16 05:00:10.384993+00:00
+264,uttej.bhimnath@universal.edu.in,Uttej,Bhi,20,AS&H,FE,A,8855944731,STUDENT,True,2025-01-16 07:06:38+00:00
+203,tiwari.abhishek@universal.edu.in,Abhishek ,Tiwari ,93,AIML,SE,D,8237788644,STUDENT,True,2025-01-16 04:34:47.184367+00:00
+197,vikas.spal@universal.edu.in,Vikas,Pal,61,AIML,TE,C,9702360987,STUDENT,True,2025-01-16 04:21:25.283564+00:00
+210,vishwakarma.harsh@universal.edu.in,Harsh,vishwakarma,325,AS&H,FE,F,7397852696,STUDENT,True,2025-01-16 04:54:59+00:00
+211,eklavya.jha@universal.edu.in,Eklavya ,JHA,96,AS&H,FE,B,8080321523,STUDENT,True,2025-01-16 04:55:20.174640+00:00
+208,krish.rane@universal.edu.in,Krish,Rane ,227,AS&H,FE,E,9049111760,STUDENT,True,2025-01-16 04:48:32.467081+00:00
+205,samar.patil@universal.edu.in,Samar,Patil,196,AS&H,FE,D,9766797303,STUDENT,True,2025-01-16 04:40:47.223193+00:00
+212,manvendra.singh@universal.edu.in,Manvendra ,Singh ,90,AIML,SE,D,9493965907,STUDENT,True,2025-01-16 04:58:47.273267+00:00
+213,subunsh.shingade@universal.edu.in,Subaunsh ,Shingade ,264,AS&H,FE,E,9511616519,STUDENT,True,2025-01-16 04:59:31.162703+00:00
+216,shinde.parth@universal.edu.in,Parth,Shinde,263,AS&H,FE,E,9699475144,STUDENT,True,2025-01-16 05:04:55.344032+00:00
+222,vikash.psingh@universal.edu.in,Vikash,Singh,14,AIML,TE,C,8484097579,STUDENT,True,2025-01-16 05:15:31.350510+00:00
+277,kushan.dave@universal.edu.in,Kushan ,Dave,12,IT,BE,A,9004898714,STUDENT,True,2025-01-16 07:33:49.073703+00:00
+218,Jui.patil@universal.edu.in,JUI,patil,55,AIML,BE,C,9022567087,STUDENT,True,2025-01-16 05:05:53.656969+00:00
+265,suyog.bhalekar@universal.edu.in,Suyog,Bhalekar,16,AS&H,FE,A,8010852524,STUDENT,True,2025-01-16 07:06:50.864373+00:00
+259,anurag.y@universal.edu.in,Anurag,Yadav,328,AS&H,FE,F,9321299920,STUDENT,True,2025-01-16 06:55:21.774367+00:00
+219,devanshu.shekhawat@universal.edu.in,Devanshu,Shekhawat,..,AIML,BE,C,7506067781,STUDENT,True,2025-01-16 05:10:10.122296+00:00
+256,shadan.ansari@universal.edu.in,Shadan,Ansari,09,AS&H,FE,A,9225631754,STUDENT,True,2025-01-16 06:46:10+00:00
+220,Sudhanshu.gupta@universal.edu.in,Sudhanshu,Gupta,29,COMPUTER,TE,A,9029708145,STUDENT,True,2025-01-16 05:11:52.195989+00:00
+217,avdut.devkule@universal.edu.in,Avdhut,Devkule,53,AS&H,FE,A,7249212330,STUDENT,True,2025-01-16 05:05:51+00:00
+242,harikishan.sonagra@universal.edu.in,Harikishan,Sonagra,289,AS&H,FE,F,8668659427,STUDENT,True,2025-01-16 06:04:41+00:00
+221,bhargav.shingala@universal.edu.in,Bhargav ,Shingala,77,AIML,BE,C,9324822270,STUDENT,True,2025-01-16 05:15:14.652626+00:00
+262,krishna.pal@universal.edu.in,Krishna,Pal,344,AS&H,FE,B,8652375067,STUDENT,True,2025-01-16 06:59:05+00:00
+273,chinmai.patil@universal.edu.in,CHINMAI ,PATIL ,22,IT,TE,A,8010212091,STUDENT,True,2025-01-16 07:23:54.306914+00:00
+236,Veer.dubey@universal.edu.in,Veer,Dubey,62,AS&H,FE,B,09172845573,STUDENT,True,2025-01-16 05:49:41.791194+00:00
+250,parth.parab@universal.edu.in,Parth,Parab,177,AS&H,FE,D,9307700277,STUDENT,True,2025-01-16 06:25:16.675210+00:00
+146,rohan.padrat@universal.edu.in,Rohan,Padrat,37,IT,BE,A,9819974649,STUDENT,True,2025-01-15 17:51:40.087886+00:00
+293,manas.gunjal@universal.edu.in,Manas,Gunjal,23,COMPUTER,TE,A,9322379865,STUDENT,True,2025-01-16 08:07:36.357243+00:00
+287,devraj.bajpai@universal.edu.in,Devraj,Bajpai,05,COMPUTER,SE,A,9326639296,STUDENT,True,2025-01-16 07:51:21.715807+00:00
+282,rai.aryan@universal.edu.in,Aryan,Rai,220,AS&H,FE,D,8369371141,STUDENT,True,2025-01-16 07:39:02+00:00
+298,kadam.y@universal.edu.in,Yash,Kadam,16,IT,SE,A,8421860306,STUDENT,True,2025-01-16 08:13:38.224935+00:00
+301,yash.shekhada@universal.edu.in,Yash,Shekhada,32,COMPUTER,TE,B,8779243051,STUDENT,True,2025-01-16 08:30:06.090757+00:00
+305,suman.khamrui@universal.edu.in,suman,khamrui,36,COMPUTER,TE,A,7710843107,STUDENT,True,2025-01-16 08:42:42.588797+00:00
+331,ansari.moham@universal.edu.in,Asad,Ansari,3,IT,SE,A,9307338659,STUDENT,True,2025-01-16 09:16:57.530318+00:00
+332,atul.vishwakarma@universal.edu.in,Atul ,Vishwakarma ,340,AS&H,FE,D,7208604007,STUDENT,True,2025-01-16 09:18:08.902903+00:00
+346,amaan.akhan@universal.edu.in,Amaan,Khan,62,IT,SE,A,7350777864,STUDENT,True,2025-01-16 09:35:59.193498+00:00
+345,akshaykumar.tank@universal.edu.in,Akshay ,Tank ,297,AIML,FE,F,7020220376,STUDENT,True,2025-01-16 09:34:45.573806+00:00
+355,rahul.jagwan@universal.edu.in,Rahul,Jagwan,32,COMPUTER,BE,A,8369416925,STUDENT,True,2025-01-16 09:47:37.568688+00:00
+359,jino.abraham@universal.edu.in,Jino,Abraham,,AS&H,,,7066689940,FACULTY,True,2025-01-16 09:52:46.174923+00:00
+376,veekshith.kunder@universal.edu.in,Veekshith,Kunder,28,DE,SE,E,8655977679,STUDENT,True,2025-01-16 10:17:51.771059+00:00
+364,om.kene@universal.edu.in,Om,Kene,113,AS&H,FE,C,9322620360,STUDENT,True,2025-01-16 10:06:02.227063+00:00
+366,jadhav.archi@universal.edu.in,Archi,Jadhav,33,AIML,SE,D,8055409000,STUDENT,True,2025-01-16 10:07:31.834857+00:00
+378,nishchay.patel@universal.edu.in,Nishchay,Patel,188,AS&H,FE,D,7738018653,STUDENT,True,2025-01-16 10:18:38.194732+00:00
+535,surti.paras@universal.edu.in,Paras,Surti,65,IT,SE,A,+91 89761 70633,STUDENT,True,2025-01-16 14:22:35.187737+00:00
+367,Rutvik.kamble@universal.edu.in,Rutvik ,Kamble ,25,DE,SE,E,8767651098,STUDENT,True,2025-01-16 10:10:31.400408+00:00
+369,paras.mestri@universal.edu.in,Paras,Mestri,139,AS&H,FE,C,8623913161,STUDENT,True,2025-01-16 10:10:51.383891+00:00
+541,pooja.tharali@universal.edu.in,Pooja,Tharali,88,COMPUTER,TE,B,8591081139,STUDENT,True,2025-01-16 14:30:20.608988+00:00
+832,sandeep.d@universal.edu.in,Sandeep,Dubey,,AIML,,,08806685469,FACULTY,True,2025-01-16 16:01:02.011282+00:00
+374,juee.rane@universal.edu.in,Juee,Rane,226,AS&H,FE,E,7715003818,STUDENT,True,2025-01-16 10:14:45.232139+00:00
+362,kaustubh.shirpurkar@universal.edu.in,kaustubh,shirpurkar,268,AS&H,FE,E,9503265709,STUDENT,True,2025-01-16 09:59:25.466416+00:00
+380,anuragh.singh@universal.edu.in,Anurag,Singh,,AS&H,,,7276075231,FACULTY,True,2025-01-16 10:21:13.301859+00:00
+382,sabista.shaikh@universal.edu.in,Sabista ,Shaikh ,,COMPUTER,,,9373012461,FACULTY,True,2025-01-16 10:22:33.216688+00:00
+387,rovina.dbritto@universal.edu.in,Rovina ,Dbritto ,,IT,,,9975290654,FACULTY,True,2025-01-16 10:23:35.696965+00:00
+390,akshay.agarwal@universal.edu.in,Akshay,Agrawal,,IT,,,8390671271,FACULTY,True,2025-01-16 10:24:02.504936+00:00
+385,akshay.amate@universal.edu.in,Akshay,Amate,,DE,,,9076151954,FACULTY,True,2025-01-16 10:23:19.452757+00:00
+389,santosh.rout@universal.edu.in,Santosh,Rout,,IT,,,9326347437,FACULTY,True,2025-01-16 10:23:43.322242+00:00
+388,krish.naik@universal.edu.in,Krish,Naik,152,AS&H,FE,C,7775058100,STUDENT,True,2025-01-16 10:23:38.716775+00:00
+392,chaitali.mahtte@universal.edu.in,chaitali.mahtte,universal,,COMPUTER,,,,FACULTY,False,2025-01-16 10:24:53.336248+00:00
+391,patra.abhishek@universal.edu.in,Abhishek,patra,,AIML,,,9561643882,FACULTY,True,2025-01-16 10:24:38.482229+00:00
+333,prajwal.avhad@universal.edu.in,Prajwal,avhad,51,IT,SE,A,82618 21525,STUDENT,True,2025-01-16 09:19:38.829982+00:00
+370,trushant.bhoir@universal.edu.in,Trushant ,Bhoir,1,CIVIL,SE,A,8432390949,STUDENT,True,2025-01-16 10:11:17.790202+00:00
+360,harshal.badgujar@universal.edu.in,Harshal ,Badgujar ,,AS&H,,,8788029416,FACULTY,True,2025-01-16 09:54:16.172463+00:00
+363,ranjit.panigrahi@universal.edu.in,Ranjit,Panigrahi ,174,AS&H,FE,D,7977527219,STUDENT,True,2025-01-16 10:04:39.287706+00:00
+233,omkar.bhombad@universal.edu.in,Omkar,Bhombad ,23,AS&H,FE,A,7208148157,STUDENT,True,2025-01-16 05:43:47.175389+00:00
+338,khan.arbaaz@universal.edu.in,Arbaaz,Khan,115,AS&H,FE,C,9175624084,STUDENT,True,2025-01-16 09:23:32.305745+00:00
+336,vivek.bist@universal.edu.in,Vivek ,Bist ,27,AS&H,FE,A,8355887437,STUDENT,True,2025-01-16 09:22:36.349121+00:00
+337,akash.prajapati@universal.edu.in,Akash ,Prajapati ,211,AS&H,FE,D,9819681525,STUDENT,True,2025-01-16 09:23:24.566262+00:00
+339,mohit.bhandari@universal.edu.in,Mohit ,Bhandari ,18,AS&H,FE,A,8369244348,STUDENT,True,2025-01-16 09:25:03.804097+00:00
+365,khan.sa@universal.edu.in,Sahil,Khan,134,AIML,SE,C,8793937027,STUDENT,True,2025-01-16 10:06:17.421294+00:00
+881,divyanshi.tripathi@universal.edu.in,Divyanshi ,Tripathi ,314,AS&H,FE,F,9226576569,STUDENT,True,2025-01-16 16:38:31.375090+00:00
+340,amarsingh.dhami@universal.edu.in,Amar Singh,Dhami,56,AS&H,FE,A,9987928475,STUDENT,True,2025-01-16 09:26:12.148166+00:00
+335,om.prajapati@universal.edu.in,OM,PRAJAPATI,214,AS&H,FE,D,9136134188,STUDENT,True,2025-01-16 09:20:25.510940+00:00
+351,acharya.yash@universal.edu.in,Yash ,Acharya ,1,AIML,SE,C,7387072139,STUDENT,True,2025-01-16 09:40:45.235289+00:00
+286,devarth.darge@universal.edu.in,Devarth,Darge,46,AS&H,FE,A,8097244596,STUDENT,True,2025-01-16 07:50:50.405576+00:00
+357,praneet.bhosale@universal.edu.in,Praneet,Bhosale,24,AS&H,FE,A,9834068271,STUDENT,True,2025-01-16 09:48:27.058681+00:00
+373,shubham.gawali@universal.edu.in,Shubham,Gawli,66,AS&H,FE,B,7767005373,STUDENT,True,2025-01-16 10:13:55.766574+00:00
+368,ansari.moh@universal.edu.in,Mohammad saif,Ansari,5,AIML,SE,C,8976813757,STUDENT,True,2025-01-16 10:10:38.259736+00:00
+375,dhiraj1.patil@universal.edu.in,DHIRAJ,PATIL,30,IT,TE,A,09960018898,STUDENT,True,2025-01-16 10:16:36.110442+00:00
+377,pratima.patil@universal.edu.in,Pratima ,Patil ,,AS&H,,,9820716114,FACULTY,True,2025-01-16 10:18:22.162100+00:00
+379,tanushree.shirke@universal.edu.in,tanushree,shirke,266,AS&H,FE,E,7350673572,STUDENT,True,2025-01-16 10:18:53.719395+00:00
+381,nehali.mhatre@universal.edu.in,Nehali,Mhatre,,COMPUTER,,,8237708626,FACULTY,True,2025-01-16 10:22:01.839784+00:00
+383,shaikh.jannat@universal.edu.in,shaikh.jannat,universal,,AIML,,,,FACULTY,False,2025-01-16 10:22:59.242100+00:00
+386,dinesh.gadge@universal.edu.in,Dinesh,Gadge,,AS&H,,,9168946669,FACULTY,True,2025-01-16 10:23:22.798067+00:00
+474,omkar.p@universal.edu.in,Omkar ,Parab ,176,AS&H,FE,D, 74002 90293,STUDENT,True,2025-01-16 12:54:10.779179+00:00
+393,sachin.more@universal.edu.in,SACHIN,MORE,,AIML,,,9699890688,FACULTY,True,2025-01-16 10:25:22.126209+00:00
+536,ritesh.rathewar@universal.edu.in,Ritesh,Rathewar ,229,AS&H,FE,E,9284514662,STUDENT,True,2025-01-16 14:24:26.549827+00:00
+110,kumarisupriya.sinha@universal.edu.in,Supriya,SINHA,288,AS&H,FE,F,8169100862,STUDENT,True,2025-01-15 16:05:04+00:00
+581,kunal.kotekar@universal.edu.in,Kunal,Kotekar,110,COMPUTER,BE,B,9307049200,STUDENT,True,2025-01-16 15:05:09.996424+00:00
+548,raj.shukla@universal.edu.in,raj,shukla,273,AS&H,FE,E,9967435797,STUDENT,True,2025-01-16 14:37:16.834750+00:00
+554,ramesh.gaurang@universal.edu.in,Gaurang ,Narayankar ,38,DE,SE,E,9004998183,STUDENT,True,2025-01-16 14:43:51.587550+00:00
+582,chirag.mhatre@universal.edu.in,Chirag,Mhatre,19,IT,TE,A,9321680449,STUDENT,True,2025-01-16 15:05:13.793873+00:00
+430,amey.raut@universal.edu.in,Amey,Raut,65,AIML,BE,C,8767726726,STUDENT,True,2025-01-16 10:58:48.765635+00:00
+559,yash.warang@universal.edu.in,Yash,Warang,48,IT,TE,A,7718013312,STUDENT,True,2025-01-16 14:48:25.448197+00:00
+565,dhanashree.chavhan@universal.edu.in,dhanashree,chavhan,05,DE,SE,E,9172825523,STUDENT,True,2025-01-16 14:52:55.061269+00:00
+560,atharva.thakare@universal.edu.in,Atharva,Thakare,129,AIML,SE,D,+919224055327,STUDENT,True,2025-01-16 14:49:02.127691+00:00
+571,yash.ganar@universal.edu.in,Yash,Ganar,17,AIML,BE,C,9960537529,STUDENT,True,2025-01-16 14:55:19.440371+00:00
+574,suprit.dalal@universal.edu.in,Suprit,Dalal,76,IT,SE,A,89990 62526,STUDENT,True,2025-01-16 14:55:33.580455+00:00
+577,vaibhav.dubey@universal.edu.in,Vaibhav ,Dubey ,61,AS&H,FE,B,+91 9372668834,STUDENT,True,2025-01-16 14:57:41.667671+00:00
+579,shravansurya.mattaparti@universal.edu.in,Surya,MATTAPARTI,134,AS&H,FE,C,9136233274,STUDENT,True,2025-01-16 15:00:57.173111+00:00
+580,bar.ankan@universal.edu.in,Ankan ,Bar ,8,AIML,SE,C,8425001365,STUDENT,True,2025-01-16 15:01:05.829169+00:00
+567,vinod.suthar@universal.edu.in,Vinod,suthar,293,AS&H,FE,F,78773 06616,STUDENT,True,2025-01-16 14:54:19.769986+00:00
+463,vedant.garudkar@universal.edu.in,Vedant ,Garudkar ,65,AS&H,FE,B,8087337768,STUDENT,True,2025-01-16 12:26:17.558652+00:00
+576,monika.choudhary@universal.edu.in,Monika ,Choudhary ,40,AS&H,FE,A,7249483553,STUDENT,True,2025-01-16 14:57:13.379672+00:00
+638,abhishek.dubey@universal.edu.in,Abhishek,Dubey,59,AS&H,FE,B,09145286233,STUDENT,True,2025-01-16 15:25:31.349210+00:00
+639,shravya.shetty@universal.edu.in,shravya,shetty,260,AS&H,FE,E,8793705240,STUDENT,True,2025-01-16 15:25:51.368367+00:00
+979,saad.muqri@universal.edu.in,Saad,Muqri,6,CIVIL,BE,A,7767936708,STUDENT,True,2025-01-17 03:43:39.409885+00:00
+1059,nitesh.chaubey@universal.edu.in,Nitish,Chaubey,,AS&H,,,09769464454,FACULTY,True,2025-01-18 05:08:37.973143+00:00
+394,sanketi.raut@universal.edu.in,Sanketi,Raut,,IT,,,08806877577,FACULTY,True,2025-01-16 10:26:19.620903+00:00
+396,chaitali.mahtre@universal.edu.in,chaitali.mahtre,universal,,IT,,,,FACULTY,False,2025-01-16 10:27:43.315755+00:00
+395,omkar.ghag@universal.edu.in,Omkar,Ghag,,AIML,,,9768616463,FACULTY,True,2025-01-16 10:26:59.797407+00:00
+406,waseem.shaikh@universal.edu.in,Waseem ,Shaikh,,COMPUTER,,,9923427686,FACULTY,True,2025-01-16 10:32:16.353721+00:00
+398,avinash.svishwakarma@universal.edu.in,Avinash ,Vishwakarma ,324,DE,FE,F,9653368874,STUDENT,True,2025-01-16 10:28:48.170659+00:00
+397,sahil.salgude@universal.edu.in,sahil,salgude,238,AS&H,FE,E,7620084180,STUDENT,True,2025-01-16 10:28:35.772068+00:00
+405,patil.ved@universal.edu.in,VEDANT ,PATIL,200,AS&H,FE,D,9594404546,STUDENT,True,2025-01-16 10:32:11.151517+00:00
+417,viraj.kherde@universal.edu.in,Viraj,Kherde,12,COMPUTER,BE,A,9869619855,STUDENT,True,2025-01-16 10:45:54.455831+00:00
+399,priyanka.bhoir@universal.edu.in,Priyanka ,Bhoir,,AIML,,,8087789976,FACULTY,True,2025-01-16 10:29:53.671625+00:00
+400,allan.lopes@universal.edu.in,allan ,lopes,,IT,,,9004486811,FACULTY,True,2025-01-16 10:30:11.341298+00:00
+401,dipika.mankar@universal.edu.in,Dipika,Mankar,,COMPUTER,,,9975938772,FACULTY,True,2025-01-16 10:30:22.339527+00:00
+1080,khushi.pathak@universal.edu.in,khushi,pathak,68,AIML,TE,C,7028311842,STUDENT,True,2025-01-20 04:05:45.462289+00:00
+404,chaitali.mhatre@universal.edu.in,Chaitali,Mhatre,,COMPUTER,,,8329779633,FACULTY,True,2025-01-16 10:31:02.399443+00:00
+402,manisha.kashid@universal.edu.in,Manisha ,Kashid ,,AIML,,,9867586785,FACULTY,True,2025-01-16 10:30:47.164784+00:00
+523,singh.shivanshu@universal.edu.in,Shivanshu ,Singh,66,IT,SE,A,9167902331,STUDENT,True,2025-01-16 14:09:07.045035+00:00
+854,priti.prajapati@universal.edu.in,Priti,Prajapati,49,DE,SE,E,8850938466,STUDENT,True,2025-01-16 16:13:56.880617+00:00
+409,mudra.doshi@universal.edu.in,Mudra,Doshi,,IT,,,09029652532,FACULTY,True,2025-01-16 10:35:30.192782+00:00
+412,rajesh.giri@universal.edu.in,Dr. Rajesh ,Giri,,AS&H,,,9920765179,FACULTY,True,2025-01-16 10:37:43.051353+00:00
+411,pradeep.pal@universal.edu.in,Pradeep ,Pal,166,AS&H,FE,C,7972224732,STUDENT,True,2025-01-16 10:36:58.700135+00:00
+415,patel.piyush@universal.edu.in,Piyush ,Patel ,42,DE,SE,E,8855940546,STUDENT,True,2025-01-16 10:42:08.267599+00:00
+414,dubey.aryan@universal.edu.in,Aryan,DUBEY,67,IT,SE,A,7620483953,STUDENT,True,2025-01-16 10:40:15.151037+00:00
+413,vinayak.patil@universal.edu.in,Vinayak ,Patil ,46,DE,SE,E,7414986615,STUDENT,True,2025-01-16 10:39:44.955930+00:00
+416,prathamesh.rraut@universal.edu.in,Prathamesh,Raut,66,AIML,BE,C,8530296611,STUDENT,True,2025-01-16 10:45:09.696252+00:00
+418,dagur.pratham@universal.edu.in,Pratham ,Dagur ,21,AIML,SE,C,7499501988,STUDENT,True,2025-01-16 10:47:21.907953+00:00
+420,akshay.bhammer@universal.edu.in,akshay,bhammer,17,AS&H,FE,A,8237092694,STUDENT,True,2025-01-16 10:48:15.728816+00:00
+419,iqbal.shaikh@universal.edu.in,Iqbal ,Shaikh,,AS&H,,,7208499814,FACULTY,True,2025-01-16 10:48:04.596663+00:00
+566,abid.khan@universal.edu.in,Abid,Khan,97,COMPUTER,BE,B,9022340119,STUDENT,True,2025-01-16 14:52:55.910204+00:00
+927,priyansh.kumar@universal.edu.in,Priyansh,Kumar,21,IT,BE,A,07039984537,STUDENT,True,2025-01-16 17:29:00.188590+00:00
+408,bhukan.bhavdeep@universal.edu.in,Bhavdeep,Bhukan,6,IT,SE,A,09316226263,STUDENT,True,2025-01-16 10:34:25.473269+00:00
+421,dhruvit.patolia@universal.edu.in,Dhruvit ,Patolia,27,COMPUTER,BE,A,9967067597,STUDENT,True,2025-01-16 10:49:13.083000+00:00
+833,manas.vedre@universal.edu.in,Manas,vedre,12,IT,TE,A,7506025175,STUDENT,True,2025-01-16 16:01:18.773030+00:00
+424,rajesh.dubey@universal.edu.in,rajesh.dubey,universal,,CIVIL,,,,FACULTY,False,2025-01-16 10:51:17.990727+00:00
+425,paras.mohite@universal.edu.in,Paras,Mohite,45,AIML,BE,C,9823465425,STUDENT,True,2025-01-16 10:56:18.153053+00:00
+426,karthik.nadar@universal.edu.in,Karthik ,Nadar ,,IT,,,9004867170,FACULTY,True,2025-01-16 10:56:22.090023+00:00
+428,MOMIN.ABDUL@universal.edu.in,Abdul baasit,Momin,17,AIML,SE,C,7498907430,STUDENT,True,2025-01-16 10:58:38.201243+00:00
+95,dhanawade.tanishq@universal.edu.in,Tanishq,Dhanawade,10,IT,SE,A,8657108504,STUDENT,True,2025-01-15 15:07:36.454200+00:00
+432,chaitanya.barapatre@universal.edu.in,Chaitanya,Barapatre,02,AIML,BE,C,7738830056,STUDENT,True,2025-01-16 11:00:02.652167+00:00
+537,Sandesh.yadav@universal.edu.in,Sandesh ,Yadav,333,AS&H,FE,F,8623986521,STUDENT,True,2025-01-16 14:27:55.709464+00:00
+427,mihir.patil@universal.edu.in,Mihir,Patil,45,DE,SE,E,8767826918,STUDENT,True,2025-01-16 10:57:20.243866+00:00
+855,vikrant.ingale@universal.edu.in,VIKRANT ,INGALE,,COMPUTER,,,8779559013,FACULTY,True,2025-01-16 16:14:05.401326+00:00
+434,vedika.bhoir@universal.edu.in,Vedika,Bhoir,,COMPUTER,,,8390892035,FACULTY,True,2025-01-16 11:00:30.962885+00:00
+436,asodariya.prince@universal.edu.in,Prince ,Asodariya,04,IT,SE,A,8928771108,STUDENT,True,2025-01-16 11:05:07.935836+00:00
+435,sejal.lad@universal.edu.in,Sejal,Lad,40,AIML,BE,C,8484967484,STUDENT,True,2025-01-16 11:03:52.897852+00:00
+438,swadesh.kumar@universal.edu.in,Swadesh ,Kumar ,,COMPUTER,,,8528861300,FACULTY,True,2025-01-16 11:15:55.359421+00:00
+429,sharique.ahmad@universal.edu.in,Sharique ,Ahmad ,,COMPUTER,,,9765653662,FACULTY,True,2025-01-16 10:58:42.013694+00:00
+441,smriti.patil@universal.edu.in,Smriti ,Patil,3,CIVIL,TE,A,9579421121,STUDENT,True,2025-01-16 11:22:10.991714+00:00
+439,joshi.dev@universal.edu.in,Dev ,Joshi,38,AIML,SE,C,8169669045,STUDENT,True,2025-01-16 11:16:50.827998+00:00
+440,pravin.chaudhari@universal.edu.in,pravin,chaudhari,31,AS&H,FE,A,9665462022,STUDENT,True,2025-01-16 11:20:02.379183+00:00
+1083,srishti.jmishra@universal.edu.in,srishti,mishra,92,AIML,SE,D,9137379305,STUDENT,True,2025-01-20 05:09:25.132475+00:00
+431,singh.anuradha@universal.edu.in,Anuradha,Singh,86,AIML,SE,D,7219771543,STUDENT,True,2025-01-16 10:59:51.647755+00:00
+443,patil.siddhi@universal.edu.in,Siddhi,Patil,197,AS&H,FE,D,7738135396,STUDENT,True,2025-01-16 11:31:49.579760+00:00
+457,chandru.arjuns@universal.edu.in,Chandru,Arjun,11,AS&H,FE,A,8355902663,STUDENT,True,2025-01-16 12:13:26.483275+00:00
+444,jayan.patil@universal.edu.in,Jayan,Patil ,44,DE,SE,E,9021104693,STUDENT,True,2025-01-16 11:33:10.474882+00:00
+445,gauri.prasad@universal.edu.in,Gauri,Prasad,216,AS&H,FE,D,7387158592,STUDENT,True,2025-01-16 11:37:25.780201+00:00
+466,parth.naik@universal.edu.in,Parth,naik,153,AS&H,FE,C,8830652952,STUDENT,True,2025-01-16 12:31:16.477317+00:00
+845,shreya.satvi@universal.edu.in,Shreya ,Satvi,53,DE,SE,E,8799936306,STUDENT,True,2025-01-16 16:09:41.915332+00:00
+452,aum.pathare@universal.edu.in,AUM,PATHARE,192,AS&H,FE,D,7517617162,STUDENT,True,2025-01-16 11:56:36.954220+00:00
+450,shraddha.sandimani@universal.edu.in,Shraddha,Sandimani,,IT,,,8976081033,FACULTY,True,2025-01-16 11:49:15.516247+00:00
+454,aniket.patil@universal.edu.in,Aniket,Patil,,AS&H,,,9960693092,FACULTY,True,2025-01-16 11:57:03.742648+00:00
+449,parab.sarthak@universal.edu.in,Sarthak,Parab,178,AS&H,FE,D,80978 28775,STUDENT,True,2025-01-16 11:45:32.409803+00:00
+453,sawaisingh.rathod@universal.edu.in,Sawaisingh ,Rathod,231,AS&H,FE,E,8928412292,STUDENT,True,2025-01-16 11:56:49.055088+00:00
+448,harsh.patil@universal.edu.in,Harsh,Patil,193,AS&H,FE,D,+91 93217-29571,STUDENT,True,2025-01-16 11:44:31.878699+00:00
+455,Aditya.bandgar@universal.edu.in,Aditya,Bandgar,68,DE,SE,E,8983763770,STUDENT,True,2025-01-16 11:57:27.696509+00:00
+451,shreyash.wadkar@universal.edu.in,Shreyash,Wadkar,2,COMPUTER,BE,A,9767372213,STUDENT,True,2025-01-16 11:54:12.138190+00:00
+461,sachin.shinde@universal.edu.in,Sachin,Shinde,39,COMPUTER,BE,A,08975082094,STUDENT,True,2025-01-16 12:21:48.090636+00:00
+460,thakur.parth@universal.edu.in,Parth,Thakur ,136,COMPUTER,SE,B,9209597140,STUDENT,True,2025-01-16 12:18:18.132456+00:00
+469,arunkumar.pal@universal.edu.in,Arun,Pal,165,AS&H,FE,C,9594685080,STUDENT,True,2025-01-16 12:37:57.760192+00:00
+462,yash.bhoir@universal.edu.in,Yash ,Bhoir,14,AIML,SE,C,8329349316,STUDENT,True,2025-01-16 12:23:13.405093+00:00
+464,naitik.hukamali@universal.edu.in,Naitik ,Hukamali ,88,AS&H,FE,B,8766798415,STUDENT,True,2025-01-16 12:26:48.948027+00:00
+468,ranjith.rajarapu@universal.edu.in,Ranjith,Rajarapu ,223,IT,FE,D,9172341272,STUDENT,True,2025-01-16 12:37:53.739586+00:00
+467,saurabh.mmishra@universal.edu.in,saurabh,mishra,47,COMPUTER,TE,A,7387628021,STUDENT,True,2025-01-16 12:37:12.338075+00:00
+522,sandeeps.yadav@universal.edu.in,sandeep,yadav,60,DE,TE,D,8291619076,STUDENT,True,2025-01-16 14:08:43.400202+00:00
+521,kamble.aditya@universal.edu.in,Aditya ,Kamble ,103,AS&H,FE,B,8433616618,STUDENT,True,2025-01-16 14:08:25.296935+00:00
+470,shah.satyam@universal.edu.in,Satyam ,Shah,36,IT,SE,A,7972164076,STUDENT,True,2025-01-16 12:42:33.296068+00:00
+835,mourya.vishal@universal.edu.in,Vishal,Mourya,56,COMPUTER,SE,A,9860488969,STUDENT,True,2025-01-16 16:01:39.621295+00:00
+472,sahoo.omkar@universal.edu.in,Omkar,Sahoo,236,AS&H,FE,E,8591396429,STUDENT,True,2025-01-16 12:50:36.934230+00:00
+481,patoliya.rudra@universal.edu.in,Rudra,Patoliya,93,COMPUTER,SE,B,07397807498,STUDENT,True,2025-01-16 13:02:16.057323+00:00
+473,harsh.mandaliya@universal.edu.in,Harsh,Mandaliya,42,COMPUTER,TE,A,7039746831,STUDENT,True,2025-01-16 12:53:43.691407+00:00
+489,roshni.yadav@universal.edu.in,Roshni,Yadav,99,COMPUTER,TE,B,8446719548,STUDENT,True,2025-01-16 13:27:31.414846+00:00
+475,makam.rohit@universal.edu.in,Rohit ,Makam,19,IT,SE,A,8956402653,STUDENT,True,2025-01-16 12:54:18.365200+00:00
+482,shubham.smishra@universal.edu.in,Shubham ,mishra ,33,DE,SE,E,9579616351,STUDENT,True,2025-01-16 13:10:06.872520+00:00
+477,sanjana.choudhary@universal.edu.in,Sanjana,Choudhary ,41,AS&H,FE,A,9987079948,STUDENT,True,2025-01-16 12:55:41.638363+00:00
+478,krutika.bhoskar@universal.edu.in,krutika,bhoskar,25,AS&H,FE,A,7666092939,STUDENT,True,2025-01-16 12:56:19.403263+00:00
+553,vaze.kshitij@universal.edu.in,kshitij,vaze,58,DE,TE,D,8459813112,STUDENT,True,2025-01-16 14:40:05.973087+00:00
+476,bhavesh.baliwala@universal.edu.in,Bhavesh,Baliwala ,336,AS&H,FE,A,9594570880,STUDENT,True,2025-01-16 12:54:39.396512+00:00
+479,pal.aditya@universal.edu.in,Aditya ,Pal,39,DE,SE,E,8855836513,STUDENT,True,2025-01-16 12:57:27.131959+00:00
+1077,jha.sejal@universal.edu.in,Sejal ,Jha,36,AIML,SE,C,9004008579,STUDENT,True,2025-01-20 03:10:34.986937+00:00
+547,shreyoshi.banerjee@universal.edu.in,shreyoshi,banerjee,14,AS&H,FE,A,8624907297,STUDENT,True,2025-01-16 14:35:27.234932+00:00
+487,Harsh.spandey@universal.edu.in,Harsh,Pandey,24,IT,SE,A,70458 17251,STUDENT,True,2025-01-16 13:21:16.282541+00:00
+484,srajan.shetty@universal.edu.in,SRAJAN,SHETTY,83,COMPUTER,TE,A,8928796840,STUDENT,True,2025-01-16 13:13:32.497340+00:00
+490,ayush.mhatre@universal.edu.in,Ayush,Mhatre ,141,AS&H,FE,C,8080074404,STUDENT,True,2025-01-16 13:29:04.619547+00:00
+488,anish.dhanak@universal.edu.in,Anish,Dhanak,13,IT,BE,A,+91 84249 41355,STUDENT,True,2025-01-16 13:26:53.503125+00:00
+491,aman.kgupta@universal.edu.in,Aman,Gupta,117,DE,TE,D,9321754618,STUDENT,True,2025-01-16 13:29:38.758682+00:00
+493,patil.harshika@universal.edu.in,Harshika ,Patil,88,COMPUTER,SE,B,9881624382,STUDENT,True,2025-01-16 13:32:43.311141+00:00
+76,dhruv.chavan@universal.edu.in,Dhruv,Chavan,12,COMPUTER,TE,A,7249763651,STUDENT,True,2025-01-15 13:00:57.818203+00:00
+495,shaikh.abdulharis@universal.edu.in,Abdulharis,Shaikh,37,IT,SE,A,9136405753,STUDENT,True,2025-01-16 13:33:47.525717+00:00
+825,shruti.dontula@universal.edu.in,Shruti ,Dontula ,17,DE,SE,E,7218201549,STUDENT,True,2025-01-16 15:57:47.547932+00:00
+492,vikaskumar.yadav@universal.edu.in,Vikas ,Yadav ,335,AS&H,FE,F,8887635564,STUDENT,True,2025-01-16 13:31:12.914094+00:00
+496,krushna.sakhare@universal.edu.in,Krushna,sakhare,35,IT,TE,A,9132346222,STUDENT,True,2025-01-16 13:35:37.840934+00:00
+511,devansh.patil@universal.edu.in,Devansh ,Patil,41,DE,TE,D,9373999101,STUDENT,True,2025-01-16 13:57:27.656292+00:00
+497,noumaan.khatri@universal.edu.in,Noumaan,Khatri,42,AIML,SE,C,7522990606,STUDENT,True,2025-01-16 13:36:23.390958+00:00
+507,prakash.maharana@universal.edu.in,Biswa Prakash,Maharana,19,DE,SE,E,8097250535,STUDENT,True,2025-01-16 13:54:12.824050+00:00
+499,karishma.gupta@universal.edu.in,Karishma,Gupta,118,DE,TE,D,8668317242,STUDENT,True,2025-01-16 13:39:38.829692+00:00
+498,manasi.bhoir@universal.edu.in,Manasi,Bhoir,5,DE,SE,E,8888255566,STUDENT,True,2025-01-16 13:37:59.545263+00:00
+1070,shashank.nanote@universal.edu.in,Shashank,Nanote,52,AIML,TE,C,9820719497,STUDENT,True,2025-01-19 12:15:58.510773+00:00
+500,nirnay.mhatre@universal.edu.in,Nirnay ,Mhatre ,142,AS&H,FE,C,9890810906,STUDENT,True,2025-01-16 13:42:01.016129+00:00
+518,aaryan.singh@universal.edu.in,aaryan ,singh,108,AIML,BE,C,9307660439,STUDENT,True,2025-01-16 14:05:23.792204+00:00
+558,phadte.suniksha@universal.edu.in,SUNIKSHA,PHADTE,204,AS&H,FE,D,7666038956,STUDENT,True,2025-01-16 14:47:26.773561+00:00
+928,amey.sawant@universal.edu.in,Amey,Sawant,37,IT,BE,A,9653329948,STUDENT,True,2025-01-16 17:29:04.949442+00:00
+509,gauri.bhirud@universal.edu.in,gauri,bhirud,07,COMPUTER,TE,A,07021174151,COUNCIL,True,2025-01-16 13:55:45+00:00
+510,singh.disha@universal.edu.in,disha ,devendra singh,88,AIML,SE,D,8169018224,STUDENT,True,2025-01-16 13:55:49.938448+00:00
+823,riya.kamti@universal.edu.in,Riya,Kamti,104,AS&H,FE,B,8779819644,STUDENT,True,2025-01-16 15:56:05.444443+00:00
+505,yash.karadkar@universal.edu.in,yash ,karadkar ,106,AS&H,FE,B,+91 90825 75549,STUDENT,True,2025-01-16 13:49:46.639987+00:00
+494,shukla.aniket@universal.edu.in,Aniket ,Shukla,66,IT,SE,A,7499083895,STUDENT,True,2025-01-16 13:33:35.473834+00:00
+550,pratham.patil@universal.edu.in,pratham ,patil,54,AIML,BE,C,88052 20922,STUDENT,True,2025-01-16 14:38:31.483657+00:00
+512,shravani.dabade@universal.edu.in,Shravani,Dabade ,44,AS&H,FE,A,9766669260,STUDENT,True,2025-01-16 13:59:06.242748+00:00
+508,harshil.dshetty@universal.edu.in,Harshil,Shetty,34,IT,TE,A,7715999317,STUDENT,True,2025-01-16 13:55:33.511167+00:00
+514,karan.toraskar@universal.edu.in,Karan,Toraskar,49,IT,BE,A,+91 84338 65642,STUDENT,True,2025-01-16 14:00:30.086610+00:00
+519,hitesh.girase@universal.edu.in,Hitesh,girase,10,IT,TE,A,9322533182,STUDENT,True,2025-01-16 14:05:27.713411+00:00
+515,kabadi.darshan@universal.edu.in,Darshan,kabadi,20,IT,SE,B,7775077848,STUDENT,True,2025-01-16 14:02:33.346781+00:00
+517,esha.mourya@universal.edu.in,esha,mourya,22,COMPUTER,BE,A,07666997423,STUDENT,True,2025-01-16 14:05:00.470614+00:00
+520,deepak.yannadle@universal.edu.in,deepak,yannadle ,108,AIML,BE,C,+91 95521 73884,STUDENT,True,2025-01-16 14:07:52.785834+00:00
+506,ayesha.lilgar@universal.edu.in,Ayesha ,Lilgar,341,AS&H,FE,E,9028844728,STUDENT,True,2025-01-16 13:53:15.263624+00:00
+540,amul.sahani@universal.edu.in,amul,sahani,235,AS&H,FE,E,9554910380,STUDENT,True,2025-01-16 14:29:56.475918+00:00
+524,PRANALI.PATIL@universal.edu.in,pranali,Patil,29,IT,BE,A,9850238298,STUDENT,True,2025-01-16 14:14:59.931216+00:00
+525,jadhav.malhar@universal.edu.in,Malhar,Jadhav,34,AIML,SE,C,9029292300,STUDENT,True,2025-01-16 14:15:20.689872+00:00
+526,aryan.menon@universal.edu.in,ARYAN,MENON,138,AS&H,FE,C,7888148534,STUDENT,True,2025-01-16 14:15:28.381474+00:00
+527,aaquib.shaikh@universal.edu.in,Aaquib ,Shaikh ,250,AS&H,FE,E,06204744297,STUDENT,True,2025-01-16 14:17:04.994145+00:00
+549,aryan.makwana@universal.edu.in,Aryan,Makwana,21,IT,BE,A,+91 74004 72531,STUDENT,True,2025-01-16 14:37:35.253585+00:00
+528,sankhi.singh@universal.edu.in,Sankhi ,Singh,82,COMPUTER,TE,B,09930526830,STUDENT,True,2025-01-16 14:18:58.391190+00:00
+556,disha.manjarekar@universal.edu.in,Disha,Manjarekar ,40,AIML,BE,C,+918177873678,STUDENT,True,2025-01-16 14:45:41.984610+00:00
+529,harsh.mahadik@universal.edu.in,Harsh,Mahadik,125,AS&H,FE,C,09890205293,STUDENT,True,2025-01-16 14:19:07.898154+00:00
+530,priyank.gharat@universal.edu.in,priyank,gharat,65,DE,SE,E,8855811736,STUDENT,True,2025-01-16 14:19:22.457888+00:00
+531,tejashree.mestry@universal.edu.in,tejashree ,mestry,44,COMPUTER,TE,A,+91 84220-90601,STUDENT,True,2025-01-16 14:19:31.628310+00:00
+836,vighnesh.s@universal.edu.in,Vighnesh,Sonawale,290,AIML,FE,F,8879403922,STUDENT,True,2025-01-16 16:01:49.058316+00:00
+564,karan.g.singh@universal.edu.in,karan,singh,279,AS&H,FE,E,9820964872,STUDENT,True,2025-01-16 14:52:08.211374+00:00
+573,anshkumar.singh@universal.edu.in,Ansh ,Singh,22,IT,BE,A,+91 98192 33296,STUDENT,True,2025-01-16 14:55:24.448441+00:00
+1078,tanish.galhate@universal.edu.in,Tanish,Galhate ,21,AIML,TE,C,9372337490,STUDENT,True,2025-01-20 03:28:16.289533+00:00
+848,atharv.ambetkar@universal.edu.in,Atharv,Ambetkar,05,AS&H,FE,A,08356825305,STUDENT,True,2025-01-16 16:10:13.805734+00:00
+575,hemangi.deore@universal.edu.in,Hemangi ,Deore,51,AS&H,FE,A,8805474187,STUDENT,True,2025-01-16 14:57:10.416349+00:00
+563,RUSHABH.NAIK@universal.edu.in,Rushabh,Naik,154,AS&H,FE,C,9284639699,STUDENT,True,2025-01-16 14:50:27.024210+00:00
+179,antra.sawant@universal.edu.in,Antra,Sawant,243,AS&H,FE,E,9892054344,STUDENT,True,2025-01-16 03:42:08.360967+00:00
+570,niharika.sonkar@universal.edu.in,Niharika,Sonkar,292,AS&H,FE,F,8286771199,STUDENT,True,2025-01-16 14:55:02.303658+00:00
+882,sneha_v.singh@universal.edu.in,SNEHA,SINGH,86,COMPUTER,BE,B,09370800413,STUDENT,True,2025-01-16 16:39:50.359188+00:00
+837,isha.mhatre@universal.edu.in,Isha,Mhatre,46,AIML,TE,C,8329864365,STUDENT,True,2025-01-16 16:02:13.120708+00:00
+644,esha.utekar@universal.edu.in,ESHA,UTEKAR,89,COMPUTER,TE,B,8655663099,STUDENT,True,2025-01-16 15:26:46.565720+00:00
+849,sneha.karmakar@universal.edu.in,Sneha ,karmakar,107,AS&H,FE,B,7977017083,STUDENT,True,2025-01-16 16:10:25.373058+00:00
+827,shrujan.shetty@universal.edu.in,Shrujan,Shetty ,261,AS&H,FE,E,9820949058,STUDENT,True,2025-01-16 15:58:29.388624+00:00
+863,aditya.dakare@universal.edu.in,Aditya,Dakare,28,COMPUTER,BE,A,9221112659,STUDENT,True,2025-01-16 16:20:52.519269+00:00
+872,gaurav.shete@universal.edu.in,Gaurav ,Shete,,DE,,,7028890038,FACULTY,True,2025-01-16 16:32:04.263582+00:00
+900,sheta.aastha@universal.edu.in,Aastha ,Sheta,137,AIML,SE,D,8767327901,STUDENT,True,2025-01-16 16:57:46.141928+00:00
+908,akash.jaiswal@universal.edu.in,Akash,Jaiswal ,24,DE,SE,E,7666610167,STUDENT,True,2025-01-16 17:03:35.413170+00:00
+916,chauhan.viraj@universal.edu.in,Viraj,Chauhan,13,COMPUTER,SE,A,93263 57256,STUDENT,True,2025-01-16 17:12:30.268637+00:00
+924,dhiraj.gharat@universal.edu.in,Dhiraj,Gharat,03,CIVIL,BE,A,7666822993,STUDENT,True,2025-01-16 17:23:21.019986+00:00
+929,jeevan.choudhary@universal.edu.in,Jeevan,Choudhary,8,IT,BE,A,8779190830,STUDENT,True,2025-01-16 17:29:59.892139+00:00
+996,pooja.patil@universal.edu.in,Pooja,Patil,,OTHERS,,,9518394925,FACULTY,True,2025-01-17 04:36:22.516966+00:00
+936,harshvardhan.chaudhari@universal.edu.in,Harsh vardhan ,Chaudhari ,30,AS&H,FE,A,7559105585,STUDENT,True,2025-01-16 17:34:13.066919+00:00
+980,shah.neha@universal.edu.in,Neha ,Shah,,AS&H,,,9987562350,FACULTY,True,2025-01-17 03:53:48.924181+00:00
+295,mhatre.swayam@universal.edu.in,Swayam,Mhatre,69,IT,SE,A,9892658322,STUDENT,True,2025-01-16 08:09:54.354967+00:00
+952,deepak.kadam@universal.edu.in,deepak,kadam,,OTHER,,,08097764657,FACULTY,True,2025-01-16 18:07:34+00:00
+972,anjali1.singh@universal.edu.in,Anjali,Singh,87,AIML,BE,C,96653 78731,STUDENT,True,2025-01-17 02:54:01.124808+00:00
+988,marina.thomas@universal.edu.in,Marina ,Thomas ,,AS&H,,,9892403684,FACULTY,True,2025-01-17 04:30:09.781626+00:00
+241,priyank.purohit@universal.edu.in,Priyank,Purohy,218,AS&H,FE,D,8080254858,STUDENT,True,2025-01-16 06:04:03+00:00
+1026,chaudhari.nirjal@universal.edu.in,nirjal,chaudhari,02,CIVIL,SE,A,7030403555,STUDENT,True,2025-01-17 08:00:27.426224+00:00
+1010,ayaz1.khan@universal.edu.in,Ayaz,khan,36,COMPUTER,BE,A,9623266520,STUDENT,True,2025-01-17 06:19:28.630838+00:00
+1033,harsh.bhoir@universal.edu.in,Harsh ,Bhoir,50,DE,SE,E,7709782003,STUDENT,True,2025-01-17 08:27:08.894688+00:00
+1045,jiya.rajuk@universal.edu.in,Jiya,Raju k,97,AS&H,FE,B,06380552709,STUDENT,True,2025-01-17 10:44:29.422899+00:00
+1048,aniket.bhalerao@universal.edu.in,Aniket,bhalerao,23,AIML,TE,A,9594639134,COUNCIL,True,2025-01-17 16:52:07.181689+00:00
+637,ajay.gogane@universal.edu.in,Ajay,Gogane,111,COMPUTER,BE,B,8956346287,STUDENT,True,2025-01-16 15:25:24.691606+00:00
+645,omkar.prajapati@universal.edu.in,omkar,prajapati,43,DE,TE,D,9136711882,STUDENT,True,2025-01-16 15:26:47.326622+00:00
+834,satyam.vishwakarma@universal.edu.in,Satyam ,Vishwakarma ,99,AIML,SE,D,8291200623,STUDENT,True,2025-01-16 16:01:19.317921+00:00
+847,Kaushal.shukla@universal.edu.in,Kaushal,Shukla,44,IT,BE,A,8739026208,STUDENT,True,2025-01-16 16:09:54.620995+00:00
+857,sandesh.patil@universal.edu.in,Sandesh,Patil,,DE,,,9730954784,FACULTY,True,2025-01-16 16:17:41.117115+00:00
+864,chudasama.vineet@universal.edu.in,Vineet,Chudasama,14,COMPUTER,SE,A,07757042299,STUDENT,True,2025-01-16 16:21:57.680675+00:00
+828,siddhi.spatil@universal.edu.in,Siddhi,Patil,34,IT,TE,A,08605492558,STUDENT,True,2025-01-16 15:58:44.676660+00:00
+1071,Tanishka.naik@universal.edu.in,Tanishka ,Naik,156,AS&H,FE,C,9209102385,STUDENT,True,2025-01-19 14:39:14.663900+00:00
+873,jitesh.bangera@universal.edu.in,Jitesh,Bangera,08,AIML,TE,C,9987458675,STUDENT,True,2025-01-16 16:32:25.892757+00:00
+503,kashak.shah@universal.edu.in,kashak,shah,246,AS&H,FE,E,9372437906,STUDENT,True,2025-01-16 13:43:50.698666+00:00
+899,meghana.koduri@universal.edu.in,Meghana,Koduri,120,AS&H,FE,C,9373297720,STUDENT,True,2025-01-16 16:57:04.793110+00:00
+1003,amrit.verma@universal.edu.in,Amrit,Verma,322,AIML,FE,F,9969645303,STUDENT,True,2025-01-17 05:28:46.982899+00:00
+915,yadav.akash@universal.edu.in,Akash,YADAV,326,AS&H,FE,F,9322863826,STUDENT,True,2025-01-16 17:12:20.834900+00:00
+944,aditya.parmar@universal.edu.in,ADITYA,Parmar,180,AS&H,FE,D,75592 93116,STUDENT,True,2025-01-16 17:45:33.462703+00:00
+973,kaushalya.devlikar@universal.edu.in,Kaushalya,Devlikar,01,CIVIL,TE,A,9028299036,STUDENT,True,2025-01-17 02:56:57.202024+00:00
+953,mehta.heet@universal.edu.in,Heet,Mehta,136,COMPUTER,FE,C,9320846533,STUDENT,True,2025-01-16 18:13:07.501501+00:00
+925,yash.amrelia@universal.edu.in,Yash,Amrelia,82,COMPUTER,BE,B,9975123273,STUDENT,True,2025-01-16 17:24:51.785788+00:00
+981,ramchandra.khapare@universal.edu.in,ramchandra.khapare,universal,,CIVIL,,,,FACULTY,False,2025-01-17 03:59:56.753222+00:00
+987,vipulkumar.verma@universal.edu.in,Vipulkumar,Verma,,AS&H,,,09768510129,FACULTY,True,2025-01-17 04:29:42.531867+00:00
+967,ankur.yadav@universal.edu.in,Ankur ,Yadav,327,AS&H,FE,F,9372977143,STUDENT,True,2025-01-17 01:42:06.536090+00:00
+997,poonam.thakre@universal.edu.in,poonam.thakre,universal,,AIML,,,,FACULTY,False,2025-01-17 04:36:47.613837+00:00
+1011,fenil.sheladiya@universal.edu.in,Fenil ,Sheladiya ,37,DE,SE,E,8169602279,STUDENT,True,2025-01-17 06:25:13.247846+00:00
+1046,sakpal.bhushan@universal.edu.in,Bhushan,Sakpal,68,AIML,TE,C,84220 01968,STUDENT,True,2025-01-17 15:47:36.106344+00:00
+1027,yatin.bhalekar@universal.edu.in,Yatin,Bhalekar,50,COMPUTER,BE,A,8080248883,STUDENT,True,2025-01-17 08:03:31.491357+00:00
+883,khushboo.gupta@universal.edu.in,khushboo,gupta,80,AS&H,FE,B,9588470711,STUDENT,True,2025-01-16 16:42:14.152970+00:00
+646,sakshi.pendharkar@universal.edu.in,Sakshi,Pendharkar,202,AS&H,FE,D,9029643607,STUDENT,True,2025-01-16 15:26:54.297429+00:00
+247,vishal.badapandara@universal.edu.in,vishal,badapandara,04,COMPUTER,SE,A,8855987966,COUNCIL,True,2025-01-16 06:16:01+00:00
+561,prachi.t@universal.edu.in,prachi,tiwari,309,AS&H,FE,F,9321458805,STUDENT,True,2025-01-16 14:49:25.710524+00:00
+838,silviya.dmonte@universal.edu.in,Silviya ,Dmonte ,,COMPUTER,,,9823516248,FACULTY,True,2025-01-16 16:03:25.179817+00:00
+184,sejalkumari.singh@universal.edu.in,Sejal,Singh,281,AS&H,FE,F,9619421980,STUDENT,True,2025-01-16 03:53:13+00:00
+923,rehan.mohammad@universal.edu.in,Rehan ,Mohammad ,56,IT,SE,A,8263017776,STUDENT,True,2025-01-16 17:22:35.786265+00:00
+865,patil.chirag@universal.edu.in,Chirag,Patil,79,IT,SE,A,9594760028,STUDENT,True,2025-01-16 16:23:10.410211+00:00
+874,borana.mohit@universal.edu.in,Mohit ,Borana ,17,AIML,SE,C,8857980157,STUDENT,True,2025-01-16 16:34:06.650718+00:00
+931,sejal.manjalkar@universal.edu.in,Sejal ,Manjalkar ,24,IT,BE,A,7506077253,STUDENT,True,2025-01-16 17:30:49.060183+00:00
+82,ghare.shvet@universal.edu.in,Shvet,Ghare,26,COMPUTER,SE,A,7249832504,COUNCIL,True,2025-01-15 13:39:06.224622+00:00
+961,priti.singh@universal.edu.in,PRITI,SINGH,11,AIML,TE,C,7387134148,COUNCIL,True,2025-01-16 20:16:16.923226+00:00
+909,harshit.pal@universal.edu.in,harsahit,pal,23,DE,SE,E,9021565284,COUNCIL,True,2025-01-16 17:04:17.101153+00:00
+46,maaheedhar.dewassi@universal.edu.in,Maaheedhar,Dewassi,112,DE,TE,D,7021521241,STUDENT,True,2025-01-15 10:31:36+00:00
+28,souvik.mondal@universal.edu.in,Souvik,Mondal,11,IT,TE,A,7774980931,COUNCIL,True,2025-01-14 19:41:58.469739+00:00
+945,harshal.vpatil@universal.edu.in,Harshal,Patil,10,CIVIL,BE,A,9022495748,STUDENT,True,2025-01-16 17:45:47.255898+00:00
+954,Bhatt.KASHYAP@universal.edu.in,Kashyap,Bhatt,11,COMPUTER,SE,A,8779544355,COUNCIL,True,2025-01-16 18:15:56.878371+00:00
+1004,arpit.sharma@universal.edu.in,Arpit,Sharma,48,COMPUTER,BE,A,9284239374,STUDENT,True,2025-01-17 05:42:31.731445+00:00
+989,nikhil.sontakke@universal.edu.in,nikhil,sontakke,,CIVIL,,,7020999258,FACULTY,True,2025-01-17 04:32:41.951218+00:00
+974,karambalekar.meet@universal.edu.in,Meet,Karambalekar ,68,IT,SE,A,8291375903,STUDENT,True,2025-01-17 02:57:01.294755+00:00
+856,boridkar.soham@universal.edu.in,Soham,Boridkar,18,AIML,SE,C,09321559182,COUNCIL,True,2025-01-16 16:16:04+00:00
+995,deepak.bhise@universal.edu.in,Deepak,Bhise,,OTHERS,,,8779279766,FACULTY,True,2025-01-17 04:35:58.638137+00:00
+1072,jayesh.kondi@universal.edu.in,Jayesh,Kondi,27,DE,SE,E,08788277533,STUDENT,True,2025-01-19 15:44:51.295976+00:00
+1028,rahuld.singh@universal.edu.in,Rahul,singh,13,CIVIL,BE,A,09373679173,STUDENT,True,2025-01-17 08:14:34.732379+00:00
+1041,ruchita.khanna@universal.edu.in,Ruchita,Khanna,118,AS&H,FE,C,7058276623,STUDENT,True,2025-01-17 09:40:24.148665+00:00
+642,surve.maitri@universal.edu.in,maitri ,surve,45,IT,SE,A,9820375667,STUDENT,True,2025-01-16 15:26:43.391770+00:00
+648,yash.trivedi@universal.edu.in,Yash,Trivedi,14,COMPUTER,BE,A,8779047335,STUDENT,True,2025-01-16 15:27:13.954357+00:00
+839,patel.sakshi@universal.edu.in,Sakshi ,Patel ,85,COMPUTER,SE,B,8799976408,STUDENT,True,2025-01-16 16:03:32.787877+00:00
+926,atharva.pa@universal.edu.in,Atharva,Patil,40,DE,TE,D,7620674705,STUDENT,True,2025-01-16 17:25:06.713066+00:00
+850,sushant.gawade1@universal.edu.in,Sushant ,Gawade,,AIML,,,9870848850,FACULTY,True,2025-01-16 16:11:13.229741+00:00
+641,swara.vast@universal.edu.in,swara,vast,320,AS&H,FE,F,9284458101,STUDENT,True,2025-01-16 15:26:19.881795+00:00
+826,pal.debojit@universal.edu.in,Debojit,Pal,135,AIML,SE,D,7718916126,STUDENT,True,2025-01-16 15:58:26.862409+00:00
+885,hasti.parakhiya@universal.edu.in,Hasti,Parakhiya,179,AS&H,FE,D, 97680 21253,STUDENT,True,2025-01-16 16:43:14.551735+00:00
+858,vishe.bhavika@universal.edu.in,bhavika,vishe,48,IT,SE,A,7620202090,STUDENT,True,2025-01-16 16:18:45.958837+00:00
+844,Kripesh.tiwari@universal.edu.in,Kripesh,Tiwari ,308,AS&H,FE,F,9156639770,STUDENT,True,2025-01-16 16:09:28.583060+00:00
+866,gupta.prince@universal.edu.in,Prince ,Gupta,83,AS&H,FE,B,9372882079,STUDENT,True,2025-01-16 16:26:27.765668+00:00
+875,mayank.thaware@universal.edu.in,Mayank,Thaware,61,DE,SE,E,9136752954,STUDENT,True,2025-01-16 16:34:56.043625+00:00
+901,ayaan.skhan@universal.edu.in,Khan,Ayaan,110,DE,BE,D,7387619695,STUDENT,True,2025-01-16 16:58:23.423834+00:00
+955,kunal.maru@universal.edu.in,Kunal ,Maru,81,COMPUTER,BE,B,8828064841,STUDENT,True,2025-01-16 18:16:35.912017+00:00
+910,shivam.rajage@universal.edu.in,Shivam,Rajage,23,COMPUTER,BE,A,07021522283,STUDENT,True,2025-01-16 17:05:44.882786+00:00
+932,chaitanya.koli@universal.edu.in,Chaitanya,Koli,4,CIVIL,BE,A,7721097346,STUDENT,True,2025-01-16 17:31:02.736866+00:00
+918,sahil.saykar@universal.edu.in,Sahil,Saykar,37,COMPUTER,BE,A,9175245702,STUDENT,True,2025-01-16 17:15:40.367917+00:00
+940,sawant.shreya@universal.edu.in,Shreya ,Sawant,245,AS&H,FE,E,9970930065,STUDENT,True,2025-01-16 17:40:09.879990+00:00
+946,sujal.singh@universal.edu.in,SUJAL ,Singh ,283,AS&H,FE,F,9834580318,STUDENT,True,2025-01-16 17:46:03.322893+00:00
+962,sadiya.shaikh@universal.edu.in,Sadiya ,Shaikh,51,DE,SE,E,08591639243,STUDENT,True,2025-01-16 20:57:01.998110+00:00
+968,patil.krish@universal.edu.in,KRISH ,PATIL,30,IT,SE,A,9156767375,STUDENT,True,2025-01-17 02:08:32.534457+00:00
+975,yadav.saurabh@universal.edu.in,Saurabh,Yadav,108,AIML,SE,D,8591169771,STUDENT,True,2025-01-17 02:57:36.031190+00:00
+990,Ramchandra.Khapare@universal.edu.in,Ramchandra,Khapare,,CIVIL,,,7588855191,FACULTY,True,2025-01-17 04:34:04.275282+00:00
+1013,sai.palande@universal.edu.in,Sai,Palande,56,AIML,TE,C,9321601827,STUDENT,True,2025-01-17 06:39:32.535269+00:00
+1035,dhruvi.lpatel@universal.edu.in,Dhruvi ,Patel,61,COMPUTER,TE,B,8108390739,STUDENT,True,2025-01-17 08:29:18.043317+00:00
+649,choudhary.sanjay@universal.edu.in,choudhary,sanjay,20,AIML,SE,C,8806486552,STUDENT,True,2025-01-16 15:27:38.896648+00:00
+840,rahul.thakur@universal.edu.in,rahul,thakur,303,AS&H,FE,F,8097697706,STUDENT,True,2025-01-16 16:05:51.270908+00:00
+846,arya.sjadhav@universal.edu.in,Arya,Jadhav,22,DE,SE,E,9082729734,STUDENT,True,2025-01-16 16:09:43.286845+00:00
+969,Manasi.Churi@universal.edu.in,Manasi,Churi,,COMPUTER,,,7709194332,FACULTY,True,2025-01-17 02:39:08.840623+00:00
+437,nandani.gohil@universal.edu.in,Nandani ,gohil,73,AS&H,FE,B,9372125923,STUDENT,True,2025-01-16 11:05:31.372721+00:00
+859,prerna.prajapati@universal.edu.in,Prerna ,Prajapati ,48,DE,SE,E,93260 80587,STUDENT,True,2025-01-16 16:18:52.716929+00:00
+829,omkar.horate@universal.edu.in,omkar,horate,28,AIML,BE,C,7977947141,STUDENT,True,2025-01-16 15:59:19.463503+00:00
+867,pravin.julum@universal.edu.in,Pravin,Julum,,AS&H,,,8928682791,FACULTY,True,2025-01-16 16:26:44.984655+00:00
+933,mogal.hamza@universal.edu.in,Hamza,Mogal,53,AIML,SE,C,8828319809,STUDENT,True,2025-01-16 17:31:23.622803+00:00
+886,anurags.singh@universal.edu.in,Anurag,Singh,276,AS&H,FE,E,8770879708,STUDENT,True,2025-01-16 16:43:38.796451+00:00
+947,mohammedfaisal.khan@universal.edu.in,Faisal,Khan,38,COMPUTER,BE,A,7718049387,STUDENT,True,2025-01-16 17:47:19.815385+00:00
+403,aarti.shrestha@universal.edu.in,Aarti,Shrestha ,271,AS&H,FE,E,+91 86980 96224,STUDENT,True,2025-01-16 10:30:58.092313+00:00
+902,ishan.shirode@universal.edu.in,Ishan,Shirode,87,AIML,TE,D,09307767804,COUNCIL,True,2025-01-16 16:58:24.287321+00:00
+956,ubaida.ansari@universal.edu.in,Ubaida,Ansari ,10,AS&H,FE,A,8623078798,STUDENT,True,2025-01-16 18:17:16.752077+00:00
+640,sanika.raut@universal.edu.in,Sanika,Raut,67,AIML,BE,C,7507725000,STUDENT,True,2025-01-16 15:25:52.192372+00:00
+963,sagar.dhotare@universal.edu.in,Sagar,Dhotare,,AS&H,,,7875899685,FACULTY,True,2025-01-17 00:48:42.513305+00:00
+1014,ishan.kanhirathingal@universal.edu.in,Ishan,Kanhirathingal,56,COMPUTER,BE,A,9527659448,STUDENT,True,2025-01-17 06:41:44.637104+00:00
+999,manish.pawade@universal.edu.in,Manish,Pawade,,COMPUTER,,,8668672798,FACULTY,True,2025-01-17 04:41:37.332563+00:00
+983,puja.solanki@universal.edu.in,Puja ,Solanki ,,DE,,,8999141330,FACULTY,True,2025-01-17 04:27:17.390370+00:00
+991,darshit.gharat@universal.edu.in,Darshit,Gharat,,DE,,,8629584675,FACULTY,True,2025-01-17 04:34:08.288749+00:00
+1006,anas.dange@universal.edu.in,Anas,Dange,,AIML,,,9022873433,FACULTY,True,2025-01-17 05:59:13.362392+00:00
+1022,rahul.andher@universal.edu.in,Rahul,Andher,,CIVIL,,,8788995024,FACULTY,True,2025-01-17 07:43:07.766926+00:00
+1029,bhavesh.jawale@universal.edu.in,Bhavesh,Jawale,95,AS&H,FE,B,9028809615,STUDENT,True,2025-01-17 08:17:23.876976+00:00
+1034,prayas.bhoir@universal.edu.in,prayas,bhoir,22,AS&H,FE,A,8691823664,STUDENT,True,2025-01-17 08:29:17.959700+00:00
+1042,ketaki.bhoir@universal.edu.in,Ketaki,bhoir,2,IT,TE,A,8097326822,STUDENT,True,2025-01-17 09:56:24.490806+00:00
+651,ashraf.siddiqui@universal.edu.in,Ashraf,Siddiqui,,COMPUTER,,,9619011146,FACULTY,True,2025-01-16 15:28:10.463267+00:00
+841,atharva.sankhe@universal.edu.in,Atharva ,Sankhe,19,COMPUTER,BE,A,7821029306,STUDENT,True,2025-01-16 16:06:25.099409+00:00
+830,gupta.v@universal.edu.in,Vishal,Gupta,24,AIML,TE,C,9005542834,STUDENT,True,2025-01-16 16:00:11.598708+00:00
+887,singh.shivam@universal.edu.in,SHIVAM,SINGH,42,IT,SE,A,7666788437,STUDENT,True,2025-01-16 16:44:42.750641+00:00
+860,pranay.devtale@universal.edu.in,Pranay,Devtale,24,AIML,SE,C,8602460257,STUDENT,True,2025-01-16 16:19:00.571962+00:00
+868,patil.akash@universal.edu.in,akash,patil,39,DE,TE,D,9527204682,STUDENT,True,2025-01-16 16:26:49.251605+00:00
+934,adeyinka.aderemi@universal.edu.in,Adeyinka ,Aderemi ,1,DE,SE,E,9833982497,STUDENT,True,2025-01-16 17:33:02.880146+00:00
+877,patil.dhruv@universal.edu.in,Dhruv,Patil,131,DE,TE,D,09067453561,STUDENT,True,2025-01-16 16:35:12.593109+00:00
+896,payal.dubey@universal.edu.in,Payal,Dubey,17,COMPUTER,TE,A,9838486059,STUDENT,True,2025-01-16 16:55:40.228908+00:00
+851,karina.sanwalot@universal.edu.in,Kareena ,Sanwalot,242,AS&H,FE,E,7666854079,STUDENT,True,2025-01-16 16:12:43.355193+00:00
+903,SARKAR.NAYOMI@universal.edu.in,Nayomi,Sarkar,74,AIML,SE,D,09136480768,STUDENT,True,2025-01-16 16:59:19.390548+00:00
+912,dalvi.ashish@universal.edu.in,Ashish,Dalvi,16,COMPUTER,SE,A,8329367276,STUDENT,True,2025-01-16 17:09:15.816773+00:00
+538,sayali.khopatkar@universal.edu.in,Sayali,Khopatkar ,119,AS&H,FE,C,7400323459,STUDENT,True,2025-01-16 14:28:56.451145+00:00
+941,tanay.vare@universal.edu.in,Tanay,Vare,57,DE,TE,D,9136362925,STUDENT,True,2025-01-16 17:41:42.769810+00:00
+948,sharanya.shrivastav@universal.edu.in,Sharanya ,Shrivastav,272,AS&H,FE,E,9175939888,STUDENT,True,2025-01-16 17:50:04.373983+00:00
+984,mishra.vaishnavi@universal.edu.in,Vaishnavi,Tripathi ,,AS&H,,,08591132193,FACULTY,True,2025-01-17 04:28:04.650414+00:00
+957,ashish.rawat@universal.edu.in,Ashish,Rawat,40,COMPUTER,BE,A,7066637526,STUDENT,True,2025-01-16 18:19:10.233787+00:00
+302,shetty.karthik@universal.edu.in,Karthik ,Shetty ,38,IT,SE,A,9867412096,STUDENT,True,2025-01-16 08:32:50.365123+00:00
+1081,khan.shainaz@universal.edu.in,Shainaz ,Khan,36,AIML,TE,C,7045743802,STUDENT,True,2025-01-20 04:27:11.188019+00:00
+1000,sujata.irkar@universal.edu.in,Sujata,Irkar,,OTHERS,,,9096795023,FACULTY,True,2025-01-17 04:43:24.642253+00:00
+1015,manoj.manchikatla@universal.edu.in,Manchikatla Manoj,Narsaiah,24,COMPUTER,BE,A,7822947158,STUDENT,True,2025-01-17 06:42:16.690654+00:00
+1007,mandlesh.yadav@universal.edu.in,Mandlesh,Yadav,103,AIML,SE,D,9022664476,STUDENT,True,2025-01-17 06:07:46.213988+00:00
+1023,gunjan.sheth@universal.edu.in,Gunjan,Sheth,24,COMPUTER,TE,B,7400029708,STUDENT,True,2025-01-17 07:52:17.447242+00:00
+1030,chirag.seepi@universal.edu.in,Chirag,Seepi,10,CIVIL,BE,A,8208477634,STUDENT,True,2025-01-17 08:19:44.909317+00:00
+1050,samiksha.devrukhkar@universal.edu.in,Samiksha ,Devrukhkar ,54,AS&H,FE,A,7208686395,STUDENT,True,2025-01-17 17:24:52.246277+00:00
+652,shreeja.nair@universal.edu.in,Shreeja ,nair,43,IT,BE,A,7030670910,STUDENT,True,2025-01-16 15:28:33.560422+00:00
+842,rahul.tanvar@universal.edu.in,RAHUL,TANWAR,298,AS&H,FE,F,9967589982,STUDENT,True,2025-01-16 16:06:33.564939+00:00
+852,vala.yatri@universal.edu.in,yatri,vala,145,COMPUTER,SE,B,9076106783,COUNCIL,True,2025-01-16 16:13:42.331396+00:00
+1073,ronit1.singharoy@universal.edu.in,Ronit,Singhroy,82,AIML,BE,C,7620727822,STUDENT,True,2025-01-19 16:44:40.992379+00:00
+861,darji.aastha@universal.edu.in,aastha,darji,9,IT,SE,A,8104204309,STUDENT,True,2025-01-16 16:19:18.342054+00:00
+480,krish.kawa@universal.edu.in,KRISH,KAWA,112,AS&H,FE,B,8452001976,STUDENT,True,2025-01-16 12:59:03.707741+00:00
+1024,manav.patil@universal.edu.in,manav ,patil,4,CIVIL,SE,A,9156711458,STUDENT,True,2025-01-17 07:55:40.679760+00:00
+542,Gayatri.ch@universal.edu.in,GAYATRI,RAO,336,AS&H,FE,F,7620814397,STUDENT,True,2025-01-16 14:30:40.809606+00:00
+897,tiwari.saurabh@universal.edu.in,Saurabh ,Tiwari ,94,AIML,SE,D,9792373097,STUDENT,True,2025-01-16 16:56:32.574817+00:00
+964,patil.prem@universal.edu.in,Prem,Patil,80,AIML,SE,D,7249455859,STUDENT,True,2025-01-17 01:27:01.885233+00:00
+913,yash.talwar@universal.edu.in,Yash,Talwar,85,COMPUTER,TE,B,08956365211,STUDENT,True,2025-01-16 17:10:39.993120+00:00
+942,mayur.gaikwad@universal.edu.in,Mayur ,Gaikwad,25,AIML,SE,C,7021218042,STUDENT,True,2025-01-16 17:42:26.429215+00:00
+993,kausar.maner@universal.edu.in,Kausar,Maner,,COMPUTER,,,8452075231,FACULTY,True,2025-01-17 04:35:03.484651+00:00
+949,Shreya.ranjak@universal.edu.in,Shreya,Ranjak,50,DE,SE,E,77388 71449,STUDENT,True,2025-01-16 17:51:50.746774+00:00
+970,amogh.gawde@universal.edu.in,Amogh,Gawde,,OTHERS,,,7057311146,FACULTY,True,2025-01-17 02:48:02.747613+00:00
+958,triveni.gavathe@universal.edu.in,Triveni ,Gavathe,21,AIML,BE,C,08446405020,STUDENT,True,2025-01-16 18:27:55.893884+00:00
+977,sarode.akansha@universal.edu.in,akansha,sarode,69,AIML,SE,D,8097780140,STUDENT,True,2025-01-17 03:39:09.129403+00:00
+1016,sanjana.satpute@universal.edu.in,Sanjana,Satpute,,COMPUTER,,,9082614991,FACULTY,True,2025-01-17 06:48:17.827889+00:00
+985,deepak.suthar@universal.edu.in,Deepak,Suthar,80,AIML,BE,C,9372592208,STUDENT,True,2025-01-17 04:29:12.671009+00:00
+1001,sourabh.shrivastava@universal.edu.in,SOURABH,SHRIVASTAVA,,AS&H,,,9685503809,FACULTY,True,2025-01-17 04:51:34.012363+00:00
+1008,jaypradeepsingh.deora@universal.edu.in,Jaypradeepsingh,Deora,2,CIVIL,BE,A,9619788439,STUDENT,True,2025-01-17 06:16:33.893157+00:00
+1031,shaji.alan@universal.edu.in,Alan ,Shaji,113,COMPUTER,SE,B,8149317911,STUDENT,True,2025-01-17 08:21:43.186660+00:00
+824,Swapnil.patil@universal.edu.in,Swapnil.patil,universal,,AS&H,,,,FACULTY,False,2025-01-16 15:56:53.543665+00:00
+1044,vishakha.dabhi@universal.edu.in,vishakha,dabhi,7,IT,TE,A,9359495456,STUDENT,True,2025-01-17 10:00:14.946754+00:00
+650,yash.kathe@universal.edu.in,Yash,Kathe,26,DE,SE,E,7028242369,STUDENT,True,2025-01-16 15:27:59.594011+00:00
+843,roshni.meher@universal.edu.in,Roshni,Meher,43,COMPUTER,TE,A,9307712969,STUDENT,True,2025-01-16 16:08:28.653344+00:00
+1017,aashay.shirodkar@universal.edu.in,aashay,shirodkar,267,AS&H,FE,E,8080555970,STUDENT,True,2025-01-17 06:53:33.768926+00:00
+889,pilke.gaurav@universal.edu.in,Gaurav,Pilke,136,AIML,SE,D,8767084748,STUDENT,True,2025-01-16 16:46:36.538927+00:00
+188,Anjali.t@universal.edu.in,Anjali,Tiwari,307,AS&H,FE,F,8788077168,STUDENT,True,2025-01-16 04:00:40+00:00
+853,krutika.pandya@universal.edu.in,Krutika ,Pandya,55,COMPUTER,TE,B,7045105139,STUDENT,True,2025-01-16 16:13:55.411633+00:00
+935,samar.shrivastava@universal.edu.in,samar,kumar,456,DE,SE,A,8262840435,STUDENT,True,2025-01-16 17:33:53.757685+00:00
+986,sneha.j@universal.edu.in,Sneha ,Jadhav,,AS&H,,,7738727416,FACULTY,True,2025-01-17 04:29:21.466552+00:00
+898,Satyaprakash.yadav@universal.edu.in,Satyaprakash  ,Yadav,105,AIML,SE,D,9136248483,STUDENT,True,2025-01-16 16:56:54.732511+00:00
+943,viya.shah@universal.edu.in,Viya,Shah,249,AS&H,FE,E,7397886526,STUDENT,True,2025-01-16 17:42:52.961814+00:00
+869,naitk.singh@universal.edu.in,Naitik,Singh,338,AS&H,FE,B,9653643156,STUDENT,True,2025-01-16 16:28:43.054130+00:00
+422,kartik.rpatel@universal.edu.in,Kartik,Patel,53,AIML,BE,C,7261917574,STUDENT,True,2025-01-16 10:49:15.451828+00:00
+950,sujal.hatakar@universal.edu.in,sujal,hatakar,112,AIML,SE,D,9594545644,STUDENT,True,2025-01-16 17:54:36.007943+00:00
+959,jadhav.vidhiti@universal.edu.in,vidhiti,jadhav,32,DE,TE,D,81691 13091,STUDENT,True,2025-01-16 18:28:43.870512+00:00
+643,sanjana.adhav@universal.edu.in,sanjana,adhav,1,IT,BE,A,8369454992,STUDENT,True,2025-01-16 15:26:46.223691+00:00
+965,more.omkar@universal.edu.in,Omkar,More,118,AIML,SE,D,9137869602,STUDENT,True,2025-01-17 01:35:40.576896+00:00
+1092,rohit.masal@universal.edu.in,Rohit,Masal,,OTHERS,,,9158286785,FACULTY,True,2025-01-20 12:53:34.127530+00:00
+1002,shraddha.shah@universal.edu.in,Shraddha ,Shaj,,AIML,,,8625854817,FACULTY,True,2025-01-17 04:52:23.798597+00:00
+1047,SINGH.LAVESH@universal.edu.in,Lavesh,Singh,114,COMPUTER,SE,B,9834780457,STUDENT,True,2025-01-17 16:19:46.307173+00:00
+1025,kanish.velkumar@universal.edu.in,Kanish,Velkumar,105,AS&H,FE,B,7559455660,STUDENT,True,2025-01-17 07:56:27.144797+00:00
+1049,ranjitsingh.chauhan@universal.edu.in,Ranjit Singh,Chauhan,62,COMPUTER,BE,A,09511790720,STUDENT,True,2025-01-17 16:56:55.263889+00:00
+1052,parmar.shubham@universal.edu.in,Shubham,Parmar,83,COMPUTER,SE,B,09321885157,STUDENT,True,2025-01-17 20:49:33.805473+00:00
+904,srushti.jondhale@universal.edu.in,srushti,jondhale,32,COMPUTER,TE,A,9702452802,COUNCIL,True,2025-01-16 16:59:22+00:00
+978,poojari.lavanya@universal.edu.in,Lavanya,Poojari,63,AIML,SE,D,9923090120,STUDENT,True,2025-01-17 03:42:10.532979+00:00
+1061,sampada.pimpale@universal.edu.in,Sampada ,Pimpale ,,AS&H,,,7020171569,FACULTY,True,2025-01-18 05:38:59.878359+00:00
+552,yogita.dhapola@universal.edu.in,YOGITA,DHAPOLA,58,AS&H,FE,B,7977670523,STUDENT,True,2025-01-16 14:40:01.709068+00:00
+1051,Khushi.dgupta@universal.edu.in,Khushi Gupta,Durgaprasad,11,IT,TE,A,07715071310,STUDENT,True,2025-01-17 17:54:34.026829+00:00
+1054,koriya.dhaval@universal.edu.in,dhaval,koriya,46,COMPUTER,SE,A,9137460127,STUDENT,True,2025-01-18 03:58:16.745445+00:00
+1055,butani.naitik@universal.edu.in,Naitik,Butani,12,COMPUTER,SE,A,8104147432,STUDENT,True,2025-01-18 04:02:09.833280+00:00
+1056,tanawade.harshita@universal.edu.in,Harshita ,Tanawade ,52,IT,SE,A,8097767189,COUNCIL,True,2025-01-18 04:07:28.928426+00:00
+1057,achal.patel@universal.edu.in,Achal,Patel,181,COMPUTER,FE,D,9029624190,STUDENT,True,2025-01-18 04:23:27.455016+00:00
+1058,saurabh.ya@universal.edu.in,saurabh,yadav,107,AIML,SE,D,9096736890,STUDENT,True,2025-01-18 05:02:49.106686+00:00
+1060,gharat.pratik@universal.edu.in,Pratik,Gharat,24,COMPUTER,SE,A,8625003408,STUDENT,True,2025-01-18 05:30:59.539763+00:00
+1062,shruti.kamble@universal.edu.in,Shruti,kamble,55,COMPUTER,BE,A,8080556917,STUDENT,True,2025-01-18 05:41:29.773976+00:00
+1064,ansh.gurav@universal.edu.in,Ansh,Gurav,119,DE,TE,D,9987420526,STUDENT,True,2025-01-18 09:07:52.513050+00:00
+1065,atul.pathak@universal.edu.in,Atul ,Pathak ,191,AS&H,FE,D,7021409974,STUDENT,True,2025-01-18 13:39:47.817023+00:00
+546,harshita.chaubey@universal.edu.in,Harshita,Chaubey,04,DE,SE,E,9323816801,STUDENT,True,2025-01-16 14:34:29.926119+00:00
+1079,jangam.aakashi@universal.edu.in,Aakashi,Jangam,24,AIML,TE,C,07710997496,STUDENT,True,2025-01-20 03:34:46.135251+00:00
+966,saheel.ware@universal.edu.in,Sahil,Ware,100,AIML,SE,D,7972721869,STUDENT,True,2025-01-17 01:35:46.159509+00:00
+1084,anil.sawant@universal.edu.in,Anil,Sawant,25,COMPUTER,BE,A,7506152880,STUDENT,True,2025-01-20 05:17:19.483831+00:00
+1089,anmol.mishra@universal.edu.in,Anmol ,Mishra,47,AIML,TE,C,8591172029,STUDENT,True,2025-01-20 06:41:25.498468+00:00
+1104,shubham.gohil@universal.edu.in,Shubham,Gohil,66,COMPUTER,BE,A,9137513061,STUDENT,True,2025-01-22 07:21:05.099069+00:00
+1095,kamalesh.lenka@universal.edu.in,Kamalesh ,Lenka,18,IT,SE,C,7977894574,STUDENT,True,2025-01-20 13:48:05.654711+00:00
+1097,namir.shah@universal.edu.in,Namir,Shah,154,DE,BE,D,9326922187,STUDENT,True,2025-01-20 14:25:59.623519+00:00
+1099,keon.modi@universal.edu.in,Keon,Modi,101,DE,BE,D,7972936118,STUDENT,True,2025-01-20 15:35:02.273122+00:00
+1101,shivsen.bhosale@universal.edu.in,Shivsen,Bhosale,10,AIML,BE,C,9172982524,STUDENT,True,2025-01-21 05:09:05.857666+00:00
+1102,prajakta.more@universal.edu.in,Prajakta,More,34,DE,SE,E,7350654839,STUDENT,True,2025-01-21 15:57:04.408634+00:00
+1106,rajeshk.yadav@universal.edu.in,Rajesh Kumar ,Yadav ,,AS&H,,,9920557677,FACULTY,True,2025-01-23 04:20:52.422280+00:00
+1012,pushpak.shinde@universal.edu.in,Pushpak,Shinde,7,AIML,TE,D,8591076876,COUNCIL,True,2025-01-17 06:25:25.188098+00:00
+1067,israr.shaikh@universal.edu.in,israr,shaikh,60,IT,TE,A,8591143723,STUDENT,True,2025-01-18 17:16:22.388115+00:00
+1107,premgorivale1995@universal.edu.in,Prem,Gorivale ,,COMPUTER,,,9370381267,FACULTY,True,2025-01-23 08:36:19.301073+00:00
+1074,renuka.pangam@universal.edu.in,Renuka ,pangam,41,COMPUTER,BE,A,73040 38496,STUDENT,True,2025-01-19 18:29:53.122959+00:00
+1096,saisaketh.gudla@universal.edu.in,SaiSaketh,Gudla,140,DE,BE,D,9769782322,STUDENT,True,2025-01-20 14:23:01.311072+00:00
+350,sannidhi.hshetty@universal.edu.in,Sannidhi,Shetty,65,AIML,TE,D,8698975924,STUDENT,True,2025-01-16 09:40:20.322891+00:00
+1088,anish.sanga@universal.edu.in,anish ,sanga,43,DE,SE,E,9503976156,COUNCIL,True,2025-01-20 05:32:36.967197+00:00
+442,rai.abhinav@universal.edu.in,Abhinav,Rai,98,COMPUTER,SE,B,7860474844,STUDENT,True,2025-01-16 11:24:48.044223+00:00
+1066,srinjan.chatterjee@universal.edu.in,Srinjan ,Chatterjee,165,AIML,BE,C,09921412080,STUDENT,True,2025-01-18 13:40:59.906446+00:00
+433,naman.purohit@universal.edu.in,Naman,Purohit ,143,AIML,SE,C,9168594971,COUNCIL,True,2025-01-16 11:00:29.732429+00:00
+1091,aaditya.thokal@universal.edu.in,Aaditya,Thokal,42,DE,SE,E,9987025977,COUNCIL,True,2025-01-20 08:53:21.421689+00:00
+1094,aryan.giri@universal.edu.in,aryan,giri,72,AS&H,FE,B,8928054328,STUDENT,True,2025-01-20 13:42:19.106543+00:00
+1103,anushka.p@universal.edu.in,Anushka ,Patil ,,CIVIL,,,8261877657,FACULTY,True,2025-01-22 05:54:09.498435+00:00
+1105,kaushik.thumbare@universal.edu.in,Kaushik,Thumbare,140,DE,BE,D,8329293362,STUDENT,True,2025-01-22 16:18:30.292396+00:00
